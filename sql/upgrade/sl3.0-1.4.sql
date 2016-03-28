@@ -20,6 +20,9 @@ ALTER TABLE sl30.customer ADD COLUMN credit_id int;
 
 --Accounts
 
+INSERT INTO gifi
+SELECT * FROM sl30.gifi;
+
 insert into account_link_description values ('CT_tax', false, false);
 
 INSERT INTO account_heading(id, accno, description)
@@ -34,6 +37,10 @@ SELECT account__save(id, accno, description, category,
                     string_to_array(link,':'), 'f', 'f')
   FROM sl30.chart
  WHERE charttype = 'A';
+
+-- Why does account__save doesn't handle that?
+UPDATE account
+SET gifi_accno = (SELECT gifi_accno FROM sl30.chart WHERE account.accno = sl30.chart.accno);
 
 delete from account_link where description = 'CT_tax';
 
@@ -364,9 +371,6 @@ drawing, microfiche, partsgroup_id, avgcost FROM sl30.parts;
 
 INSERT INTO makemodel (parts_id, make, model) 
 SELECT parts_id, make, model FROM sl30.makemodel;
-
-INSERT INTO gifi
-SELECT * FROM sl30.gifi;
 
 /* TODO -- can't be solved this easily: a freshly created defaults
 table contains 30 keys, one after having saved the System->Defaults
