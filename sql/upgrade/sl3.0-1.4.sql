@@ -30,17 +30,13 @@ SELECT id, accno, description
   FROM sl30.chart WHERE charttype = 'H';
 
 SELECT account__save(id, accno, description, category,
-                     case when gifi_accno ~ '[\s\t]*' then NULL
+                     case when gifi_accno ~ '^[\s\t]*$' then NULL
                           else gifi_accno end, NULL::int,
                     contra,
                     CASE WHEN link like '%tax%' THEN true ELSE false END,
                     string_to_array(link,':'), 'f', 'f')
   FROM sl30.chart
  WHERE charttype = 'A';
-
--- Why does account__save doesn't handle that?
-UPDATE account
-SET gifi_accno = (SELECT gifi_accno FROM sl30.chart WHERE account.accno = sl30.chart.accno);
 
 delete from account_link where description = 'CT_tax';
 
