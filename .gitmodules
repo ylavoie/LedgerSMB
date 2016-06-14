@@ -7,3 +7,6 @@
 [submodule "UI/js-src/util"]
 	path = UI/js-src/util
 	url = https://github.com/dojo/util.git
+[submodule "txgh"]
+	path = txgh
+	url = https://github.com/transifex/txgh.git
