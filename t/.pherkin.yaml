@@ -3,6 +3,10 @@ default:
       - t/lib
       - lib
       - old/lib
+   steps:
+    - t/[0189]*.t
+    - t/4*.t
+    - t/6*.t
    extensions:
       Pherkin::Extension::LedgerSMB:
          db_name: postgres
