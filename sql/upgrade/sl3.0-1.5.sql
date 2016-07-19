@@ -167,7 +167,6 @@ $$ LANGUAGE PLPGSQL;
 
 PERFORM payment_migrate(p.id, p.trans_id, cast(p.exchangerate as numeric), p.paymentmethod_id)
 FROM sl30.payment p;
-
 --Company
 
 INSERT INTO company (entity_id, legal_name, tax_id)
