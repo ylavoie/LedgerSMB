@@ -38,6 +38,7 @@ if ( $LedgerSMB::Sysconfig::dojo_built) {
 }
 
 Log::Log4perl::init(\$LedgerSMB::Sysconfig::log4perl_config);
+        qr/^\/?$/ => ['/login.pl',302]
 
 LedgerSMB::PSGI::setup_url_space(
         development => ($ENV{PLACK_ENV} eq 'development'),
