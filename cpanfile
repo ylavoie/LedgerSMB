@@ -89,6 +89,7 @@ feature 'xls', "Microsoft Excel" =>
         requires 'Spreadsheet::WriteExcel';
         requires 'Excel::Writer::XLSX';
 };
+
 # Even with cpanm --notest, 'test' target of --installdeps
 # will be included, so put our testing requirements in develop...
 on 'develop' => sub {
