@@ -190,6 +190,14 @@ sub create_from_template {
     $self->_clear_admin_dbh;
 }
 
+sub check_existing_company {
+  my ($self, $company) = @_;
+
+  my $sth = $self->super_dbh->prepare(qq(SELECT 1 FROM pg_database WHERE datname = ') . $company . qq('));
+  $sth->execute();
+  my $rows = $sth->fetchrow_hashref();
+  return $rows;
+}
 sub ensure_nonexisting_company {
     my ($self, $company) = @_;
 
