@@ -9,6 +9,7 @@ my @missing = grep { ! $ENV{$_} } @reqenv;
 
 plan skip_all => join (' and ', @missing) . ' not set'
     if @missing;
+
 plan tests => 2;
 require Selenium::Remote::Driver;
 
@@ -44,3 +45,4 @@ ok($driver->find_element_by_name('password'), 'got a password');
 $driver->get($base_url . '/setup.pl');
 
 ok($driver->find_element_by_name('s_password'), 'got a user');
+
