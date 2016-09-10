@@ -61,9 +61,11 @@ sub _build_admin_dbh {
     return $dbh;
 }
 
+
 sub step_directories {
     return [ 'ledgersmb_steps/' ];
 }
+
 
 sub pre_feature {
     my ($self, $feature, $stash) = @_;
@@ -84,6 +86,7 @@ sub pre_feature {
     $stash->{ext_lsmb} = $self;
     $self->last_feature_stash($stash);
 }
+
 
 sub post_feature {
     my ($self, $feature, $stash) = @_;
@@ -170,9 +173,20 @@ sub create_template {
 }
 
 
+sub check_existing_template {
+    my ($self) = @_;
+    my $template = $self->template_db_name;
+
+    my $sth = $self->super_dbh->prepare("SELECT 1 FROM pg_database WHERE datname = '$template'");
+    $sth->execute();
+    return $sth->fetchrow_hashref();
+}
+
 sub ensure_template {
     my ($self) = @_;
 
+    $self->template_created(1)
+        if $self->check_existing_template;
     $self->create_template
         unless $self->template_created;
 }
@@ -190,20 +204,22 @@ sub create_from_template {
     $self->_clear_admin_dbh;
 }
 
+
 sub check_existing_company {
   my ($self, $company) = @_;
 
   my $sth = $self->super_dbh->prepare(qq(SELECT 1 FROM pg_database WHERE datname = ') . $company . qq('));
   $sth->execute();
-  my $rows = $sth->fetchrow_hashref();
-  return $rows;
+  return $sth->fetchrow_hashref();
 }
+
 sub ensure_nonexisting_company {
     my ($self, $company) = @_;
 
     $self->super_dbh->do(qq(DROP DATABASE IF EXISTS "$company"));
     $self->_clear_admin_dbh;
 }
+
 
 sub ensure_nonexisting_user {
     my ($self, $role) = @_;
