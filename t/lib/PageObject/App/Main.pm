@@ -28,6 +28,7 @@ has content => (is => 'rw',
                 clearer => 'clear_content',
                 lazy => 1);
 
+
 sub content {
     my ($self, $new_value) = @_;
 
@@ -45,6 +46,7 @@ sub content {
     return $self->_get_content;
 }
 
+
 sub _build_content {
     my ($self) = @_;
 
@@ -58,6 +60,7 @@ sub _build_content {
 
     return $found;
 }
+
 
 # Note: copy of PageObject::Root::wait_for_body()
 sub wait_for_content {
@@ -93,7 +96,6 @@ sub _verify {
     $self->content->verify;
     return $self;
 };
-
 
 
 __PACKAGE__->meta->make_immutable;

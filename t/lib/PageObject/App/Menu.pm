@@ -20,7 +20,6 @@ __PACKAGE__->self_register(
                   id => 'menudiv',
               });
 
-
 my %menu_path_pageobject_map = (
     "Contacts > Add Contact" => 'PageObject::App::Contacts::Contact',
     "Contacts > Search" => 'PageObject::App::Search::Contact',
@@ -67,6 +66,28 @@ my %menu_path_pageobject_map = (
     "System > Defaults" => 'PageObject::App::System::Defaults',
     "System > Taxes" => 'PageObject::App::System::Taxes',
     );
+
+#before qr/^(.+)/ => sub {
+#  warn "PageObject::App::Menu before @_";
+#};
+
+#after qr/^(.+)/ => sub {
+#  warn "PageObject::App::Menu after  @_";
+#};
+
+#for my $func (qw(find click_menu _verify)) {
+#  before $func => sub {
+#    my $self = shift;
+#    warn "PageObject::App::Menu $func+";
+#  };
+#}
+
+#for my $func (qw(find click_menu _verify)) {
+#  after $func => sub {
+#    my $self = shift;
+#    warn "PageObject::App::Menu $func-";
+#  };
+#}
 
 
 sub _verify {

@@ -35,8 +35,8 @@ sub open {
     my ($class, $session) = @_;
 
     $session->get($class->url);
-
     $session->page->wait_for_body;
+
     return $session->page->body;
 }
 

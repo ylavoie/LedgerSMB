@@ -1,4 +1,4 @@
-package PageObject::App::Contacts;
+package PageObject::App::Contacts::Contact;
 
 use strict;
 use warnings;
@@ -6,9 +6,10 @@ use warnings;
 use Carp;
 use PageObject;
 
-use PageObject::App::Contacts;
 use Moose;
 extends 'PageObject';
+
+my $page_heading = 'Contact creation';
 
 __PACKAGE__->self_register(
               'contacts',
@@ -18,9 +19,12 @@ __PACKAGE__->self_register(
                   id => 'contacts',
               });
 
-
 sub _verify {
     my ($self) = @_;
+
+#    $self->find(".//*[\@class='listtop'
+#                      and normalize-space(text())='$page_heading']");
+    $self->find(".//*[normalize-space(text())='$page_heading']");
 
     return $self;
 }

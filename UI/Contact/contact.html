@@ -12,7 +12,10 @@ PROCESS "dynatable.html"  ?>
 <?lsmb  # Target_div handling now moved to controller script -- CT -?>
 
 <body class="lsmb <?lsmb dojo_theme ?>">
-
+  <form data-dojo-type="lsmb/Form"
+        id="contacts"
+        method="post"
+        action="<?lsmb request.script ?>">
     <?lsmb IF name ?>
 <div class="pageheading"><?lsmb text('Company') ?>: <?lsmb name ?></div>
     <?lsmb END ?>
@@ -25,7 +28,7 @@ PROCESS "dynatable.html"  ?>
     <?lsmb END ?>
     <div class="navigation" id="nav_div"><?lsmb target_div ?>
 <?lsmb IF entity_id ?><?lsmb operation = "Edit" ?><?lsmb ELSE
-?><?lsmb operation = "Add Contact"
+?><?lsmb operation = "Contact creation"
 ?><?lsmb END ?>
 <!-- CT: Keys for localization scripts:
 <?lsmb text("Add Customer") ?>
@@ -48,5 +51,6 @@ PROCESS "dynatable.html"  ?>
   END;
   ?>
 </div>
+</form>
 </body>
 </html>

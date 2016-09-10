@@ -29,10 +29,8 @@ When qr/I navigate to the application root/, sub {
 
 When qr/I navigate to the (.*) page/, sub {
     my $page = $1;
-warn $page;
     die "Unknown page '$page'"
         unless exists $pages{$page};
-#    ok(exists $pages{$page},"Page " . $page . "is handled");
 
     use_module($pages{$page});
     S->{page} = $pages{$page}->open(S->{ext_wsl})->verify;
@@ -50,17 +48,14 @@ Then qr/I should see the (.*) page/, sub {
        "the page is of expected class: " . ref $page);
 };
 
-use Data::Dumper;
-
 When qr/I navigate the menu and select the item at "(.*)"/, sub {
     my @path = split /[\n\s\t]*>[\n\s\t]*/, $1;
 
-warn Dumper(S->{ext_wsl}->page->body);
     S->{ext_wsl}->page->body->menu->click_menu(\@path);
 };
 
 my %screens = (
-    'Contacts Add Contact' => 'PageObject::App::Contacts::Add',
+    'Contact creation' => 'PageObject::App::Contacts::Contact',
     'Contact search' => 'PageObject::App::Search::Contact',
     'AR transaction entry' => 'PageObject::App::AR::Transaction',
     'AR invoice entry' => 'PageObject::App::AR::Invoice',
@@ -118,9 +113,9 @@ When qr/I select the "(.*)" tab/, sub {
 };
 
 Then qr/ I see the '(.+)' Tab/, sub {
-  my $tab = $1;
-  ok(S->{ext_wsl}->page->find(".//*[\@role='tab' and text()='$tab']"),
-    "the page has a tab named " . $tab)
+    my $tab = $1;
+    ok(S->{ext_wsl}->page->find(".//*[\@role='tab' and text()='$tab']"),
+       "the page has a tab named " . $tab)
 };
 
 

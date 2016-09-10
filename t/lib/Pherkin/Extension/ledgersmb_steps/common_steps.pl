@@ -15,14 +15,16 @@ Given qr/a (fresh )?standard test company/, sub {
 
     S->{ext_lsmb}->ensure_template;
 
-    my $db_exists = S->{ext_lsmb}->check_existing_company("standard-$company_seq");
+    my $company = "standard-" . $company_seq;
+    my $db_exists = S->{ext_lsmb}->check_existing_company($company);
 
     if ($db_exists && ! S->{"the company"} && !$fresh_required) {
-        ok(1,"Dababase standard-$company_seq exists");
+        ok(1,"Dababase $company exists");
+        S->{"the company"} = $company;
         return;
     }
     if (! S->{"the company"} || $fresh_required) {
-        my $company = "standard-" . $company_seq++;
+        $company = "standard-" . $company_seq++;
         S->{ext_lsmb}->create_from_template($company);
     }
 };

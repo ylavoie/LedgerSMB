@@ -1,3 +1,4 @@
+@one-db @weasel
 Feature: This application tests general components of contact management
 including new customers, vendors, leads and so forth.
 
