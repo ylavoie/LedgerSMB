@@ -13,6 +13,11 @@ my $company_seq = 0;
 Given qr/a (fresh )?standard test company/, sub {
     my $fresh_required = $1;
 
+    my $db_exists = S->{ext_lsmb}->check_existing_company("standard-$company_seq");
+    if ($db_exists && ! S->{"the company"} && !$fresh_required) {
+        ok(1,"Dababase standard-$company_seq exists");
+        return;
+    }
     S->{ext_lsmb}->ensure_template;
 
     if (! S->{"the company"} || $fresh_required) {
