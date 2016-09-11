@@ -22,7 +22,7 @@ __PACKAGE__->self_register(
 
 
 my %menu_path_pageobject_map = (
-    "Contacts > Add Contact" => '',
+    "Contacts > Add Contact" => 'PageObject::App::Contacts::Contact',
     "Contacts > Search" => 'PageObject::App::Search::Contact',
     "AR > Add Transaction" => 'PageObject::App::AR::Transaction',
     "AR > Import Batch" => 'PageObject::App::BatchImport',
