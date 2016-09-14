@@ -1,3 +1,6 @@
 # default arguments for the 'prove' command
 -l
+--source Feature
+-r
+
 -Iold/lib/
