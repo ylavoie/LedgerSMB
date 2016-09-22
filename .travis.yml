@@ -120,6 +120,7 @@ before_script:
   - make dist DIST_VER=travis DIST_DIR=${HOME}/built-dist/tar-output
   - cd ${HOME}/built-dist
   - tar xzf tar-output/ledgersmb-travis.tar.gz
+  - echo "Patch until tap-source is released"; cd $HOME/locallib/lib/perl5 ; tar Jxvf ${HOME}/built-dist/ledgersmb/utils/test/tap-source.tar.xz; cd ${HOME}/built-dist
   - cd ledgersmb
   - cp conf/ledgersmb.conf.default ledgersmb.conf
   - coverage-setup 2>/dev/null
