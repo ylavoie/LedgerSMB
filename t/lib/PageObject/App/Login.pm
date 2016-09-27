@@ -30,6 +30,16 @@ sub _verify {
     return $self;
 };
 
+use Data::Printer;
+use Digest::SHA qw(sha256_hex);
+
+before login => sub {
+  warn "PageObject::App::Login++";
+};
+
+after login => sub {
+  warn "PageObject::App::Login--";
+};
 
 sub login {
     my ($self, %args) = @_;
@@ -41,6 +51,7 @@ sub login {
         $element->click;
         $element->clear;
         $element->send_keys($_->{value});
+        warn "$_->{label} = $_->{value}"
     } for ({ label => "User Name",
              value => $user },
            { label => "Password",
@@ -50,7 +61,6 @@ sub login {
     $self->find('*button', text => "Login")->click;
     return $self->session->page->wait_for_body;
 }
-
 
 
 __PACKAGE__->meta->make_immutable;

@@ -45,20 +45,37 @@ sub field_types { return {}; }
 sub url { croak "Abstract method 'PageObject::url' called"; }
 
 
+my %img_num = ();
+
+sub _save_screenshot {
+    my ($self, $event, $phase) = @_;
+
+    $img_num{$event}++ if $phase !~ /post/;
+    my $img_name = "$event-$phase-" . $img_num{$event} . '.png';
+    CORE::open my $fh, ">", "screens" . '/' . $img_name;
+    $self->session->screenshot($fh);
+    close $fh;
+
+    my $html_name = "$event-$phase-" . $img_num{$event} . '.html';
+    CORE::open $fh, ">:utf8", "screens" . '/' . $html_name;
+    print $fh $self->session->get_page_source();
+    close $fh;
+}
+
 before click => sub {
-    warn "click++";
+    warn "PageObject::click++";
 };
 
 after click => sub {
-    warn "click--";
+    warn "PageObject::click--";
 };
 
 before wait_for_page => sub {
-    warn "wait_for_page++";
+    warn "PageObject::wait_for_page++";
 };
 
 after wait_for_page => sub {
-    warn "wait_for_page--";
+    warn "PageObject::wait_for_page--";
 };
 
 sub wait_for_page {
@@ -68,6 +85,7 @@ sub wait_for_page {
         sub {
 
             if ($ref) {
+                $self->session->_save_screenshot("find","stale");
                 local $@;
                 # if there's a reference element,
                 # wait for it to go stale (raise an exception)
@@ -79,8 +97,11 @@ sub wait_for_page {
                 return 0;
             }
             else {
-                return $self->session->page
+                $self->_save_screenshot("find","pre");
+                my $css = $self->session->page
                     ->find('body.done-parsing', scheme => 'css');
+                $self->_save_screenshot("find","post");
+                return defined $css;
             }
         });
 }

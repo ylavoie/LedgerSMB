@@ -197,9 +197,10 @@ sub create_from_template {
 sub check_existing_company {
   my ($self, $company) = @_;
 
-  my $sth = $self->super_dbh->prepare(qq(SELECT 1 FROM pg_database WHERE datname = ') . $company . qq('));
-  $sth->execute();
-  return $sth->fetchrow_hashref();
+    return 0;
+    my $sth = $self->super_dbh->prepare(qq(SELECT 1 FROM pg_database WHERE datname = ') . $company . qq('));
+    $sth->execute();
+    return $sth->fetchrow_hashref();
 }
 
 sub ensure_nonexisting_company {

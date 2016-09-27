@@ -23,16 +23,55 @@ sub _build_body {
     return $self->find('body.done-parsing', scheme => 'css');
 }
 
+use Digest::SHA qw(sha256_hex);
+use Data::Printer {
+    class =>   { show_methods => 'none', parents => 0 },
+    filters => {
+        'Selenium::Remote::Driver' => sub { $_[0]->remote_server_addr . ":" . $_[0]->port . $_[0]->wd_context_prefix },
+        'PageObject::Root'         => sub { $_[0]->body },
+        '_id'                      => sub { $_[0]->id },
+        'Weasel::Session'          => sub { $_[0]->page },
+    }
+};
+use Data::Dumper;
+
+sub _get_sha {
+    my $self = shift;
+    my $sha = "";
+    open my $fh, '>:encoding(UTF-8)', \$sha;
+    $self->session->get_page_source($fh);
+    close $fh;
+    return sha256_hex($sha);
+}
+
+my %img_num = ();
+
+sub _save_screenshot {
+    my ($self, $event, $phase) = @_;
+
+    $img_num{$event}++ if $phase !~ /post/;
+    my $img_name = "$event-$phase-" . $img_num{$event} . '.png';
+    CORE::open my $fh, ">", "screens" . '/' . $img_name;
+    $self->session->screenshot($fh);
+    close $fh;
+
+#    my $html_name = "$event-$phase-" . $img_num{$event} . '.html';
+#    CORE::open $fh, ">:utf8", "screens" . '/' . $html_name;
+#    print $fh $self->session->get_page_source();
+#    close $fh;
+}
+
 before clear_body => sub {
     my ($self) = @_;
     local @_;
     warn "clear_body++";
     for (my $i = 0 ; $i < 20 ; $i++ ) {
         my ($package, $filename, $line, $subroutine) = caller($i);
-        print STDERR $package . '::' . $subroutine . '#' . $line . "\n" if $package ne 'Class::MOP::Method';
+#        print STDERR $package . '::' . $subroutine . '#' . $line . "\n" if $package ne 'Class::MOP::Method';
     }
     my $ref;
     $ref = $self->body if $self->has_body;
+
     while ($ref) {
         my $gone = 1;
         try {
@@ -41,7 +80,6 @@ before clear_body => sub {
             #  it's not out of scope yet...
             $gone = 0;
         };
-        warn "tag_name " . ($gone ? "gone" : "still there");
         $ref = undef if $gone;
     }
 };
@@ -66,7 +104,8 @@ sub wait_for_body {
         sub {
             my $elem = $self->find('body.done-parsing', scheme => 'css');
             warn "body.done-parsing" . ( defined $elem ? " defined" : "" ) . ($elem && $elem->is_displayed ? " displayed" : "" );
-            return ($elem && $elem->is_displayed) ? 1 : 0;
+#            return ($elem && $elem->is_displayed) ? 1 : 0;
+            return $elem ? 1 : 0;
         });
     return $self->body;
 }

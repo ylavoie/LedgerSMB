@@ -18,7 +18,7 @@ __PACKAGE__->self_register(
               });
 
 
-my $page_heading = 'Add Contact';
+my $page_heading = 'Add';
 
 sub _verify {
     my ($self) = @_;
