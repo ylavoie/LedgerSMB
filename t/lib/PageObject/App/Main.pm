@@ -87,11 +87,9 @@ sub wait_for_content {
                 $ref = undef if $gone;
                 return 0; # Not done yet
             }
-            else {
-                my $elem = $self->session->page->find('#maindiv.done-parsing',
-                                                      scheme => 'css');
-                return ($elem && $elem->is_displayed) ? 1 : 0;
-           }
+            my $elem = $self->session->page->find('#maindiv.done-parsing',
+                                                  scheme => 'css');
+            return ($elem && $elem->is_displayed) ? 1 : 0;
         });
     return $self->content;
 }

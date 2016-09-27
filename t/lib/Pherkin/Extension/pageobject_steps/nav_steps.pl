@@ -29,7 +29,6 @@ When qr/I navigate to the application root/, sub {
 
 When qr/I navigate to the (.*) page/, sub {
     my $page = $1;
-warn $page;
     die "Unknown page '$page'"
         unless exists $pages{$page};
 #    ok(exists $pages{$page},"Page " . $page . "is handled");
@@ -55,7 +54,6 @@ use Data::Dumper;
 When qr/I navigate the menu and select the item at "(.*)"/, sub {
     my @path = split /[\n\s\t]*>[\n\s\t]*/, $1;
 
-warn Dumper(S->{ext_wsl}->page->body);
     S->{ext_wsl}->page->body->menu->click_menu(\@path);
 };
 

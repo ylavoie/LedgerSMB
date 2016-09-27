@@ -17,7 +17,7 @@ Scenario Outline: Navigate to menu and open screen
    Then I should see the <screen> screen
   Examples:
     | path                                      | screen                   |
-    | Contacts > Add Contact                    | contact creation         |
+    | Contacts > Add Contact                    | Add                      |
     | Contacts > Search                         | Contact search           |
     | AR > Add Transaction                      | AR transaction entry     |
     | AR > Import Batch                         | Batch import             |
@@ -51,4 +51,3 @@ Scenario Outline: Navigate to menu and open screen
     | Goods and Services > Add Overhead         | overhead entry           |
     | System > Defaults                         | system defaults          |
     | System > Taxes                            | system taxes             |
-
