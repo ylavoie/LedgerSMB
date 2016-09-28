@@ -77,6 +77,7 @@ matrix:
       env:
         - DB_TESTING=1
 
+
 before_cache:
   - mkdir -p $HOME/dojo_archive
 
@@ -156,3 +157,4 @@ after_success:
        echo "" ;
     fi
   - coverage-report
+
