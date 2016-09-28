@@ -59,29 +59,39 @@ sub _build_content {
     return $found;
 }
 
+before wait_for_content => sub {
+    warn "wait_for_content++";
+};
+
+after wait_for_content => sub {
+    warn "wait_for_content--";
+};
+
 # Note: copy of PageObject::Root::wait_for_body()
 sub wait_for_content {
     my ($self) = @_;
-    my $old_content;
-    $old_content = $self->content if $self->has_content;
+    my $ref;
+    $ref = $self->content if $self->has_content;
     $self->clear_content;
 
     $self->session->wait_for(
         sub {
-            if ($old_content) {
+            if ($ref) {
                 my $gone = 1;
                 try {
-                    $old_content->tag_name;
+                    $ref->tag_name;
                     # When successfully accessing the tag
                     #  it's not out of scope yet...
                     $gone = 0;
                 };
-                $old_content = undef if $gone;
-                return 0;
+                $ref = undef if $gone;
+                return 0; # Not done yet
             }
-            my $elem = $self->session->page->find('#maindiv.done-parsing',
-                                                  scheme => 'css');
-            return ($elem && $elem->is_displayed) ? 1 : 0;
+            else {
+                my $elem = $self->session->page->find('#maindiv.done-parsing',
+                                                      scheme => 'css');
+                return ($elem && $elem->is_displayed) ? 1 : 0;
+           }
         });
     return $self->content;
 }

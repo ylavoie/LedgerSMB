@@ -18,8 +18,8 @@ default:
            selenium:
              base_url: ${LSMB_BASE_URL}
              page_class: PageObject::Root
-             retry_timeout: 35
-             poll_delay: 0.75
+             retry_timeout: 30
+             poll_delay: 0.5
              driver:
                 drv_name: Weasel::Driver::Selenium2
                 wait_timeout: 3000
