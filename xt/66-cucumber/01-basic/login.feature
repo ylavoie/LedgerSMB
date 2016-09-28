@@ -21,3 +21,4 @@ Scenario: Viewing setup.pl
 Scenario: Viewing login.pl
   When I navigate to the application login page
   Then I should see the application login page
+
