@@ -2,6 +2,7 @@ package PageObject::Root;
 
 use strict;
 use warnings;
+use Carp;
 
 use Moose;
 extends 'Weasel::Element::Document';
@@ -22,28 +23,50 @@ sub _build_body {
     return $self->find('body.done-parsing', scheme => 'css');
 }
 
+before clear_body => sub {
+    my ($self) = @_;
+    local @_;
+    warn "clear_body++";
+    for (my $i = 0 ; $i < 20 ; $i++ ) {
+        my ($package, $filename, $line, $subroutine) = caller($i);
+        print STDERR $package . '::' . $subroutine . '#' . $line . "\n" if $package ne 'Class::MOP::Method';
+    }
+    my $ref;
+    $ref = $self->body if $self->has_body;
+    while ($ref) {
+        my $gone = 1;
+        try {
+            $ref->tag_name;
+            # When successfully accessing the tag
+            #  it's not out of scope yet...
+            $gone = 0;
+        };
+        warn "tag_name " . ($gone ? "gone" : "still there");
+        $ref = undef if $gone;
+    }
+};
+
+after clear_body => sub {
+    warn "clear_body--";
+};
+
+before wait_for_body => sub {
+    warn "wait_for_body++";
+};
+
+after wait_for_body => sub {
+    warn "wait_for_body--";
+};
+
 sub wait_for_body {
     my ($self) = @_;
-    my $old_body;
-    $old_body = $self->body if $self->has_body;
     $self->clear_body;
 
     $self->session->wait_for(
         sub {
-            if ($old_body) {
-                my $gone = 1;
-                try {
-                    $old_body->tag_name;
-                    # When successfully accessing the tag
-                    #  it's not out of scope yet...
-                    $gone = 0;
-                };
-                $old_body = undef if $gone;
-                return 0; # Not done yet
-            }
-            else {
-                return $self->find('body.done-parsing', scheme => 'css') ? 1 : 0;
-            }
+            my $elem = $self->find('body.done-parsing', scheme => 'css');
+            warn "body.done-parsing" . ( defined $elem ? " defined" : "" ) . ($elem && $elem->is_displayed ? " displayed" : "" );
+            return ($elem && $elem->is_displayed) ? 1 : 0;
         });
     return $self->body;
 }

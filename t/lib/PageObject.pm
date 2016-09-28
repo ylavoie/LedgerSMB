@@ -45,6 +45,22 @@ sub field_types { return {}; }
 sub url { croak "Abstract method 'PageObject::url' called"; }
 
 
+before click => sub {
+    warn "click++";
+};
+
+after click => sub {
+    warn "click--";
+};
+
+before wait_for_page => sub {
+    warn "wait_for_page++";
+};
+
+after wait_for_page => sub {
+    warn "wait_for_page--";
+};
+
 sub wait_for_page {
     my ($self, $ref) = @_;
 
@@ -63,7 +79,7 @@ sub wait_for_page {
                 return 0;
             }
             else {
-                $self->session->page
+                return $self->session->page
                     ->find('body.done-parsing', scheme => 'css');
             }
         });
