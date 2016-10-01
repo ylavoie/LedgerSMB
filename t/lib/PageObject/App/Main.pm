@@ -28,6 +28,19 @@ has content => (is => 'rw',
                 clearer => 'clear_content',
                 lazy => 1);
 
+#for my $func (qw(wait_for_content content _get_content _set_content has_content _build_content clear_content _verify)) {
+#    before $func => sub {
+#        warn __PACKAGE__."::$func++";
+#    };
+#}
+
+#for my $func (qw(wait_for_content content _get_content _set_content has_content _build_content clear_content _verify)) {
+#    after $func => sub {
+#        warn __PACKAGE__."::$func--";
+#    };
+#}
+
+
 sub content {
     my ($self, $new_value) = @_;
 
@@ -45,6 +58,7 @@ sub content {
     return $self->_get_content;
 }
 
+
 sub _build_content {
     my ($self) = @_;
 
@@ -59,33 +73,26 @@ sub _build_content {
     return $found;
 }
 
-before wait_for_content => sub {
-    warn "wait_for_content++";
-};
-
-after wait_for_content => sub {
-    warn "wait_for_content--";
-};
 
 # Note: copy of PageObject::Root::wait_for_body()
 sub wait_for_content {
     my ($self) = @_;
-    my $ref;
-    $ref = $self->content if $self->has_content;
+    my $old_content;
+    $old_content = $self->content if $self->has_content;
     $self->clear_content;
 
     $self->session->wait_for(
         sub {
-            if ($ref) {
+            if ($old_content) {
                 my $gone = 1;
                 try {
-                    $ref->tag_name;
+                    $old_content->tag_name;
                     # When successfully accessing the tag
                     #  it's not out of scope yet...
                     $gone = 0;
                 };
-                $ref = undef if $gone;
-                return 0; # Not done yet
+                $old_content = undef if $gone;
+                return 0;
             }
             my $elem = $self->session->page->find('#maindiv.done-parsing',
                                                   scheme => 'css');
@@ -101,7 +108,6 @@ sub _verify {
     $self->content->verify;
     return $self;
 };
-
 
 
 __PACKAGE__->meta->make_immutable;

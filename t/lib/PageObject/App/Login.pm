@@ -30,17 +30,6 @@ sub _verify {
     return $self;
 };
 
-use Data::Printer;
-use Digest::SHA qw(sha256_hex);
-
-before login => sub {
-  warn "PageObject::App::Login++";
-};
-
-after login => sub {
-  warn "PageObject::App::Login--";
-};
-
 sub login {
     my ($self, %args) = @_;
     my $user = $args{user};
@@ -51,7 +40,6 @@ sub login {
         $element->click;
         $element->clear;
         $element->send_keys($_->{value});
-        warn "$_->{label} = $_->{value}"
     } for ({ label => "User Name",
              value => $user },
            { label => "Password",

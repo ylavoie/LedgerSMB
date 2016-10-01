@@ -18,7 +18,7 @@ Scenario Outline: Navigate to menu and open screen
   Examples:
     | path                                      | screen                   |
     | Contacts > Add Contact                    | Add                      |
-    | Contacts > Search                         | Contact search           |
+#    | Contacts > Search                         | Contact search           |
     | AR > Add Transaction                      | AR transaction entry     |
     | AR > Import Batch                         | Batch import             |
     | AR > Sales Invoice                        | AR invoice entry         |
