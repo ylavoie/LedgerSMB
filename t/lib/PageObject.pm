@@ -62,21 +62,21 @@ sub _save_screenshot {
     close $fh;
 }
 
-before click => sub {
-    warn "PageObject::click++";
-};
+#before click => sub {
+#    warn "PageObject::click++";
+#};
 
-after click => sub {
-    warn "PageObject::click--";
-};
+#after click => sub {
+#    warn "PageObject::click--";
+#};
 
-before wait_for_page => sub {
-    warn "PageObject::wait_for_page++";
-};
+#before wait_for_page => sub {
+#    warn "PageObject::wait_for_page++";
+#};
 
-after wait_for_page => sub {
-    warn "PageObject::wait_for_page--";
-};
+#after wait_for_page => sub {
+#    warn "PageObject::wait_for_page--";
+#};
 
 sub wait_for_page {
     my ($self, $ref) = @_;
@@ -85,7 +85,7 @@ sub wait_for_page {
         sub {
 
             if ($ref) {
-                $self->session->_save_screenshot("find","stale");
+#                $self->session->_save_screenshot("find","stale");
                 local $@;
                 # if there's a reference element,
                 # wait for it to go stale (raise an exception)
@@ -97,10 +97,10 @@ sub wait_for_page {
                 return 0;
             }
             else {
-                $self->_save_screenshot("find","pre");
+#                $self->_save_screenshot("find","pre");
                 my $css = $self->session->page
                     ->find('body.done-parsing', scheme => 'css');
-                $self->_save_screenshot("find","post");
+#                $self->_save_screenshot("find","post");
                 return defined $css;
             }
         });

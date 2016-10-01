@@ -58,7 +58,8 @@ When qr/I navigate the menu and select the item at "(.*)"/, sub {
 };
 
 my %screens = (
-    'Contacts Add Contact' => 'PageObject::App::Contacts::Add',
+#    'Contacts Add Contact' => 'PageObject::App::Contacts::Add',
+    'Add' => 'PageObject::App::Contacts::Add',
     'Contact search' => 'PageObject::App::Search::Contact',
     'AR transaction entry' => 'PageObject::App::AR::Transaction',
     'AR invoice entry' => 'PageObject::App::AR::Invoice',
