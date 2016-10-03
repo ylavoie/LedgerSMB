@@ -173,20 +173,9 @@ sub create_template {
 }
 
 
-sub check_existing_template {
-    my ($self) = @_;
-    my $template = $self->template_db_name;
-
-    my $sth = $self->super_dbh->prepare("SELECT 1 FROM pg_database WHERE datname = '$template'");
-    $sth->execute();
-    return $sth->fetchrow_hashref();
-}
-
 sub ensure_template {
     my ($self) = @_;
 
-    $self->template_created(1)
-        if $self->check_existing_template;
     $self->create_template
         unless $self->template_created;
 }
