@@ -22,6 +22,20 @@ __PACKAGE__->self_register(
 
 sub url { return '/setup.pl'; }
 
+for my $func (qw(login _verify)) {
+    before $func => sub {
+        warn DateTime->now->ymd . " " . DateTime->now->hms . " " . __PACKAGE__."::$func++"
+            if(defined $ENV{'DEBUG_WEASEL'});
+    };
+}
+
+for my $func (qw(login _verify)) {
+    after $func => sub {
+        warn DateTime->now->ymd . " " . DateTime->now->hms . " " . __PACKAGE__."::$func--"
+            if(defined $ENV{'DEBUG_WEASEL'});
+    };
+}
+
 sub _verify {
     my ($self) = @_;
 
@@ -51,11 +65,7 @@ sub login {
            { label => "Database",
              value => $company });
 
-    my $btn = $self->find('*button', text => "Login");
-    $btn->click;
-
-    $self->session->page->wait_for_body;
-    return $self->session->page->body;
+    return $self->session->page->click_and_wait_for_body('*button', text => "Login");
 }
 
 sub login_non_existent {

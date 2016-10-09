@@ -43,18 +43,14 @@ sub _verify {
 
 sub list_users {
     my ($self) = @_;
-    my $btn = $self->find('*button', text => "List Users");
-    $btn->click;
 
-    return $self->session->page->wait_for_body;
+    return $self->session->page->click_and_wait_for_body('*button', text => "List User");
 }
 
 sub add_user {
     my ($self) = @_;
-    my $btn = $self->find('*button', text => "Add User");
-    $btn->click;
 
-    return $self->session->page->wait_for_body;
+    return $self->session->page->click_and_wait_for_body('*button', text => "Add User");
 }
 
 sub copy_company {
@@ -62,10 +58,8 @@ sub copy_company {
 
     $self->find('*labeled', text => "Copy to New Name")
         ->send_keys($target);
-    my $btn = $self->find('*button', text => "Copy");
-    $btn->click;
 
-    return $self->session->page->wait_for_body;
+    return $self->session->page->click_and_wait_for_body('*button', text => "Copy");
 }
 
 sub create_database {
@@ -107,10 +101,7 @@ sub create_database {
         ->find_option($param{"Templates"})
         ->click;
 
-    my $btn = $page->find('*button', text => "Load Templates");
-    $btn->click;
-
-     $self->session->page->wait_for_body;
+    $self->session->page->click_and_wait_for_body('*button', text => "Load Templates");
     return $self->session->page->body;
 }
 

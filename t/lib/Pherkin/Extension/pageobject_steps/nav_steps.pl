@@ -49,8 +49,6 @@ Then qr/I should see the (.*) page/, sub {
        "the page is of expected class: " . ref $page);
 };
 
-use Data::Dumper;
-
 When qr/I navigate the menu and select the item at "(.*)"/, sub {
     my @path = split /[\n\s\t]*>[\n\s\t]*/, $1;
 

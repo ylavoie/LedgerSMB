@@ -46,10 +46,7 @@ sub create_user {
             $elm->send_keys($param{$field});
         }
     }
-    my $btn = $self->find('*button', text => "Create User");
-    $btn->click;
-
-    $self->session->page->wait_for_body;
+    $self->session->page->click_and_wait_for_body('*button', text => "Create User");
     return $self->session->page->body;
 }
 

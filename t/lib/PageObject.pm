@@ -56,53 +56,39 @@ sub _save_screenshot {
     $self->session->screenshot($fh);
     close $fh;
 
-    my $html_name = "$event-$phase-" . $img_num{$event} . '.html';
-    CORE::open $fh, ">:utf8", "screens" . '/' . $html_name;
-    print $fh $self->session->get_page_source();
-    close $fh;
+#    my $html_name = "$event-$phase-" . $img_num{$event} . '.html';
+#    CORE::open $fh, ">:utf8", "screens" . '/' . $html_name;
+#    $self->session->get_page_source($fh);
+#    close $fh;
 }
 
-#before click => sub {
-#    warn "PageObject::click++";
-#};
+use DateTime;
 
-#after click => sub {
-#    warn "PageObject::click--";
-#};
+for my $func (qw(wait_for_page click)) {
+    before $func => sub {
+        warn DateTime->now->ymd . " " . DateTime->now->hms . " " . __PACKAGE__."::$func++"
+            if(defined $ENV{'DEBUG_WEASEL'});
+    };
+}
 
-#before wait_for_page => sub {
-#    warn "PageObject::wait_for_page++";
-#};
-
-#after wait_for_page => sub {
-#    warn "PageObject::wait_for_page--";
-#};
+for my $func (qw(wait_for_page click)) {
+    after $func => sub {
+        warn DateTime->now->ymd . " " . DateTime->now->hms . " " . __PACKAGE__."::$func--"
+            if(defined $ENV{'DEBUG_WEASEL'});
+    };
+}
 
 sub wait_for_page {
     my ($self, $ref) = @_;
 
+    $self->session->wait_for_stale($ref);
     $self->session->wait_for(
         sub {
-
-            if ($ref) {
-#                $self->session->_save_screenshot("find","stale");
-                local $@;
-                # if there's a reference element,
-                # wait for it to go stale (raise an exception)
-                eval {
-                    $ref->tag_name;
-                    1;
-                };
-                $ref = undef if !defined $@;
-                return 0;
-            }
-            else {
-#                $self->_save_screenshot("find","pre");
-                my $css = $self->session->page
-                    ->find('body.done-parsing', scheme => 'css');
-#                $self->_save_screenshot("find","post");
-                return defined $css;
-            }
+            $self->_save_screenshot("find","pre");
+            my $css = $self->session->page
+                ->find('body.done-parsing', scheme => 'css');
+            $self->_save_screenshot("find","post");
+            return defined $css;
         });
 }
 
