@@ -46,8 +46,7 @@ sub login {
              value => $password },
            { label => "Company",
              value => $company });
-    $self->find('*button', text => "Login")->click;
-    return $self->session->page->wait_for_body;
+    return $self->session->page->click_and_wait_for_body('*button', text => "Login");
 }
 
 

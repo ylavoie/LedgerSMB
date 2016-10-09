@@ -13,12 +13,58 @@ has body => (is => 'rw',
              builder => '_build_body',
              lazy => 1);
 
+use DateTime;
+
+for my $func (qw(wait_for_body body has_body _build_body clear_body click_and_wait_for_body)) {
+    before $func => sub {
+        warn DateTime->now->ymd . " " . DateTime->now->hms . " " . __PACKAGE__."::$func++"
+            if(defined $ENV{'DEBUG_WEASEL'});
+    };
+}
+
+for my $func (qw(wait_for_body body has_body _build_body clear_body click_and_wait_for_body)) {
+    after $func => sub {
+        warn DateTime->now->ymd . " " . DateTime->now->hms . " " . __PACKAGE__."::$func--"
+            if(defined $ENV{'DEBUG_WEASEL'});
+    };
+}
+
 sub _build_body {
     my ($self) = @_;
 
     return $self->find('body.done-parsing', scheme => 'css');
 }
 
+sub _wait_for_stale {
+  my ($self,$link) = @_;
+  $self->session->wait_for(
+      sub {
+          try {
+              # poll the link with an arbitrary call
+              $link->tag_name;
+              return 0;
+          } catch {
+            die $_ if ref($_) ne "HASH";
+            warn $_->{cmd_return}->{error}->{code} if ref($_) eq "HASH" && $_->{cmd_return}->{error}->{code} ne "STALE_ELEMENT_REFERENCE";
+            return $_->{cmd_return}->{error}->{code} eq "STALE_ELEMENT_REFERENCE";
+          }
+        }) if $link;
+};
+
+use Data::Printer;
+sub click_and_wait_for_body {
+    my ($self, @args) = @_;
+    my $link = $self->find(@args);
+    $link->click();
+
+    $self->_wait_for_stale($link);
+    $self->clear_body;
+    $self->session->wait_for(
+        sub {
+          return $self->find('body.done-parsing', scheme => 'css') ? 1 : 0;
+        });
+    return $self->body;
+}
 
 sub wait_for_body {
     my ($self) = @_;
@@ -26,20 +72,10 @@ sub wait_for_body {
     $ref = $self->body if $self->has_body;
     $self->clear_body;
 
+    $self->_wait_for_stale($ref);
     $self->session->wait_for(
         sub {
-            if ($ref) {
-                my $gone = 1;
-                try {
-                    $ref->tag_name;
-                    # When successfully accessing the tag
-                    #  it's not out of scope yet...
-                    $gone = 0;
-                };
-                $ref = undef if $gone;
-            }
-            my $elem = $self->find('body.done-parsing', scheme => 'css');
-            return $elem ? 1 : 0;
+            return $self->find('body.done-parsing', scheme => 'css') ? 1 : 0;
         });
     return $self->body;
 }

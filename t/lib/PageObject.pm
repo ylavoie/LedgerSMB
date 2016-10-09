@@ -62,47 +62,55 @@ sub _save_screenshot {
     close $fh;
 }
 
-#before click => sub {
-#    warn "PageObject::click++";
-#};
+use DateTime;
 
-#after click => sub {
-#    warn "PageObject::click--";
-#};
+before click => sub {
+    warn DateTime->now->ymd . " " . DateTime->now->hms . " PageObject::click++"
+        if(defined $ENV{'DEBUG_WEASEL'});
+};
 
-#before wait_for_page => sub {
-#    warn "PageObject::wait_for_page++";
-#};
+after click => sub {
+    warn DateTime->now->ymd . " " . DateTime->now->hms . " PageObject::click--"
+        if(defined $ENV{'DEBUG_WEASEL'});
+};
 
-#after wait_for_page => sub {
-#    warn "PageObject::wait_for_page--";
-#};
+before wait_for_page => sub {
+    warn DateTime->now->ymd . " " . DateTime->now->hms . " PageObject::wait_for_page++"
+        if(defined $ENV{'DEBUG_WEASEL'});
+};
+
+after wait_for_page => sub {
+    warn DateTime->now->ymd . " " . DateTime->now->hms . " PageObject::wait_for_page--"
+        if(defined $ENV{'DEBUG_WEASEL'});
+};
+
+sub _wait_for_stale {
+  my ($self,$link) = @_;
+  $self->session->wait_for(
+      sub {
+          try {
+              # poll the link with an arbitrary call
+              $link->tag_name;
+              return 0;
+          } catch {
+            die $_ if ref($_) ne "HASH";
+            warn $_->{cmd_return}->{error}->{code} if ref($_) eq "HASH" && $_->{cmd_return}->{error}->{code} ne "STALE_ELEMENT_REFERENCE";
+            return $_->{cmd_return}->{error}->{code} eq "STALE_ELEMENT_REFERENCE";
+          }
+        }) if $link;
+};
 
 sub wait_for_page {
     my ($self, $ref) = @_;
 
+    $self->_wait_for_stale($ref);
     $self->session->wait_for(
         sub {
-
-            if ($ref) {
-#                $self->session->_save_screenshot("find","stale");
-                local $@;
-                # if there's a reference element,
-                # wait for it to go stale (raise an exception)
-                eval {
-                    $ref->tag_name;
-                    1;
-                };
-                $ref = undef if !defined $@;
-                return 0;
-            }
-            else {
-#                $self->_save_screenshot("find","pre");
-                my $css = $self->session->page
-                    ->find('body.done-parsing', scheme => 'css');
-#                $self->_save_screenshot("find","post");
-                return defined $css;
-            }
+            $self->_save_screenshot("find","pre");
+            my $css = $self->session->page
+                ->find('body.done-parsing', scheme => 'css');
+            $self->_save_screenshot("find","post");
+            return defined $css;
         });
 }
 

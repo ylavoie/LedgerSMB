@@ -28,17 +28,21 @@ has content => (is => 'rw',
                 clearer => 'clear_content',
                 lazy => 1);
 
-#for my $func (qw(wait_for_content content _get_content _set_content has_content _build_content clear_content _verify)) {
-#    before $func => sub {
-#        warn __PACKAGE__."::$func++";
-#    };
-#}
+use DateTime;
 
-#for my $func (qw(wait_for_content content _get_content _set_content has_content _build_content clear_content _verify)) {
-#    after $func => sub {
-#        warn __PACKAGE__."::$func--";
-#    };
-#}
+for my $func (qw(wait_for_content content _get_content _set_content has_content _build_content clear_content _verify)) {
+    before $func => sub {
+        warn DateTime->now->ymd . " " . DateTime->now->hms . " " . __PACKAGE__."::$func++"
+            if(defined $ENV{'DEBUG_WEASEL'});
+    };
+}
+
+for my $func (qw(wait_for_content content _get_content _set_content has_content _build_content clear_content _verify)) {
+    after $func => sub {
+        warn DateTime->now->ymd . " " . DateTime->now->hms . " " . __PACKAGE__."::$func--"
+            if(defined $ENV{'DEBUG_WEASEL'});
+    };
+}
 
 
 sub content {
@@ -74,26 +78,47 @@ sub _build_content {
 }
 
 
-# Note: copy of PageObject::Root::wait_for_body()
+sub _wait_for_stale {
+  my ($self,$link) = @_;
+  $self->session->wait_for(
+      sub {
+          try {
+              # poll the link with an arbitrary call
+              $link->tag_name;
+              return 0;
+          } catch {
+            die $_ if ref($_) ne "HASH";
+            warn $_->{cmd_return}->{error}->{code} if ref($_) eq "HASH" && $_->{cmd_return}->{error}->{code} ne "STALE_ELEMENT_REFERENCE";
+            return $_->{cmd_return}->{error}->{code} eq "STALE_ELEMENT_REFERENCE";
+          }
+        }) if $link;
+};
+
+sub click_and_wait_for_content {
+    my ($self, @args) = @_;
+    my $link = $self->find(@args);
+    $link->click();
+
+    $self->_wait_for_stale($link);
+    $self->clear_content;
+    $self->session->wait_for(
+        sub {
+            my $elem = $self->session->page->find('#maindiv.done-parsing',
+                                                  scheme => 'css');
+            return ($elem && $elem->is_displayed) ? 1 : 0;
+        });
+    return $self->content;
+}
+
 sub wait_for_content {
     my ($self) = @_;
     my $old_content;
     $old_content = $self->content if $self->has_content;
     $self->clear_content;
 
+    $self->_wait_for_stale($old_content);
     $self->session->wait_for(
         sub {
-            if ($old_content) {
-                my $gone = 1;
-                try {
-                    $old_content->tag_name;
-                    # When successfully accessing the tag
-                    #  it's not out of scope yet...
-                    $gone = 0;
-                };
-                $old_content = undef if $gone;
-                return 0;
-            }
             my $elem = $self->session->page->find('#maindiv.done-parsing',
                                                   scheme => 'css');
             return ($elem && $elem->is_displayed) ? 1 : 0;
