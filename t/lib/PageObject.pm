@@ -56,54 +56,32 @@ sub _save_screenshot {
     $self->session->screenshot($fh);
     close $fh;
 
-    my $html_name = "$event-$phase-" . $img_num{$event} . '.html';
-    CORE::open $fh, ">:utf8", "screens" . '/' . $html_name;
-    print $fh $self->session->get_page_source();
-    close $fh;
+#    my $html_name = "$event-$phase-" . $img_num{$event} . '.html';
+#    CORE::open $fh, ">:utf8", "screens" . '/' . $html_name;
+#    $self->session->get_page_source($fh);
+#    close $fh;
 }
 
 use DateTime;
 
-before click => sub {
-    warn DateTime->now->ymd . " " . DateTime->now->hms . " PageObject::click++"
-        if(defined $ENV{'DEBUG_WEASEL'});
-};
+for my $func (qw(wait_for_page click)) {
+    before $func => sub {
+        warn DateTime->now->ymd . " " . DateTime->now->hms . " " . __PACKAGE__."::$func++"
+            if(defined $ENV{'DEBUG_WEASEL'});
+    };
+}
 
-after click => sub {
-    warn DateTime->now->ymd . " " . DateTime->now->hms . " PageObject::click--"
-        if(defined $ENV{'DEBUG_WEASEL'});
-};
-
-before wait_for_page => sub {
-    warn DateTime->now->ymd . " " . DateTime->now->hms . " PageObject::wait_for_page++"
-        if(defined $ENV{'DEBUG_WEASEL'});
-};
-
-after wait_for_page => sub {
-    warn DateTime->now->ymd . " " . DateTime->now->hms . " PageObject::wait_for_page--"
-        if(defined $ENV{'DEBUG_WEASEL'});
-};
-
-sub _wait_for_stale {
-  my ($self,$link) = @_;
-  $self->session->wait_for(
-      sub {
-          try {
-              # poll the link with an arbitrary call
-              $link->tag_name;
-              return 0;
-          } catch {
-            die $_ if ref($_) ne "HASH";
-            warn $_->{cmd_return}->{error}->{code} if ref($_) eq "HASH" && $_->{cmd_return}->{error}->{code} ne "STALE_ELEMENT_REFERENCE";
-            return $_->{cmd_return}->{error}->{code} eq "STALE_ELEMENT_REFERENCE";
-          }
-        }) if $link;
-};
+for my $func (qw(wait_for_page click)) {
+    after $func => sub {
+        warn DateTime->now->ymd . " " . DateTime->now->hms . " " . __PACKAGE__."::$func--"
+            if(defined $ENV{'DEBUG_WEASEL'});
+    };
+}
 
 sub wait_for_page {
     my ($self, $ref) = @_;
 
-    $self->_wait_for_stale($ref);
+    $self->session->wait_for_stale($ref);
     $self->session->wait_for(
         sub {
             $self->_save_screenshot("find","pre");

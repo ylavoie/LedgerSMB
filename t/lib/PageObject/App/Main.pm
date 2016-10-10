@@ -77,30 +77,12 @@ sub _build_content {
     return $found;
 }
 
-
-sub _wait_for_stale {
-  my ($self,$link) = @_;
-  $self->session->wait_for(
-      sub {
-          try {
-              # poll the link with an arbitrary call
-              $link->tag_name;
-              return 0;
-          } catch {
-            die $_ if ref($_) ne "HASH";
-            warn $_->{cmd_return}->{error}->{code} if ref($_) eq "HASH" && $_->{cmd_return}->{error}->{code} ne "STALE_ELEMENT_REFERENCE";
-            return $_->{cmd_return}->{error}->{code} eq "STALE_ELEMENT_REFERENCE";
-          }
-        }) if $link;
-};
-
 sub click_and_wait_for_content {
     my ($self, @args) = @_;
     my $link = $self->find(@args);
     $link->click();
 
-    $self->_wait_for_stale($link);
-    $self->clear_content;
+    $self->session->wait_for_stale($link);
     $self->session->wait_for(
         sub {
             my $elem = $self->session->page->find('#maindiv.done-parsing',
@@ -116,7 +98,7 @@ sub wait_for_content {
     $old_content = $self->content if $self->has_content;
     $self->clear_content;
 
-    $self->_wait_for_stale($old_content);
+    $self->session->wait_for_stale($old_content);
     $self->session->wait_for(
         sub {
             my $elem = $self->session->page->find('#maindiv.done-parsing',
