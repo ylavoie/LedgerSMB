@@ -178,7 +178,7 @@ $$
     WHERE c.id = $1 AND ac.cleared
       AND ac.approved IS true
       AND ac.transdate <= $2
-      AND cleared_on <= $2 -- Required for historical reports
+      AND (cleared_on is null or cleared_on <= $2) -- Required for historical reports
     GROUP BY c.id, c.category;
 $$ LANGUAGE sql;
 
