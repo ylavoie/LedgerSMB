@@ -40,6 +40,10 @@ SELECT account__save(id, accno, description, category,
 
 delete from account_link where description = 'CT_tax';
 
+-- Business
+
+INSERT INTO business SELECT * FROM sl28.business;
+
 --Entity
 
 INSERT INTO entity (name, control_code, entity_class, country_id)
@@ -56,12 +60,17 @@ SELECT name, 'C-' || customernumber, 2,
 FROM sl28.customer
 GROUP BY name, customernumber;
 
+INSERT INTO entity (name, control_code, entity_class, country_id)
+SELECT 'Migrator', 'R-1', 10, (select id from country
+         where lower(short_name)  =  lower(:default_country));
+
 UPDATE sl28.vendor SET entity_id = (SELECT id FROM entity WHERE 'V-' || vendornumber = control_code);
 
 UPDATE sl28.customer SET entity_id = coalesce((SELECT min(id) FROM entity WHERE 'C-' || customernumber = control_code), entity_id);
 
 --Entity Credit Account
 
+UPDATE sl28.vendor SET business_id = NULL WHERE business_id = 0;
 INSERT INTO entity_credit_account
 (entity_id, meta_number, business_id, creditlimit, ar_ap_account_id,
         cash_account_id, startdate, enddate, threshold, entity_class)
@@ -82,6 +91,7 @@ UPDATE sl28.vendor SET credit_id =
         WHERE e.meta_number = vendornumber and entity_class = 1
         and e.entity_id = vendor.entity_id);
 
+UPDATE sl28.customer SET business_id = NULL WHERE business_id = 0;
 INSERT INTO entity_credit_account
 (entity_id, meta_number, business_id, creditlimit, ar_ap_account_id,
         cash_account_id, startdate, enddate, threshold, entity_class)
@@ -311,7 +321,12 @@ UPDATE sl28.employee set entity_id =
        (select id from entity where 'E-'||employeenumber = control_code);
 
 INSERT INTO person (first_name, last_name, entity_id)
-select name, name, entity_id FROM sl28.employee;
+SELECT name, name, entity_id FROM sl28.employee;
+
+INSERT INTO robot  (first_name, last_name, entity_id)
+SELECT '', name, id
+FROM entity
+WHERE entity_class = 10 AND control_code = 'R-1';
 
 -- users in SL2.8 have to be re-created using the 1.4 user interface
 -- Intentionally do *not* migrate the users table to prevent later conflicts
@@ -371,6 +386,91 @@ UPDATE defaults
  WHERE setting_key IN (select fldvalue FROM sl28.defaults
                         where );
 */
+/* May have to move this downward*/
+
+CREATE OR REPLACE FUNCTION pg_temp.f_insert_default(skey varchar(20),slname varchar(20)) RETURNS VOID AS
+$$
+BEGIN
+    UPDATE defaults SET value = (
+        SELECT fldvalue FROM sl28.defaults AS sl28def
+        WHERE sl28def.fldname = slname
+    )
+    WHERE setting_key = skey AND value IS NULL;
+    INSERT INTO defaults (setting_key, value)
+        SELECT skey,fldvalue FROM sl28.defaults AS sl28def
+        WHERE sl28def.fldname = slname
+        AND NOT EXISTS ( SELECT 1 FROM defaults WHERE setting_key = skey);
+END
+$$
+  LANGUAGE 'plpgsql';
+
+SELECT pg_temp.f_insert_default('company_name','company');
+SELECT pg_temp.f_insert_default('company_address','address');
+SELECT pg_temp.f_insert_default('company_fax','fax');
+SELECT pg_temp.f_insert_default('company_phone','tel');
+SELECT pg_temp.f_insert_default('audittrail','audittrail');
+SELECT pg_temp.f_insert_default('businessnumber','businessnumber');
+SELECT pg_temp.f_insert_default('decimal_places','precision');
+SELECT pg_temp.f_insert_default('weightunit','weightunit');
+-- Should we count the actual transferred entries instead?
+CREATE OR REPLACE FUNCTION pg_temp.f_insert_count(slname varchar(20)) RETURNS VOID AS
+$$
+BEGIN
+    UPDATE defaults SET value = (
+        SELECT fldvalue FROM sl28.defaults AS sl28def
+        WHERE sl28def.fldname = slname
+    )
+    WHERE setting_key = slname AND (value IS NULL OR value = '1');
+    INSERT INTO defaults (setting_key, value)
+        SELECT fldname,fldvalue FROM sl28.defaults AS sl28def
+        WHERE sl28def.fldname = slname
+        AND NOT EXISTS ( SELECT 1 FROM defaults WHERE setting_key = slname);
+END
+$$
+  LANGUAGE 'plpgsql';
+
+SELECT pg_temp.f_insert_count('customernumber');
+SELECT pg_temp.f_insert_count('employeenumber');
+SELECT pg_temp.f_insert_count('glnumber');
+SELECT pg_temp.f_insert_count('partnumber');
+SELECT pg_temp.f_insert_count('partnumber');
+SELECT pg_temp.f_insert_count('projectnumber');
+SELECT pg_temp.f_insert_count('rfqnumber');
+SELECT pg_temp.f_insert_count('sinumber');
+SELECT pg_temp.f_insert_count('sonumber');
+SELECT pg_temp.f_insert_count('sqnumber');
+SELECT pg_temp.f_insert_count('vendornumber');
+SELECT pg_temp.f_insert_count('vinumber');
+
+INSERT INTO defaults(setting_key,value) SELECT 'curr',curr FROM sl28.curr WHERE rn=1;
+
+CREATE OR REPLACE FUNCTION pg_temp.f_insert_account(skey varchar(20)) RETURNS VOID AS
+$$
+BEGIN
+    UPDATE defaults SET value = (
+        SELECT id FROM account
+        WHERE account.accno IN (
+            SELECT accno FROM sl28.chart
+            WHERE id = ( SELECT CAST(fldvalue AS INT) FROM sl28.defaults WHERE fldname = skey ))
+    )
+    WHERE setting_key = skey AND value IS NULL;
+    INSERT INTO defaults (setting_key, value)
+        SELECT skey,id FROM account
+        WHERE account.accno IN (
+            SELECT accno FROM sl28.chart
+            WHERE id = ( SELECT CAST(fldvalue AS INT) FROM sl28.defaults WHERE fldname = skey ))
+        AND NOT EXISTS ( SELECT value FROM defaults WHERE setting_key = skey);
+END
+$$
+  LANGUAGE 'plpgsql';
+
+SELECT pg_temp.f_insert_account('inventory_accno_id');
+SELECT pg_temp.f_insert_account('income_accno_id');
+SELECT pg_temp.f_insert_account('expense_accno_id');
+SELECT pg_temp.f_insert_account('fxgain_accno_id');
+SELECT pg_temp.f_insert_account('fxloss_accno_id');
+-- = "sl28.cashovershort_accno_id" ?
+-- "earn_id" = ?
 
 INSERT INTO assembly (id, parts_id, qty, bom, adj)
 SELECT id, parts_id, qty, bom, adj  FROM sl28.assembly;
@@ -381,9 +481,9 @@ INSERT INTO business_unit (id, class_id, control_code, description)
 SELECT id, 1, id, description
   FROM sl28.department;
 UPDATE business_unit_class
-   SET active = t
+   SET active = true
  WHERE id = 1
-   AND EXISTS (select 1 from sl30.department);
+   AND EXISTS (select 1 from sl28.department);
 
 INSERT INTO business_unit (id, class_id, control_code, description,
        start_date, end_date, credit_id)
@@ -393,9 +493,9 @@ SELECT 1000+id, 2, projectnumber, description, startdate, enddate,
          where c.id = p.customer_id)
   FROM sl28.project p;
 UPDATE business_unit_class
-   SET active = t
+   SET active = true
  WHERE id = 2
-   AND EXISTS (select 1 from sl30.project);
+   AND EXISTS (select 1 from sl28.project);
 
 INSERT INTO gl(id, reference, description, transdate, person_id, notes)
     SELECT gl.id, reference, description, transdate, p.id, gl.notes
@@ -451,7 +551,6 @@ ALTER TABLE ap ENABLE TRIGGER ap_audit_trail;
 
 -- ### TODO: there used to be projects here!
 -- ### Move those to business_units
--- ### TODO: Reconciled disappeared from the source table...
 
 ALTER TABLE sl28.acc_trans ADD COLUMN lsmb_entry_id integer;
 
@@ -459,31 +558,211 @@ update sl28.acc_trans
   set lsmb_entry_id = nextval('acc_trans_entry_id_seq');
 
 INSERT INTO invoice (id, trans_id, parts_id, description, qty, allocated,
-           sellprice, fxsellprice, discount, assemblyitem, unit,
-           deliverydate, serialnumber)
-   SELECT  id, trans_id, parts_id, description, qty, allocated,
-           sellprice, fxsellprice, discount, assemblyitem, unit,
-           deliverydate, serialnumber
-      FROM sl28.invoice;
+            sellprice, fxsellprice, discount, assemblyitem, unit,
+            deliverydate, serialnumber)
+    SELECT  id, trans_id, parts_id, description, qty, allocated,
+            sellprice, fxsellprice, discount, assemblyitem, unit,
+            deliverydate, serialnumber
+       FROM sl28.invoice;
 
 INSERT INTO acc_trans (entry_id, trans_id, chart_id, amount, transdate,
                        source, cleared, fx_transaction,
                        memo, approved, cleared_on, voucher_id, invoice_id)
-     SELECT lsmb_entry_id, acc_trans.trans_id,
-            (select id
-               from account
-              where accno = (select accno
-                               from sl28.chart
-                              where chart.id = acc_trans.chart_id)),
-            amount, transdate, source,
-            CASE WHEN cleared IS NOT NULL THEN TRUE ELSE FALSE END,
-            fx_transaction,
-            memo, approved, cleared, vr_id, invoice.id
-       FROM sl28.acc_trans
-  LEFT JOIN sl28.invoice ON invoice.id = acc_trans.id
-                            AND invoice.trans_id = acc_trans.trans_id
+ SELECT lsmb_entry_id, acc_trans.trans_id, (select id
+                    from account
+                   where accno = (select accno
+                                    from sl28.chart
+                                   where chart.id = acc_trans.chart_id)),
+                                    amount, transdate, source,
+        CASE WHEN cleared IS NOT NULL THEN TRUE ELSE FALSE END, fx_transaction,
+        memo, approved, cleared, vr_id, invoice.id
+   FROM sl28.acc_trans
+LEFT JOIN sl28.invoice ON acc_trans.id = invoice.id
+                      AND acc_trans.trans_id = invoice.trans_id
   WHERE chart_id IS NOT NULL
-        AND acc_trans.trans_id IN (SELECT id FROM transactions);
+    AND acc_trans.trans_id IN (SELECT id FROM transactions);
+
+--Payments
+
+CREATE OR REPLACE FUNCTION payment_migrate
+(in_id                            int,      -- Payment id
+ in_trans_id                      int,      -- Transaction id
+ in_exchangerate                  numeric,  -- Exchange rate
+ in_paymentmethod_id              int)      -- Payment method
+RETURNS INT AS $$
+    DECLARE var_payment_id int;
+    DECLARE var_employee int;
+    DECLARE default_currency char(3);
+    DECLARE current_exchangerate numeric;
+    DECLARE var_account_class int;
+    DECLARE var_datepaid date;
+    DECLARE var_curr char(3);
+    DECLARE var_notes text;
+    DECLARE var_source text[];
+    DECLARE var_memo text[];
+    DECLARE var_lsmb_entry_id int;
+    DECLARE var_entity_credit_account int;
+BEGIN
+    var_account_class = 1; -- AP
+
+    SELECT * INTO default_currency  FROM defaults_get_defaultcurrency();
+    SELECT * INTO current_exchangerate FROM currency_get_exchangerate(var_curr, var_datepaid, var_account_class);
+
+    SELECT INTO var_employee p.id
+    FROM users u
+    JOIN person p ON (u.entity_id=p.entity_id)
+    WHERE username = SESSION_USER LIMIT 1;
+
+    SELECT sl28_ac.transdate, sl28_ac.source, sl28_ac.lsmb_entry_id,
+           ap.entity_credit_account
+    INTO var_datepaid, var_notes, var_lsmb_entry_id,
+         var_entity_credit_account
+    FROM sl28.payment sl28_p
+    JOIN sl28.acc_trans sl28_ac ON (sl28_p.trans_id = sl28_ac.trans_id AND sl28_p.id=sl28_ac.id)
+    JOIN sl28.chart sl28_c on (sl28_c.id = sl28_ac.chart_id)
+    JOIN acc_trans ac ON ac.entry_id = sl28_ac.lsmb_entry_id
+    JOIN ap ON ap.id=ac.trans_id
+    WHERE sl28_c.link ~ 'AP' AND link ~ 'paid'
+    AND sl28_ac.trans_id=in_trans_id
+    AND sl28_ac.id=in_id;
+
+    -- Handle regular transaction
+    INSERT INTO payment (reference, payment_class, payment_date,
+                         employee_id, currency, notes, entity_credit_id)
+    VALUES (setting_increment('paynumber'),
+            var_account_class, var_datepaid, var_employee,
+            var_curr, var_notes, var_entity_credit_account);
+    SELECT currval('payment_id_seq') INTO var_payment_id; -- WE'LL NEED THIS VALUE TO USE payment_link table
+
+    INSERT INTO payment_links
+    VALUES (var_payment_id, var_lsmb_entry_id, 1);
+
+    RETURN var_payment_id;
+END;
+$$ LANGUAGE PLPGSQL;
+
+SELECT payment_migrate(p.id, p.trans_id, cast(p.exchangerate as numeric), p.paymentmethod_id)
+FROM sl28.payment p;
+
+-- Reconciliations
+-- Serially reuseable
+INSERT INTO cr_coa_to_account(chart_id, account)
+SELECT DISTINCT pc.id, c.description FROM sl28.acc_trans ac
+JOIN sl28.chart c ON ac.chart_id = c.id
+JOIN public.chart pc on pc.accno = c.accno
+WHERE ac.cleared IS NOT NULL
+AND c.link ~ 'paid'
+AND NOT EXISTS (SELECT 1 FROM cr_coa_to_account WHERE chart_id=pc.id);
+
+-- Log in the Migrator Robot
+INSERT INTO users(username, notify_password, entity_id)
+SELECT last_name, '1 day', entity_id
+FROM robot
+WHERE last_name = 'Migrator';
+
+-- Compute last day of the month
+CREATE OR REPLACE FUNCTION pg_temp.last_day(DATE)
+RETURNS DATE AS
+$$
+  SELECT (date_trunc('MONTH', $1) + INTERVAL '1 MONTH - 1 day')::DATE;
+$$ LANGUAGE 'sql' IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION PG_TEMP.is_cleared(clear_time DATE,end_date DATE) RETURNS BOOLEAN LANGUAGE PLPGSQL IMMUTABLE AS $$
+BEGIN
+  RETURN CASE WHEN $1::DATE IS NOT NULL AND $1 <= $2 THEN TRUE ELSE FALSE END;
+EXCEPTION WHEN OTHERS THEN
+  RETURN FALSE;
+END;$$;
+
+-- The computation of their_total is wrong at this time
+INSERT INTO cr_report(chart_id, their_total, submitted, end_date, updated, entered_by, entered_username)
+  SELECT coa.id, 0, TRUE,
+            a.end_date,max(a.updated),
+            (SELECT entity_id FROM robot WHERE last_name = 'Migrator'),
+            'Migrator'
+        FROM (
+          SELECT chart_id,
+                 cleared,fx_transaction,approved,transdate,pg_temp.last_day(transdate) as end_date,
+                 coalesce(cleared,transdate) as updated, amount
+          FROM sl28.acc_trans
+          WHERE (
+            cleared IS NOT NULL
+            AND chart_id IN (
+              SELECT DISTINCT chart_id FROM sl28.acc_trans ac
+              JOIN sl28.chart c ON ac.chart_id = c.id
+              WHERE ac.cleared IS NOT NULL
+              AND c.link ~ 'paid'
+            ) OR transdate > (
+              SELECT MAX(cleared) FROM sl28.acc_trans
+            )
+          )
+        ) a
+        JOIN sl28.chart s ON chart_id=s.id
+        JOIN reconciliation__account_list() coa ON coa.accno=s.accno
+        GROUP BY coa.id, a.end_date
+        ORDER BY coa.id, a.end_date;
+
+-- cr_report_line will insert the entry and return the ID of the upsert entry.
+-- The ID and matching post_date are entered in a temp table to pull the back into cr_report_line immediately after.
+-- Temp table will be dropped automatically at the end of the transaction.
+WITH cr_entry AS (
+SELECT cr.id::INT, cr.end_date, a.source, n.type, a.cleared::TIMESTAMP, a.amount::NUMERIC, a.transdate AS post_date, a.lsmb_entry_id
+    FROM sl28.acc_trans a
+    JOIN sl28.chart s ON chart_id=s.id
+    JOIN reconciliation__account_list() coa ON coa.accno=s.accno
+    JOIN public.cr_report cr
+    ON s.id = a.chart_id
+    AND date_trunc('MONTH', a.transdate)::DATE <= date_trunc('MONTH', cr.end_date)::DATE
+    AND date_trunc('MONTH', a.cleared)::DATE   >= date_trunc('MONTH', cr.end_date)::DATE
+    AND ( a.cleared IS NOT NULL OR a.transdate > (SELECT MAX(cleared) FROM sl28.acc_trans))
+    JOIN (
+        WITH types AS ( SELECT id,'AP' AS type FROM sl28.ap
+                  UNION SELECT id,'AR'         FROM sl28.ar
+                  UNION SELECT id,'GL'         FROM sl28.gl)
+        SELECT DISTINCT ac.trans_id, types.type
+        FROM sl28.acc_trans ac
+        JOIN types ON ac.trans_id = types.id
+        ORDER BY ac.trans_id
+    ) n ON n.trans_id = a.trans_id
+    ORDER BY post_date,cr.id,n.type,a.source ASC NULLS LAST,a.amount
+)
+SELECT reconciliation__add_entry(id, source, type, cleared, amount) AS id, cr_entry.end_date, cr_entry.post_date, cr_entry.lsmb_entry_id
+INTO TEMPORARY _cr_report_line
+FROM cr_entry;
+
+UPDATE cr_report_line cr SET post_date = cr1.post_date,
+                             ledger_id = cr1.lsmb_entry_id,
+                             cleared = pg_temp.is_cleared(clear_time,cr1.end_date),
+                             insert_time = date_trunc('second',cr1.post_date),
+                             our_balance = their_balance
+FROM (
+  SELECT id,post_date,end_date,lsmb_entry_id
+  FROM _cr_report_line
+) cr1
+WHERE cr.id = cr1.id;
+
+-- Patch their_total, now that we have all the data in cr_report_line
+UPDATE cr_report SET their_total=reconciliation__get_cleared_balance(cr.chart_id,cr.end_date)
+FROM (
+    SELECT id, chart_id, end_date
+    FROM cr_report
+) cr WHERE cr_report.id = cr.id;
+
+-- Patch for suspect clear dates
+-- The UI should reflect this
+-- Unsubmit the suspect report to allow easy edition
+UPDATE cr_report SET submitted = false
+WHERE id IN (
+    SELECT DISTINCT report_id FROM cr_report_line
+    WHERE clear_time - post_date > 150
+);
+-- Approve valid reports.
+UPDATE cr_report SET approved = true
+WHERE submitted;
+
+-- Log out the Migrator
+DELETE FROM users
+WHERE username = 'Migrator';
 
 INSERT INTO business_unit_ac (entry_id, class_id, bu_id)
 SELECT ac.entry_id, 1, gl.department_id
@@ -499,7 +778,6 @@ SELECT ac.entry_id, 2, slac.project_id+1000
   JOIN sl28.acc_trans slac ON slac.lsmb_entry_id = ac.entry_id
  WHERE project_id > 0;
 
-
 INSERT INTO business_unit_inv (entry_id, class_id, bu_id)
 SELECT inv.id, 1, gl.department_id
   FROM invoice inv
@@ -511,9 +789,6 @@ SELECT inv.id, 1, gl.department_id
 INSERT INTO business_unit_inv (entry_id, class_id, bu_id)
 SELECT id, 2, project_id + 1000 FROM sl28.invoice
  WHERE project_id > 0 and  project_id in (select id from sl28.project);
-
-
-
 
 INSERT INTO partstax (parts_id, chart_id)
      SELECT parts_id, a.id
@@ -542,8 +817,6 @@ INSERT INTO eca_tax (eca_id, chart_id)
    FROM sl28.vendortax vt
    JOIN sl28.vendor v
      ON vt.vendor_id = v.id;
-
-
 
 INSERT
   INTO oe(id, ordnumber, transdate, amount, netamount, reqdate, taxincluded,
@@ -581,13 +854,9 @@ INSERT INTO business_unit_oitem (entry_id, class_id, bu_id)
 SELECT id, 2, project_id + 1000 FROM sl28.orderitems
  WHERE project_id > 0  and  project_id in (select id from sl28.project);
 
-
 INSERT INTO exchangerate select * from sl28.exchangerate;
 
-
 INSERT INTO status SELECT * FROM sl28.status; -- may need to comment this one out sometimes
-
-INSERT INTO business SELECT * FROM sl28.business;
 
 INSERT INTO sic SELECT * FROM sl28.sic;
 
@@ -600,9 +869,8 @@ INSERT INTO warehouse_inventory(entity_id, warehouse_id, parts_id, trans_id,
        FROM sl28.inventory i
        JOIN sl28.employee e ON i.employee_id = e.id;
 
-INSERT INTO yearend (trans_id, transdate)
-  SELECT * FROM sl28.yearend
-    WHERE sl30.yearend.trans_id IN (SELECT id FROM gl);
+INSERT INTO yearend (trans_id, transdate) SELECT * FROM sl28.yearend
+WHERE sl28.yearend.trans_id IN (SELECT id FROM gl);
 
 INSERT INTO partsvendor(credit_id, parts_id, partnumber, leadtime, lastcost,
             curr)
@@ -616,12 +884,13 @@ INSERT INTO partscustomer(parts_id, credit_id, pricegroup_id, pricebreak,
      SELECT parts_id, credit_id, pv.pricegroup_id, pricebreak,
             sellprice, validfrom, validto, pv.curr
        FROM sl28.partscustomer pv
-       JOIN sl28.customer v ON v.id = pv.customer_id;
+       JOIN sl28.customer v ON v.id = pv.customer_id
+      WHERE pv.pricegroup_id <> 0;
 
 INSERT INTO language
-SELECT * FROM sl28.language sllang
+SELECT OVERLAY(code PLACING LOWER(SUBSTRING(code FROM '^..')) FROM 1 FOR 2 ) AS code,description FROM sl28.language sllang
  WHERE NOT EXISTS (SELECT 1
-                     FROM language l WHERE l.code = sllang.code);
+                     FROM language l WHERE l.code = OVERLAY(sllang.code PLACING LOWER(SUBSTRING(sllang.code FROM '^..')) FROM 1 FOR 2 ));
 
 INSERT INTO audittrail(trans_id, tablename, reference, formname, action,
             transdate, person_id)
@@ -654,8 +923,8 @@ INSERT INTO jcitems(id, parts_id, description, qty, total, allocated,
        FROM sl28.jcitems j
        JOIN sl28.employee e ON j.employee_id = e.id
        JOIN person p ON e.entity_id = p.entity_id
-    LEFT JOIN sl28.project pr on (pr.id = j.project_id)
-    LEFT JOIN sl28.customer c on (c.id = pr.customer_id);
+           LEFT JOIN sl28.project pr on (pr.id = j.project_id)
+           LEFT JOIN sl28.customer c on (c.id = pr.customer_id);
 
 INSERT INTO parts_translation SELECT * FROM sl28.translation where trans_id in (select id from parts);
 
@@ -668,61 +937,73 @@ INSERT INTO partsgroup_translation SELECT * FROM sl28.translation where trans_id
 
 SELECT setval('id', max(id)) FROM transactions;
 
- SELECT setval('acc_trans_entry_id_seq', max(entry_id)) FROM acc_trans;
- SELECT setval('partsvendor_entry_id_seq', max(entry_id)) FROM partsvendor;
- SELECT setval('warehouse_inventory_entry_id_seq', max(entry_id))
-        FROM warehouse_inventory;
- SELECT setval('partscustomer_entry_id_seq', max(entry_id)) FROM partscustomer;
- SELECT setval('audittrail_entry_id_seq', max(entry_id)) FROM audittrail;
- SELECT setval('account_id_seq', max(id)) FROM account;
- SELECT setval('account_heading_id_seq', max(id)) FROM account_heading;
- SELECT setval('account_checkpoint_id_seq', max(id)) FROM account_checkpoint;
- SELECT setval('pricegroup_id_seq', max(id)) FROM pricegroup;
- SELECT setval('country_id_seq', max(id)) FROM country;
- SELECT setval('country_tax_form_id_seq', max(id)) FROM country_tax_form;
- SELECT setval('asset_dep_method_id_seq', max(id)) FROM asset_dep_method;
- SELECT setval('asset_class_id_seq', max(id)) FROM asset_class;
- SELECT setval('entity_class_id_seq', max(id)) FROM entity_class;
- SELECT setval('asset_item_id_seq', max(id)) FROM asset_item;
- SELECT setval('asset_disposal_method_id_seq', max(id)) FROM asset_disposal_method;
- SELECT setval('users_id_seq', max(id)) FROM users;
- SELECT setval('entity_id_seq', max(id)) FROM entity;
- SELECT setval('company_id_seq', max(id)) FROM company;
- SELECT setval('location_id_seq', max(id)) FROM location;
- SELECT setval('location_class_id_seq', max(id)) FROM location_class;
- SELECT setval('asset_report_id_seq', max(id)) FROM asset_report;
- SELECT setval('salutation_id_seq', max(id)) FROM salutation;
- SELECT setval('person_id_seq', max(id)) FROM person;
- SELECT setval('contact_class_id_seq', max(id)) FROM contact_class;
- SELECT setval('entity_credit_account_id_seq', max(id)) FROM entity_credit_account;
- SELECT setval('entity_bank_account_id_seq', max(id)) FROM entity_bank_account;
- SELECT setval('note_class_id_seq', max(id)) FROM note_class;
- SELECT setval('note_id_seq', max(id)) FROM note;
- SELECT setval('batch_class_id_seq', max(id)) FROM batch_class;
- SELECT setval('batch_id_seq', max(id)) FROM batch;
- SELECT setval('invoice_id_seq', max(id)) FROM invoice;
- SELECT setval('voucher_id_seq', max(id)) FROM voucher;
- SELECT setval('parts_id_seq', max(id)) FROM parts;
- SELECT setval('taxmodule_taxmodule_id_seq', max(taxmodule_id)) FROM taxmodule;
- SELECT setval('taxcategory_taxcategory_id_seq', max(taxcategory_id)) FROM taxcategory;
- SELECT setval('oe_id_seq', max(id)) FROM oe;
- SELECT setval('orderitems_id_seq', max(id)) FROM orderitems;
- SELECT setval('business_id_seq', max(id)) FROM business;
- SELECT setval('warehouse_id_seq', max(id)) FROM warehouse;
- SELECT setval('partsgroup_id_seq', max(id)) FROM partsgroup;
- SELECT setval('jcitems_id_seq', max(id)) FROM jcitems;
- SELECT setval('payment_type_id_seq', max(id)) FROM payment_type;
- SELECT setval('custom_table_catalog_table_id_seq', max(table_id)) FROM custom_table_catalog;
- SELECT setval('custom_field_catalog_field_id_seq', max(field_id)) FROM custom_field_catalog;
- SELECT setval('menu_node_id_seq', max(id)) FROM menu_node;
- SELECT setval('menu_attribute_id_seq', max(id)) FROM menu_attribute;
- SELECT setval('menu_acl_id_seq', max(id)) FROM menu_acl;
+SELECT setval('acc_trans_entry_id_seq', max(entry_id)) FROM acc_trans;
+SELECT setval('partsvendor_entry_id_seq', max(entry_id)) FROM partsvendor;
+SELECT setval('warehouse_inventory_entry_id_seq', max(entry_id))
+       FROM warehouse_inventory;
+SELECT setval('partscustomer_entry_id_seq', max(entry_id)) FROM partscustomer;
+SELECT setval('audittrail_entry_id_seq', max(entry_id)) FROM audittrail;
+SELECT setval('account_id_seq', max(id)) FROM account;
+SELECT setval('account_heading_id_seq', max(id)) FROM account_heading;
+SELECT setval('account_checkpoint_id_seq', max(id)) FROM account_checkpoint;
+SELECT setval('pricegroup_id_seq', max(id)) FROM pricegroup;
+SELECT setval('country_id_seq', max(id)) FROM country;
+SELECT setval('country_tax_form_id_seq', max(id)) FROM country_tax_form;
+SELECT setval('asset_dep_method_id_seq', max(id)) FROM asset_dep_method;
+SELECT setval('asset_class_id_seq', max(id)) FROM asset_class;
+SELECT setval('entity_class_id_seq', max(id)) FROM entity_class;
+SELECT setval('asset_item_id_seq', max(id)) FROM asset_item;
+SELECT setval('asset_disposal_method_id_seq', max(id)) FROM asset_disposal_method;
+SELECT setval('users_id_seq', max(id)) FROM users;
+SELECT setval('entity_id_seq', max(id)) FROM entity;
+SELECT setval('company_id_seq', max(id)) FROM company;
+SELECT setval('location_id_seq', max(id)) FROM location;
+SELECT setval('location_class_id_seq', max(id)) FROM location_class;
+SELECT setval('asset_report_id_seq', max(id)) FROM asset_report;
+SELECT setval('salutation_id_seq', max(id)) FROM salutation;
+SELECT setval('person_id_seq', max(id)) FROM person;
+SELECT setval('contact_class_id_seq', max(id)) FROM contact_class;
+SELECT setval('entity_credit_account_id_seq', max(id)) FROM entity_credit_account;
+SELECT setval('entity_bank_account_id_seq', max(id)) FROM entity_bank_account;
+SELECT setval('note_class_id_seq', max(id)) FROM note_class;
+SELECT setval('note_id_seq', max(id)) FROM note;
+SELECT setval('batch_class_id_seq', max(id)) FROM batch_class;
+SELECT setval('batch_id_seq', max(id)) FROM batch;
+SELECT setval('invoice_id_seq', max(id)) FROM invoice;
+SELECT setval('voucher_id_seq', max(id)) FROM voucher;
+SELECT setval('parts_id_seq', max(id)) FROM parts;
+SELECT setval('taxmodule_taxmodule_id_seq', max(taxmodule_id)) FROM taxmodule;
+SELECT setval('taxcategory_taxcategory_id_seq', max(taxcategory_id)) FROM taxcategory;
+SELECT setval('oe_id_seq', max(id)) FROM oe;
+SELECT setval('orderitems_id_seq', max(id)) FROM orderitems;
+SELECT setval('business_id_seq', max(id)) FROM business;
+SELECT setval('warehouse_id_seq', max(id)) FROM warehouse;
+SELECT setval('partsgroup_id_seq', max(id)) FROM partsgroup;
+SELECT setval('jcitems_id_seq', max(id)) FROM jcitems;
+SELECT setval('payment_type_id_seq', max(id)) FROM payment_type;
+SELECT setval('custom_table_catalog_table_id_seq', max(table_id)) FROM custom_table_catalog;
+SELECT setval('custom_field_catalog_field_id_seq', max(field_id)) FROM custom_field_catalog;
+SELECT setval('menu_node_id_seq', max(id)) FROM menu_node;
+SELECT setval('menu_attribute_id_seq', max(id)) FROM menu_attribute;
+SELECT setval('menu_acl_id_seq', max(id)) FROM menu_acl;
 -- SELECT setval('pending_job_id_seq', max(id)) FROM pending_job;
- SELECT setval('new_shipto_id_seq', max(id)) FROM new_shipto;
- SELECT setval('payment_id_seq', max(id)) FROM payment;
- SELECT setval('cr_report_id_seq', max(id)) FROM cr_report;
- SELECT setval('cr_report_line_id_seq', max(id)) FROM cr_report_line;
- SELECT setval('business_unit_id_seq', max(id)) FROM business_unit;
+SELECT setval('new_shipto_id_seq', max(id)) FROM new_shipto;
+SELECT setval('payment_id_seq', max(id)) FROM payment;
+SELECT setval('cr_report_id_seq', max(id)) FROM cr_report;
+SELECT setval('cr_report_line_id_seq', max(id)) FROM cr_report_line;
+SELECT setval('business_unit_id_seq', max(id)) FROM business_unit;
+
+--UPDATE defaults SET value = (
+--    SELECT MAX(CAST(???number AS NUMERIC))+1 FROM sl28.??? WHERE ???number ~ '^[0-9]+$'
+--) WHERE setting_key = 'rcptnumber';
+
+--UPDATE defaults SET value = (
+--    SELECT MAX(CAST(???number AS NUMERIC))+1 FROM sl28.??? WHERE ???number ~ '^[0-9]+$'
+--) WHERE setting_key = 'rfqnumber';
+
+--UPDATE defaults SET value = (
+--    SELECT MAX(CAST(???number AS NUMERIC))+1 FROM sl28.??? WHERE ???number ~ '^[0-9]+$'
+--) WHERE setting_key = 'paynumber';
 
 UPDATE defaults SET value = 'yes' where setting_key = 'migration_ok';
 

@@ -9364,3 +9364,7 @@ msgstr ""
 #: lib/LedgerSMB/Scripts/payment.pm:1854 lib/LedgerSMB/Scripts/payment.pm:1871
 msgid "use of an overpayment"
 msgstr ""
+
+#: t/data/04-gettext.tex:8
+msgid "zh_CN"
+msgstr ""

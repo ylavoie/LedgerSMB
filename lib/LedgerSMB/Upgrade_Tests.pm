@@ -204,8 +204,7 @@ subtype 'button'
     => message { "Invalid button '$_'" };
 
 has buttons => (is => 'ro', isa => 'ArrayRef[button]',
-                default => sub {['Save and Retry', 'Cancel']},
-                required => 0);
+    default => sub { return ['Save and Retry', 'Cancel']}, required => 0);
 
 =item tooltips
 
@@ -1091,8 +1090,7 @@ push @tests, __PACKAGE__->new(
   max_version => '3.0'
 );
 
-
-### On the vendor side, SL doesn't use pricegroups
+ ### On the vendor side, SL doesn't use pricegroups
 # push @tests, __PACKAGE__->new(
 #     test_query => "select *
 #                      from partsvendor

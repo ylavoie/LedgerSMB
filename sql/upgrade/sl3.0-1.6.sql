@@ -7,8 +7,8 @@
 
 BEGIN;
 
--- Migration functions
--- TODO: Can we do without?
+-- adding mapping info for import.
+
 
 CREATE OR REPLACE FUNCTION pg_temp.account__save
 (in_id int, in_accno text, in_description text, in_category char(1),
@@ -408,6 +408,7 @@ ALTER TABLE sl30.vendor ADD COLUMN credit_id int;
 ALTER TABLE sl30.customer ADD COLUMN entity_id int;
 ALTER TABLE sl30.customer ADD COLUMN company_id int;
 ALTER TABLE sl30.customer ADD COLUMN credit_id int;
+
 
 --Accounts
 

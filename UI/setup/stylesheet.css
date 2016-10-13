@@ -65,6 +65,7 @@ caption {
 
 label {
     width: 10em;
+    text-align: right;
     float: left;
     border-width: 1px;
     margin: 0;
