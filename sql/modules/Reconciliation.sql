@@ -183,7 +183,7 @@ $$
     WHERE c.id = $1
 -- cleared confirmed and date is prior the report
       AND (crl.cleared and crl.clear_time is not null and crl.clear_time <= date_trunc('MONTH',CAST($2 AS TIMESTAMP)))
---      AND ac.approved IS true
+      AND ac.approved
       AND ac.transdate <= date_trunc('MONTH',CAST($2 AS TIMESTAMP))
     GROUP BY c.id, c.category;
 $$ LANGUAGE sql;
@@ -609,19 +609,13 @@ $$
                         IN ('A', 'E') THEN sum(a.amount) * -1
                 ELSE sum(a.amount) END
         FROM acc_trans a
-        JOIN (
-                SELECT id FROM ar
-                WHERE approved is true
-                UNION
-                SELECT id FROM ap
-                WHERE approved is true
-                UNION
-                SELECT id FROM gl
-                WHERE approved is true
-        ) gl ON a.trans_id = gl.id
-        WHERE a.approved IS TRUE
-                AND a.chart_id = in_account_id
-                AND a.transdate <= in_date;
+        JOIN (        SELECT id FROM ar WHERE approved
+                UNION SELECT id FROM ap WHERE approved
+                UNION SELECT id FROM gl WHERE approved
+        ) gl ON gl.id = a.trans_id
+        WHERE a.approved
+          AND a.chart_id = in_account_id
+          AND a.transdate <= in_date;
 
 $$ language sql;
 
