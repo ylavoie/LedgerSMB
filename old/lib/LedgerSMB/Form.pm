@@ -587,12 +587,12 @@ qq|<meta http-equiv="content-type" content="text/html; charset=$self->{charset}"
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <title>$self->{titlebar}</title> |;
-#        if (!$cache){
-#            print qq|
-#    <meta http-equiv="Pragma" content="no-cache" />
-#    <meta http-equiv="Cache-Control" content="must-revalidate" />
-#    <meta http-equiv="Expires" content="-1" /> |;
-#        }
+        if (!$cache){
+            print qq|
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Cache-Control" content="must-revalidate" />
+    <meta http-equiv="Expires" content="-1" /> |;
+        }
         print qq|
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
     $stylesheet

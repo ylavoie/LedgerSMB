@@ -91,6 +91,7 @@ sub select_all_recons {
         ++ $i;
     }
     return update_recon_set($request);
+
 }
 
 =item reject
@@ -127,6 +128,7 @@ sub submit_recon_set {
         return $template->render_to_psgi($recon);
     }
     return _display_report($recon, $request);
+
 }
 
 =item save_recon_set
@@ -355,6 +357,8 @@ sub new_report {
         );
         return $template->render_to_psgi($recon);
     }
+    return undef;
+
 }
 
 =item delete_report($request)
@@ -458,8 +462,30 @@ sub pending {
         );
     }
     else {
+
         return $template->render_to_psgi();
     }
+}
+
+sub __default {
+
+    my ($request) = @_;
+
+    my $recon = LedgerSMB::DBObject::Reconciliation->new({base=>$request, copy=>'all'});
+    my $template;
+
+    $template = LedgerSMB::Template->new(
+        user => $request->{_user},
+        template => 'reconciliation/list',
+        locale => $request->{_locale},
+        format=>'HTML',
+        path=>"UI"
+    );
+    return $template->render(
+        {
+            reports=>$recon->get_report_list()
+        }
+    );
 }
 
 ###TODO-LOCALIZE-DOLLAR-AT
