@@ -32,7 +32,17 @@ CREATE OR REPLACE FUNCTION reconciliation__submit_set(
         in_report_id int, in_line_ids int[], in_end_date date
       ) RETURNS bool AS
 $$
+DECLARE balance NUMERIC;
 BEGIN
+        SELECT SUM(crl.our_balance) - cr.their_total INTO balance
+        FROM cr_report_line crl
+        JOIN cr_report cr ON cr.id = crl.report_id
+        WHERE cr.id = in_report_id
+        GROUP BY cr.their_total;
+
+        IF balance <> 0 THEN
+            RAISE EXCEPTION 'Unbalanced report by %',balance;
+        END IF;
         UPDATE cr_report set submitted = true where id = in_report_id;
         PERFORM reconciliation__save_set(in_report_id, in_line_ids, in_end_date);
 
@@ -172,19 +182,16 @@ CREATE OR REPLACE FUNCTION reconciliation__get_cleared_balance(in_chart_id int,
    in_report_date date DEFAULT date_trunc('second', now()))
 RETURNS numeric AS
 $$
-    SELECT DISTINCT sum(ac.amount) * CASE WHEN c.category in('A', 'E') THEN -1 ELSE 1 END
+    SELECT sum(ac.amount) * CASE WHEN c.category in('A', 'E') THEN -1 ELSE 1 END
         FROM account c
         JOIN acc_trans ac ON (ac.chart_id = c.id)
-        JOIN cr_report_line crl ON (crl.ledger_id = ac.entry_id)
     JOIN (      SELECT id FROM ar WHERE approved
           UNION SELECT id FROM ap WHERE approved
           UNION SELECT id FROM gl WHERE approved
           ) g ON g.id = ac.trans_id
-    WHERE c.id = $1
--- cleared confirmed and date is prior the report
-      AND (crl.cleared and crl.clear_time is not null and crl.clear_time <= date_trunc('MONTH',CAST($2 AS TIMESTAMP)))
-      AND ac.approved
-      AND ac.transdate <= date_trunc('MONTH',CAST($2 AS TIMESTAMP))
+    WHERE c.id = $1 AND cleared AND (cleared_on is null OR cleared_on <= in_report_date) -- cleared confirmed and date is prior the report
+      AND ac.approved IS true
+      AND ac.transdate <= in_report_date
     GROUP BY c.id, c.category;
 $$ LANGUAGE sql;
 
@@ -205,10 +212,10 @@ CREATE OR REPLACE FUNCTION reconciliation__report_approve (in_report_id INT) ret
 
     DECLARE
         current_row RECORD;
-        completed cr_report_line;
         total_errors INT;
         in_user TEXT;
         ac_entries int[];
+        ac_entry INT;
     BEGIN
         in_user := current_user;
 
@@ -242,7 +249,7 @@ CREATE OR REPLACE FUNCTION reconciliation__report_approve (in_report_id INT) ret
                         AND ((rl.ledger_id = ac.entry_id
                                 AND ac.voucher_id IS NULL)
                                 OR (rl.voucher_id = ac.voucher_id)) and rl.cleared is true)
-                WHERE ac.cleared IS FALSE
+                WHERE ac.cleared IS NOT TRUE OR (ac.cleared IS TRUE  AND cleared_on IS null)
                         AND ac.chart_id = (select chart_id from cr_report where id = in_report_id)
                 GROUP BY gl.ref, ac.source, ac.transdate,
                         ac.memo, ac.voucher_id, gl.table
@@ -251,8 +258,15 @@ CREATE OR REPLACE FUNCTION reconciliation__report_approve (in_report_id INT) ret
                 ac_entries := ac_entries || current_row.entries;
         END LOOP;
 
-        UPDATE acc_trans SET cleared = TRUE
-        WHERE entry_id = any(ac_entries);
+--RAISE DEBUG 'ac_entries = %', ac_entries;
+
+        FOREACH ac_entry IN ARRAY ac_entries LOOP
+            UPDATE acc_trans
+               SET cleared = TRUE, cleared_on = clear_time
+              FROM cr_report_line
+             WHERE ledger_id = ac_entry
+               AND entry_id = ac_entry;
+        END LOOP;
 
         return 1;
     END;
@@ -613,9 +627,9 @@ $$
                 UNION SELECT id FROM ap WHERE approved
                 UNION SELECT id FROM gl WHERE approved
         ) gl ON gl.id = a.trans_id
-        WHERE a.approved
-          AND a.chart_id = in_account_id
-          AND a.transdate <= in_date;
+        WHERE a.approved IS TRUE
+                AND a.chart_id = in_account_id
+                AND a.transdate <= in_date;
 
 $$ language sql;
 
