@@ -1,7 +1,10 @@
 #!/usr/bin/plackup 
 
 BEGIN {
-    if ( $ENV{PLACK_ENV} && $ENV{PLACK_ENV} eq 'development' ) {
+    if ( $ENV{'LSMB_WORKINGDIR'}
+         && -f "$ENV{'LSMB_WORKINGDIR'}/lib/LedgerSMB.pm" ) {
+        chdir $ENV{'LSMB_WORKINGDIR'};
+    }    if ( $ENV{PLACK_ENV} && $ENV{PLACK_ENV} eq 'development' ) {
         $ENV{PLACK_SERVER}       = 'Standalone';
         $ENV{METACPAN_WEB_DEBUG} = 1;
     }
@@ -9,8 +12,14 @@ BEGIN {
 
 package LedgerSMB::FCGI;
 
-# Local packages
-#use LedgerSMB;
+use FindBin;
+use lib $FindBin::Bin . '/../lib';
+use lib $FindBin::Bin . '/../old/lib';
+use CGI::Emulate::PSGI;
+
+# Application specific
+use LedgerSMB;
+use LedgerSMB::Auth;
 use LedgerSMB::PSGI;
 use LedgerSMB::Sysconfig;
 
