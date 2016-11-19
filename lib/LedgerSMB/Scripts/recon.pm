@@ -112,10 +112,13 @@ Submits the recon set to be approved.
 
 =cut
 
+use Data::Printer;
 sub submit_recon_set {
     my ($request) = shift;
     my $recon = LedgerSMB::DBObject::Reconciliation->new({base => $request});
     $recon->submit();
+    warn p($request);
+    if ( 1 ) { # No separation of duties and user can approve
     my $template = LedgerSMB::Template->new(
             user => $request->{_user},
             template => 'reconciliation/submitted',
@@ -123,6 +126,9 @@ sub submit_recon_set {
             format => 'HTML',
             path=>"UI");
     return $template->render_to_psgi($recon);
+    } else {
+        return display_report($request);
+    }
 }
 
 =item save_recon_set
