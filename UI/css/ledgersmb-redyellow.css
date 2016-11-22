@@ -263,8 +263,9 @@ tr.suspect {
         font-weight: bold;
 }
 
-tr.warning {
+div.warning,tr.warning {
 	background-color: yellow;
+        color: black;
 }
 input[type=checkbox].remove::before {
     display: inline-block;
