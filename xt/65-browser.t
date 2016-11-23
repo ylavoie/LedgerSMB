@@ -5,6 +5,7 @@ use warnings;
 
 use Test::More;
 use YAML::Syck;
+use Carp;
 
 # If we choose to depend on environment variables,
 # uncomment the next lines and initialize reqenv with their names
@@ -35,11 +36,11 @@ my $base_url = $selenium->{base_url} =~ /\$\{([a-zA-Z0-9_]+)\}/
 my %caps = (
           port => $selenium->{driver}->{caps}->{port},
           browser_name => $browser,
-          remote_server_addr => $remote_server_addr
+          remote_server_addr => $remote_server_addr,
+          error_handler => sub { print $_[1]; croak "Unable to connect to remote browser"; }
 );
 
-my $driver = new Selenium::Remote::Driver(%caps)
-          || die "Unable to connect to remote browser";
+my $driver = new Selenium::Remote::Driver(%caps);
 
 $driver->set_implicit_wait_timeout(30000); # 30s
 $driver->get($base_url . '/login.pl');
