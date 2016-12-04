@@ -257,7 +257,7 @@ sub _display_report {
         for my $amt_name (qw/ our_ their_ /) {
             for my $bal_type (qw/ balance credits debits/) {
                 $l->{"$amt_name$bal_type"} = $l->{"$amt_name$bal_type"}->to_output(money=>1);
-                }
+            }
         }
     }
 
