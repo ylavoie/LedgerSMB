@@ -8,6 +8,7 @@ BEGIN;
     SELECT plan(64);
 
     -- Add data
+
     \i sql/modules/test/Base.sql
     \i sql/modules/test/data/Reconciliation.sql
 
