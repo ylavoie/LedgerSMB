@@ -47,12 +47,6 @@ BEGIN
         AND crl.cleared IS true
         AND crl.clear_time IS NOT NULL
         GROUP BY cr.their_total;
-
-        -- t_balance is always NULL on RAISE statement
---        IF t_balance IS NULL OR t_balance <> 0 THEN
---            RAISE EXCEPTION 'Unbalanced report by %', t_balance;
---        END IF;
-
         UPDATE cr_report set submitted = true where id = in_report_id;
         PERFORM reconciliation__save_set(in_report_id, in_line_ids, in_end_date);
 
@@ -494,7 +488,6 @@ $$
          FROM cr_report
         WHERE id = in_report_id;
 
-        -- We should make sure that a specific transaction is not in many reports
         DELETE FROM cr_report_line
         WHERE report_id = in_report_id
         AND report_id IN (SELECT id FROM cr_report
