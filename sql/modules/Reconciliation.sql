@@ -111,6 +111,10 @@ $$Sets which lines of the report are cleared.$$;
 CREATE OR REPLACE FUNCTION reconciliation__delete_my_report(in_report_id int)
 RETURNS BOOL AS
 $$
+    -- Make sure that transactions present on this report do not have a cleared_on date
+    -- or they won't be accessible anymore.
+    -- Double check to make sure we do not set cleared_on before submitting
+    -- YL
     DELETE FROM cr_report_line
      WHERE report_id = in_report_id
            AND report_id IN (SELECT id FROM cr_report
