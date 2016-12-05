@@ -388,10 +388,13 @@ sub get {
     $self->{mismatch_their_debits} = LedgerSMB::PGNumber->from_db(0);
     $self->{their_balance} //= 0;   # Report maybe empty
 
+warn "our_balance = $our_balance";
     for my $line (@{$self->{report_lines}}){
+warn "line = $line->{our_balance}";
         if ($line->{cleared}){
             $our_balance += ($neg * $line->{our_balance});
             $self->{cleared_total} += ($neg * $line->{our_balance});
+warn "our_balance cleared = $our_balance";
         }elsif (($self->{their_balance} != '0'
                  and $self->{their_balance} != $self->{our_balance})
                 or $line->{our_balance} == 0){
@@ -408,8 +411,10 @@ sub get {
             } else {
                 $self->{mismatch_their_credits} += $line->{their_balance};
             }
+warn "our_balance mismatch = $our_balance";
         } else {
             $self->{outstanding_total} += $line->{our_balance};
+warn "our_balance outstanding = $our_balance";
         }
         $line->{days} = $report_days{$line->{id}};
     }
