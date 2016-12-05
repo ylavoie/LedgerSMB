@@ -215,6 +215,7 @@ sub _display_report {
         if !$recon->{submitted};
     $recon->{can_approve} = $request->is_allowed_role({allowed_roles => ['reconciliation_approve']});
     $recon->{form_id} = $request->{form_id};
+    $recon->get();
     my $template = LedgerSMB::Template->new(
         user=> $recon->{_user},
         template => 'reconciliation/report',
