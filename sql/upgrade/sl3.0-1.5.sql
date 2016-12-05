@@ -698,6 +698,7 @@ INSERT INTO cr_report(chart_id, their_total,  submitted, end_date, updated, ente
 -- cr_report_line will insert the entry and return the ID of the upsert entry.
 -- The ID and matching post_date are entered in a temp table to pull the back into cr_report_line immediately after.
 -- Temp table will be dropped automatically at the end of the transaction.
+-- cr_report_line has acc_trans from multiple accounts
 WITH cr_entry AS (
 SELECT cr.id::INT, a.source, n.type, a.cleared::TIMESTAMP, a.amount::NUMERIC, a.transdate AS post_date, a.lsmb_entry_id
     FROM sl30.acc_trans a
