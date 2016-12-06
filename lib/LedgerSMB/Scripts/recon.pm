@@ -273,8 +273,8 @@ sub _display_report {
     # Check if only one entry could explain the difference
     if ( !$recon->{submit_enabled}) {
         for my $l (@{$recon->{report_lines}}){
-            $l->{suspect} = $l->{their_credits} == abs($recon->{out_of_balance})
-                         || $l->{their_debits}  == abs($recon->{out_of_balance})
+            $l->{suspect} = $l->{our_credits} == -$recon->{out_of_balance}
+                         || $l->{our_debits}  ==  $recon->{out_of_balance}
                          ? 1 : 0;
         }
     }
