@@ -742,9 +742,6 @@ WHERE id IN (
     SELECT DISTINCT report_id FROM cr_report_line
     WHERE clear_time - post_date > 60
 );
--- Approve valid reports.
-UPDATE cr_report SET approved = true
-WHERE submitted;
 
 -- Log out the Migrator
 DELETE FROM users
