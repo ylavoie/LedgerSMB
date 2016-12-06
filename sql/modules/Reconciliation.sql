@@ -88,6 +88,14 @@ $$
     -- or they won't be accessible anymore.
     -- Double check to make sure we do not set cleared_on before submitting
     -- YL
+--    UPDATE acc_trans ac
+--       SET cleared = FALSE, cleared_on = NULL, reconciled_on = NULL
+--      FROM cr_report_line crl
+--     WHERE crl.ledger_id = ac.entry_id
+--       AND ac.cleared
+--       AND crl.cleared
+--       AND crl.report_id = in_report_id;
+
     DELETE FROM cr_report_line
      WHERE report_id = in_report_id
            AND report_id IN (SELECT id FROM cr_report
