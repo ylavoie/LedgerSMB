@@ -509,7 +509,7 @@ SELECT * FROM pg_temp.f_insert_count('sqnumber');
 SELECT * FROM pg_temp.f_insert_count('vendornumber');
 SELECT * FROM pg_temp.f_insert_count('vinumber');
 
-INSERT INTO defaults(setting_key,value) SELECT 'curr',curr FROM sl30.curr WHERE rn=1;
+INSERT INTO defaults(setting_key,value) SELECT 'curr',array_to_string(ARRAY(SELECT curr FROM sl30.curr ORDER BY rn),':');
 
 CREATE OR REPLACE FUNCTION pg_temp.f_insert_account(skey varchar(20)) RETURNS VOID AS
 $$
