@@ -204,6 +204,7 @@ sub _display_report {
     $recon->get_unapproved_tx;
     $recon->add_entries($recon->import_file('csv_file')) if !$recon->{submitted};
     $recon->{can_approve} = $request->is_allowed_role({allowed_roles => ['reconciliation_approve']});
+    $recon->get();
     $recon->{form_id} = $request->{form_id};
     my $template = LedgerSMB::Template->new(
         user=> $recon->{_user},
@@ -274,8 +275,8 @@ sub _display_report {
     # Check if only one entry could explain the difference
     if ( !$recon->{submit_enabled}) {
         for my $l (@{$recon->{report_lines}}){
-            $l->{suspect} = $l->{our_credits} == -$recon->{out_of_balance}
-                         || $l->{our_debits}  ==  $recon->{out_of_balance}
+            $l->{suspect} = $l->{our_credits} ==  $recon->{out_of_balance}
+                         || $l->{our_debits}  == -$recon->{out_of_balance}
                          ? 1 : 0;
         }
     }

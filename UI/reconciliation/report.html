@@ -5,6 +5,22 @@
 <body class="lsmb <?lsmb dojo_theme ?>">
 <?lsmb IF check.unapproved_transactions;
     b_unapproved_transactions = "checked" ?>
+    <script>
+        require(["dojo/topic","dojo/query","dojo/domReady!"],
+        function(topic,query){
+           function update(targetValue) {
+                query("#heading-unapproved-transactions").style("display", targetValue ? "" : "none");
+            }
+            try{
+                topic.subscribe("ui/reconciliation/report/b_unapproved_transactions",
+                    function(targetValue) {
+                        update(targetValue);
+                    });
+            }catch(e){
+                alert("error in subscribe"+e);
+            }
+        });
+    </script>
 <table class="warning" border=0 id="unapproved-transactions">
     <tr class="listtop warning">
         <th colspan="10"><?lsmb INCLUDE input element_data = {
@@ -24,22 +40,6 @@
         <th><?lsmb text('Posted Date') ?></th>
         <th><?lsmb text('Amount') ?></th>
         <th><?lsmb text('Description') ?></th>
-        <script>
-            require(["dojo/topic","dojo/query","dojo/domReady!"],
-            function(topic,query){
-               function update(targetValue) {
-                    query("#heading-unapproved-transactions").style("display", targetValue ? "" : "none");
-                }
-                try{
-                    topic.subscribe("ui/reconciliation/report/b_unapproved_transactions",
-                        function(targetValue) {
-                            update(targetValue);
-                        });
-                }catch(e){
-                    alert("error in subscribe"+e);
-                }
-            });
-        </script>
     </tr>
     <?lsmb FOREACH row = unapproved_tx ?>
         <tr class="record">
@@ -57,7 +57,7 @@
     <?lsmb END -?>
 </table>
 <?lsmb END; IF check.unapproved_reports ?>
-<div class="warning"><?lsmb text('There are [_1] unapproved reconciliations before the end date of this report.',check.unapproved_reports) ?></div><?lsmb END ?>
+<div class="warning"><?lsmb text('There are [_1] unapproved reconciliations before the end date of this report.',check.unapproved_reports) ?></div>
 <?lsmb END ?>
 <?lsmb IF ! defined(b_cleared_table);
     b_cleared_table = 'checked';
