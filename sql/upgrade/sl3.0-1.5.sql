@@ -669,7 +669,7 @@ EXCEPTION WHEN OTHERS THEN
 END;$$;
 
 INSERT INTO cr_report(chart_id, their_total,  submitted, end_date, updated, entered_by, entered_username)
-  SELECT coa.id, SUM(SUM(-amount)) OVER (ORDER BY coa.id, a.end_date), TRUE,
+  SELECT coa.id, SUM(SUM(amount)) OVER (ORDER BY coa.id, a.end_date), TRUE,
             a.end_date,max(a.updated),
             (SELECT entity_id FROM robot WHERE last_name = 'Migrator'),
             'Migrator'
@@ -700,7 +700,9 @@ INSERT INTO cr_report(chart_id, their_total,  submitted, end_date, updated, ente
 -- Temp table will be dropped automatically at the end of the transaction.
 -- cr_report_line has acc_trans from multiple accounts
 WITH cr_entry AS (
-SELECT cr.id::INT, a.source, n.type, a.cleared::TIMESTAMP, a.amount::NUMERIC, a.transdate AS post_date, a.lsmb_entry_id
+    SELECT cr.id::INT, a.source, n.type, a.cleared::TIMESTAMP, 
+        a.amount::NUMERIC * CASE WHEN s.category ~ '(A|E)' THEN -1 ELSE 1 END,
+        a.transdate AS post_date, a.lsmb_entry_id
     FROM sl30.acc_trans a
     JOIN sl30.chart s ON chart_id=s.id
     JOIN reconciliation__account_list() coa ON coa.accno=s.accno
