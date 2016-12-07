@@ -10,7 +10,7 @@
         <th colspan="10"><?lsmb INCLUDE input element_data = {
         type = "toggle"
         name = "b_unapproved_transactions"
-        label = text('There are unapproved transactions before the end date of this report.')
+        label = text('There are [_1] unapproved transactions before the end date of this report.',check.unapproved_transactions)
         checked = b_unapproved_transactions
         "data-dojo-type" = "lsmb/PublishToggleButton"
         "data-dojo-props" = "topic:'ui/reconciliation/report/b_unapproved_transactions'"
@@ -57,7 +57,7 @@
     <?lsmb END -?>
 </table>
 <?lsmb END; IF check.unapproved_reports ?>
-<div class="warning"><?lsmb text('There are unapproved reconciliations before the end date of this report.') ?></div>
+<div class="warning"><?lsmb text('There are [_1] unapproved reconciliations before the end date of this report.',check.unapproved_reports) ?></div><?lsmb END ?>
 <?lsmb END ?>
 <?lsmb IF ! defined(b_cleared_table);
     b_cleared_table = 'checked';
