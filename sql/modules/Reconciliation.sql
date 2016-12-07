@@ -13,6 +13,7 @@ BEGIN
         FROM cr_report cr
         WHERE cr.id = in_report_id;
 
+        -- Fix this to validate cr_report
         SELECT CAST(t_cleared - SUM(crl.our_balance) - cr.their_total AS FLOAT) INTO t_balance
         FROM cr_report_line crl
         JOIN cr_report cr ON cr.id = crl.report_id
