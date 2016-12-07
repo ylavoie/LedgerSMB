@@ -38,10 +38,11 @@ LANGUAGE SQL AS
 $$
 WITH unapproved_tx as (
      SELECT 'unapproved_transactions'::text, count(*)::text
-       FROM (SELECT          id::text FROM ar        WHERE approved IS FALSE AND transdate < $1
-      UNION  SELECT          id::text FROM ap        WHERE approved IS FALSE AND transdate < $1
-      UNION  SELECT          id::text FROM gl        WHERE approved IS FALSE AND transdate < $1
-      UNION  SELECT DISTINCT source   FROM acc_trans WHERE approved IS FALSE AND transdate < $1 AND chart_id = $2
+       FROM (SELECT          id::text, approved, transdate FROM ar WHERE approved IS FALSE AND transdate < $1
+      UNION  SELECT          id::text, approved, transdate FROM ap WHERE approved IS FALSE AND transdate < $1
+      UNION  SELECT DISTINCT id::text, ac.approved, ac.transdate FROM gl
+               JOIN acc_trans ac ON gl.id = ac.trans_id
+               WHERE ac.approved IS FALSE AND ac.transdate < $1
             ) tx
 ),
      unapproved_cr as (
@@ -64,7 +65,8 @@ CREATE TYPE recon_unapproved_tx AS (
     description text
 );
 
-CREATE OR REPLACE FUNCTION reconciliation__get_unapproved_tx(in_end_date date, in_chart_id int)
+DROP FUNCTION IF EXISTS reconciliation__get_unapproved_tx(in_end_date date, in_chart_id int);
+CREATE OR REPLACE FUNCTION reconciliation__get_unapproved_tx(in_report_date date, in_chart_id int)
 RETURNS SETOF recon_unapproved_tx
 LANGUAGE SQL AS
 $$
@@ -72,9 +74,8 @@ $$
         SELECT * FROM (
                SELECT       id, 'AR' AS table, ar.invnumber, ar.transdate, ar.amount, ar.description, ar.approved FROM ar
         UNION  SELECT       id, 'AP' AS table, ap.invnumber, ap.transdate, ap.amount, ap.description, ap.approved FROM ap
-        UNION  SELECT       id, 'GL' AS table, gl.reference, gl.transdate, a1.amount, gl.description, gl.approved FROM gl
-                 JOIN acc_trans a1 on gl.id=a1.trans_id
-                  AND  chart_id = in_chart_id
+        UNION  SELECT       id, 'GL' AS table, gl.reference, gl.transdate, ac.amount, gl.description, gl.approved FROM gl
+                 JOIN       acc_trans ac ON gl.id = ac.trans_id
         ) xx
         WHERE id IN (
             SELECT trans_id
@@ -84,7 +85,7 @@ $$
         )
         OR approved IS FALSE
         ) xx
-    WHERE transdate < in_end_date
+    WHERE transdate < in_report_date
       AND approved IS FALSE
     ORDER BY "table", transdate, id;
 $$;
