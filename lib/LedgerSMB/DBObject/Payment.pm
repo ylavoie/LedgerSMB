@@ -23,6 +23,7 @@ use base qw(LedgerSMB::PGOld LedgerSMB::Num2text);
 use strict;
 use warnings;
 use LedgerSMB::PGNumber;
+use LedgerSMB::Setting;
 
 our $VERSION = '0.1.0';
 
@@ -656,11 +657,7 @@ workflow scripts.
 sub post_bulk {
     my ($self) = @_;
     my $total_count = 0;
-    my ($ref) = $self->call_procedure(
-          funcname => 'setting_get',
-          args     => ['queue_payments'],
-    );
-    my $queue_payments = $ref->{setting_get};
+    my $queue_payments = LedgerSMB::Setting->get('queue_payments');
     if ($queue_payments){
         my ($job_ref) = $self->call_dbmethod(
                  funcname => 'job__create'

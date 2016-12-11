@@ -24,6 +24,7 @@ on the fly, but this will have to be implemented in the future.
 package LedgerSMB::DBObject::TaxForm;
 
 use base qw(LedgerSMB::PGOld);
+use LedgerSMB::Setting;
 
 use strict;
 use warnings;
@@ -157,8 +158,7 @@ sub get_metadata
                 funcname => 'location_list_country'
     );
 
-    my ($ref) = $self->call_procedure(funcname => 'setting_get', args => ['default_country']);
-    $self->{default_country} = $ref->{setting_get};
+    $self->{default_country} = LedgerSMB::Setting->get('default_country');
 }
 
 
