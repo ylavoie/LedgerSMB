@@ -154,6 +154,11 @@ def 'DBI_TRACE',
     default => 0,
     doc => qq||;
 
+def 'DBI_TRACE_ADM',
+    section => 'main', # SHOULD BE 'debug' ????
+    default => 0,      # Should ALWAYS 0, used for settings, pg_proc and sensitive information
+    doc => qq||;
+
 def 'no_db_str',
     section => 'main',
     default => 'database',

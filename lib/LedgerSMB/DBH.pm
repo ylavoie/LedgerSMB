@@ -47,6 +47,18 @@ sub connect {
         $password = $creds->{password};
     }
     return undef unless $username && $username ne 'logout';
+
+    my $dbha = DBI->connect(qq|dbi:Pg:dbname="$company"|, $username, $password,
+           { PrintError => 0, AutoCommit => 0,
+             pg_enable_utf8 => 1, pg_server_prepare => 0 })
+        or return undef;
+    my $dbi_trace_adm=$LedgerSMB::Sysconfig::DBI_TRACE_ADM;
+    $dbha->do("set client_min_messages = 'warning'");
+    if($dbi_trace_adm)
+    {
+     $dbha->trace(split /=/,$dbi_trace_adm,2);#http://search.cpan.org/~timb/DBI-1.616/DBI.pm#TRACING
+    }
+
     my $dbh = DBI->connect(qq|dbi:Pg:dbname="$company"|, $username, $password,
            { PrintError => 0, AutoCommit => 0,
              pg_enable_utf8 => 1, pg_server_prepare => 0 })
@@ -60,6 +72,7 @@ sub connect {
 
     return $dbh;
 }
+
 
 =head2 set_datestyle
 

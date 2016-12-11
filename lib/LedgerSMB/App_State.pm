@@ -55,6 +55,15 @@ Database handle for current connection
 
 our $DBH;
 
+=item DBHA
+
+Administrative Database handle for current connection, for settings,
+pg internal tables and sensitive information, for example.
+
+=cut
+
+our $DBHA;
+
 =item DBName
 
 name of the database connecting to
@@ -167,6 +176,22 @@ sub set_DBH {
     return _set_n('DBH', @_);
 }
 
+=item DBHA
+
+=cut
+
+sub DBHA {
+    return $DBHA;
+}
+
+=item set_DBHA
+
+=cut
+
+sub set_DBHA {
+    return _set_n('DBHA', @_);
+}
+
 =back
 
 =head1 METHODS
@@ -182,12 +207,17 @@ sub cleanup {
         $DBH->commit;
         $DBH->disconnect;
     }
+    if ($DBHA){
+        $DBHA->commit;
+        $DBHA->disconnect;
+    }
     $Locale           = LedgerSMB::Locale->get_handle(
                             $LedgerSMB::Sysconfig::language
                         );
     $User             = {};
     $Company_Settings = {};
     $DBH = undef;
+    $DBHA = undef;
     $DBName = undef;
     delete $ENV{LSMB_ALWAYS_MONEY} if $ENV{LSMB_ALWAYS_MONEY};
 }

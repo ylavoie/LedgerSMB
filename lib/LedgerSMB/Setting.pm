@@ -63,12 +63,17 @@ use warnings;
 our $VERSION = '1.0.0';
 
 
+use Data::Printer;
 sub get {
     my $self = shift;
     my ($key) = @_;
     $key = $self->{key} unless $key;
+    my $dbh = LedgerSMB::App_State::DBH();
+    warn p($dbh);
+    my $dbha = LedgerSMB::App_State::DBHA();
+    warn p($dbha);
     my ($hashref) = __PACKAGE__->call_procedure(
-                                             dbh => LedgerSMB::App_State::DBH(),
+                                             dbh => LedgerSMB::App_State::DBHA(),
                                         funcname => 'setting_get',
                                             args => [$key]) ;
     $self->{value} = $hashref->{value} if ref $self !~ /hash/i;

@@ -49,7 +49,7 @@ around BUILDARGS => sub {
       );
 };
 
-sub _get_dbh { LedgerSMB::App_State::DBH() }
+sub _get_dbh { LedgerSMB::App_State::DBHA() }
 sub _get_schema { 'public' } # can be overridden
 sub _get_prefix { '' } # can be overridden
 
