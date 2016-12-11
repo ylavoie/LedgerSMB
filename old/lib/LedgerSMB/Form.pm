@@ -2568,11 +2568,7 @@ Looks up the value in the defaults table and returns it.
 
 sub get_setting {
     my ($self, $setting) = @_;
-    my $query = 'select * from setting_get(?)';
-    my $sth = $self->{dbh}->prepare($query) or $self->dberror($query);
-    $sth->execute($setting) or $self->dberror($query);
-    my $ref = $sth->fetchrow_hashref('NAME_lc') or $self->dberror($query);
-    return $ref->{value};
+    return LedgerSMB::Setting->get($setting);
 }
 
 =item $form->lastname_used($myconfig, $dbh2, $vc, $module);
