@@ -69,6 +69,7 @@ sub connect {
     {
      $dbh->trace(split /=/,$dbi_trace,2);#http://search.cpan.org/~timb/DBI-1.616/DBI.pm#TRACING
     }
+    $LedgerSMB::App_State::DBH = $dbha; # Both handles opened, Stash the administrative handle
 
     return $dbh;
 }
