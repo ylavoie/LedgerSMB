@@ -49,10 +49,50 @@ WITH unapproved_tx as (
      unapproved_cr as (
      SELECT 'unapproved_reports'::text, count(*)::text
        FROM cr_report
-      WHERE end_date < $1 AND approved IS NOT TRUE AND chart_id = $2
+      WHERE end_date < $1
+        AND submitted IS TRUE
+        AND approved IS NOT TRUE
+        AND chart_id = $2
+),
+     cleared_without_report as (
+     SELECT 'cleared_without_report'::text, count(*)::text FROM (
+        SELECT cr.id
+          FROM cr_report cr
+         WHERE cr.chart_id = in_chart_id
+           AND cr.end_date < in_end_date
+           AND cr.their_total <> reconciliation__get_cleared_balance(cr.chart_id,cr.end_date)
+     ) n
 )
-SELECT * FROM unapproved_tx
+      SELECT * FROM unapproved_tx
 UNION SELECT * FROM unapproved_cr
+UNION SELECT * FROM cleared_without_report
+$$;
+
+
+DROP TYPE IF EXISTS recon_cleared_without_report CASCADE;
+CREATE TYPE recon_cleared_without_report AS (
+    id BIGINT,
+    end_date DATE,
+    report_balance NUMERIC,
+    cleared_balance NUMERIC,
+    accno TEXT
+);
+
+CREATE OR REPLACE FUNCTION reconciliation__get_cleared_without_report(in_report_date date, in_chart_id int)
+RETURNS SETOF recon_cleared_without_report
+LANGUAGE SQL AS
+$$
+    SELECT * FROM (
+        SELECT cr.id, cr.end_date, cr.their_total AS report_balance, 
+                reconciliation__get_cleared_balance(cr.chart_id,cr.end_date)
+                    AS cleared_balance, a.accno
+          FROM cr_report cr
+          JOIN account a ON cr.chart_id = a.id
+         WHERE cr.end_date < in_report_date
+           AND cr.chart_id = in_chart_id
+           AND approved
+      ORDER BY a.accno, cr.end_date
+    ) n WHERE n.report_balance <> n.cleared_balance
 $$;
 
 DROP TYPE IF EXISTS recon_unapproved_tx CASCADE;
@@ -66,7 +106,6 @@ CREATE TYPE recon_unapproved_tx AS (
     description text
 );
 
-DROP FUNCTION IF EXISTS reconciliation__get_unapproved_tx(in_end_date date, in_chart_id int);
 CREATE OR REPLACE FUNCTION reconciliation__get_unapproved_tx(in_report_date date, in_chart_id int)
 RETURNS SETOF recon_unapproved_tx
 LANGUAGE SQL AS
@@ -89,6 +128,29 @@ $$
     WHERE transdate < in_report_date
       AND approved IS FALSE
     ORDER BY "table", transdate, id;
+$$;
+
+DROP TYPE IF EXISTS recon_unapproved_rx CASCADE;
+CREATE TYPE recon_unapproved_rx AS (
+    id BIGINT,
+    their_total NUMERIC,
+    submitted BOOL,
+    end_date DATE,
+    entered_username text,
+    updated DATE
+);
+
+CREATE OR REPLACE FUNCTION reconciliation__get_unapproved_rx(in_report_date date, in_chart_id int)
+RETURNS SETOF recon_unapproved_rx
+LANGUAGE SQL AS
+$$
+    SELECT id, their_total, submitted, end_date, entered_username, cast(updated as DATE)
+    FROM cr_report
+    WHERE NOT approved
+    AND NOT deleted
+    AND chart_id = in_chart_id
+    AND end_date < in_report_date
+    ORDER BY end_date;
 $$;
 
 CREATE OR REPLACE FUNCTION reconciliation__reject_set(in_report_id int)
@@ -548,21 +610,18 @@ $$
                      transdate, 'gl' as table
                 FROM gl WHERE approved IS TRUE ) gl
                 ON (gl.table = t.table_name AND gl.id = t.id)
-        LEFT JOIN cr_report_line rl ON (rl.report_id = in_report_id
-                AND rl.ledger_id = ac.entry_id
-                AND  (ac.voucher_id IS NULL
-                   OR ac.voucher_id = rl.voucher_id))
+        LEFT JOIN cr_report_line rl
+               ON rl.report_id = in_report_id
+              AND (   ac.voucher_id IS NULL AND rl.ledger_id = ac.entry_id
+                   OR ac.voucher_id = rl.voucher_id)
         LEFT JOIN cr_report r ON r.id = in_report_id
         LEFT JOIN exchangerate ex ON gl.transdate = ex.transdate
         WHERE (ac.cleared IS FALSE OR ac.cleared_on IS NULL)
                 AND ac.approved IS TRUE
                 AND ac.chart_id = t_chart_id
                 AND ac.transdate <= t_end_date
-                AND ((t_recon_fx is not true
-                        and ac.fx_transaction is not true)
-                    OR (t_recon_fx is true
-                        AND (gl.table <> 'gl' OR ac.fx_transaction
-                                              IS TRUE)))
+                AND ((t_recon_fx IS NOT TRUE AND ac.fx_transaction IS NOT TRUE)
+                  OR t_recon_fx IS NOT FALSE AND (ac.fx_transaction IS TRUE OR gl.table <> 'gl'))
         GROUP BY gl.ref, ac.source, ac.transdate,
                 ac.memo, ac.voucher_id, gl.table,
                 case when gl.table = 'gl' then gl.id else 1 end, ac.entry_id
