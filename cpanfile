@@ -5,6 +5,7 @@ requires 'perl', '5.14.0';
 
 requires 'App::LedgerSMB::Admin', '0.05';
 requires 'App::LedgerSMB::Admin::Database';
+requires 'AI::Genetic::Pro'; # YLA Recon solver
 requires 'CGI::Emulate::PSGI';
 requires 'CGI::Parse::PSGI';
 requires 'CGI::Simple';
@@ -88,6 +89,13 @@ feature 'xls', "Microsoft Excel" =>
     sub {
         requires 'Spreadsheet::WriteExcel';
         requires 'Excel::Writer::XLSX';
+};
+
+feature 'ai', "" =>
+    sub {
+        requires 'GD';
+        requires 'GD::Text';
+        requires 'GD::Graph::linespoints';
 };
 
 # Even with cpanm --notest, 'test' target of --installdeps

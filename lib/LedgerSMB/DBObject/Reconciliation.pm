@@ -66,10 +66,70 @@ transaction list.
 sub update {
     my $self = shift @_;
     $self->call_dbmethod(funcname=>'reconciliation__pending_transactions');
-    my $their_total = $self->{their_total} // 0;
-    my $beginning_balance = $self->{beginning_balance} // 0;
-    my $total_cleared_credits = $self->{total_cleared_credits} // 0;
-    my $total_cleared_debits = $self->{total_cleared_debits} // 0;
+}
+
+=item update_solve
+
+Updates the report, pulling in any new transactions in the date range into the
+transaction list.
+
+=cut
+
+use AI::Genetic::Pro;
+
+sub update_solve {
+    my $self = shift @_;
+    $self->call_dbmethod(funcname=>'reconciliation__pending_transactions');
+    my $variance = $self->{their_total} - $self->{beginning_balance};
+    $variance = $variance->to_sort;
+
+    my @balances = ();
+    for my $line (@{$self->{report_lines}}){
+        push @balances, $line->{our_balance}->to_sort;
+    }
+    # Performance lies within the fitness function.
+    my $fitness = sub {
+        my ($ga, $chromosome) = @_;
+        my @c = $ga->as_array($chromosome);
+        my $sum = 0;
+        map { $sum += $balances[$_] * $c[$_] } 0..$#c;
+        return 1 - abs($variance - $sum)/$variance;
+    };
+
+    my $preserve = $#balances > 5 ? $#balances : 5;
+    my $ga = AI::Genetic::Pro->new(        
+        -fitness         => \&$fitness,       # fitness function
+        -terminate       => sub { rand > 0.75 }, # terminate function
+        -type            => 'bitvector',      # type of chromosomes
+        -population      => 1000,             # population
+        -crossover       => 0.9,              # probab. of crossover
+        -mutation        => 0.01,             # probab. of mutation
+        -parents         => 2,                # number  of parents
+        -selection       => [ 'Roulette' ],   # selection strategy
+        -strategy        => [ 'Points', 2 ],  # crossover strategy
+        -cache           => 0,                # cache results
+        -history         => 1,                # remember best results
+        -preserve        => $preserve,        # remember the bests
+        -variable_length => 0,                # turn variable length OFF
+    );
+        
+    # init population of bit vectors
+    $ga->init(1+$#balances);
+        
+    # evolve 10 generations
+    $ga->evolve(10);
+    
+    # best scores
+    my @solutions = $ga->getFittest(5,1);
+
+    # Prepare output
+    $self->{"solutions"} = 1 + $#solutions;
+    $self->{"solution"} = [];
+    $self->{"solution_values"} = [];
+    map { push @{$self->{"solution"}},[@$_] } @solutions;
+    map { push @{$self->{"solution_values"}}, 
+               LedgerSMB::PGNumber->from_input($ga->as_value($_) * $variance)
+        } @solutions;
 }
 
 sub _pre_save {
@@ -133,7 +193,7 @@ sub import_file {
 
 =item unapproved_checks
 
-Checks for unapproved
+Checks for unapproved and for transactions approved without reports
 
  * transactions (generally, since these could change)
  * payments against the account
@@ -148,13 +208,27 @@ sub unapproved_checks {
     $self->{check} = { map { $_->{setting_key} => $_->{value} } $self->call_dbmethod(funcname=>'reconciliation__check') };
 }
 
+=item get_unapproved_rx
+
+Get unapproved
+
+ * reconciliation reports
+
+Sets $self->{unapproved_rx} with the name of the test and the number of failures
+
+=cut
+
+sub get_unapproved_rx {
+    my $self = shift @_;
+    @{$self->{unapproved_rx}} = $self->call_dbmethod(funcname=>'reconciliation__get_unapproved_rx');
+}
+
 =item get_unapproved_tx
 
 Get unapproved
 
  * transactions (generally, since these could change)
  * payments against the account
- * reconciliation reports
 
 Sets $self->{unapproved_tx} with the name of the test and the number of failures
 
@@ -163,6 +237,21 @@ Sets $self->{unapproved_tx} with the name of the test and the number of failures
 sub get_unapproved_tx {
     my $self = shift @_;
     @{$self->{unapproved_tx}} = $self->call_dbmethod(funcname=>'reconciliation__get_unapproved_tx');
+}
+
+=item get_cleared_without_report
+
+Get reports with ...
+
+ * reconciliation reports
+
+Sets $self->{cleared_without_report} with the name of the test and the number of failures
+
+=cut
+
+sub get_cleared_without_report {
+    my $self = shift @_;
+    @{$self->{cleared_without_report}} = $self->call_dbmethod(funcname=>'reconciliation__get_cleared_without_report');
 }
 
 =item approve($self,$reportid)

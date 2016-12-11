@@ -77,6 +77,22 @@ sub update_recon_set {
     return _display_report($recon, $request);
 }
 
+=item update_solve_recon_set
+
+
+Updates the reconciliation set, checks for new transactions to be included,
+and re-renders the reconciliation screen.
+
+=cut
+
+sub update_solve_recon_set {
+    my ($request) = shift;
+    my $recon = LedgerSMB::DBObject::Reconciliation->new({base => $request});
+    $recon->get();
+    $recon->update_solve();
+    return _display_report($recon, $request);
+}
+
 =item select_all_recons
 
 Checks off all reconciliation items and updates recon set
@@ -201,7 +217,11 @@ sub _display_report {
     $request->close_form;
     $request->open_form;
     $recon->unapproved_checks;
-    $recon->get_unapproved_tx;
+    # Get default period from user preferences
+    $recon->{report_date} = $recon->{end_date}->clone->add_interval('month',-1);
+    $recon->get_unapproved_tx if $recon->{check}->{unapproved_transactions};
+    $recon->get_unapproved_rx if $recon->{check}->{unapproved_reports};
+    $recon->get_cleared_without_report if $recon->{check}->{cleared_without_report};
     $recon->add_entries($recon->import_file('csv_file')) if !$recon->{submitted};
     $recon->{can_approve} = $request->is_allowed_role({allowed_roles => ['reconciliation_approve']});
     $recon->get();
@@ -233,6 +253,7 @@ sub _display_report {
     }
     # Credit/Debit separation (useful for some)
     for my $l (@{$recon->{report_lines}}){
+        #TODO: Fix Can't call method "bneg" on an undefined value at /lib/LedgerSMB/Scripts/recon.pm line 253, line 1
         if ($l->{their_balance} > 0){
            $l->{their_debits} = LedgerSMB::PGNumber->from_input(0);
            $l->{their_credits} = $l->{their_balance};
