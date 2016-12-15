@@ -2,12 +2,12 @@ define("lsmb/Reconciliation",
        ["dojo/_base/declare",
         "dojo/topic",
         "dojo/query",
-        "lsmb/Form",
         "dijit/registry",
+        "lsmb/Form",
         "dijit/_Container",
         "dojo/NodeList-dom",     // To load extensions in query
         "dojo/domReady!"],
-       function(declare, topic, query, Form, Registry, _Container) {
+       function(declare, topic, query, registry, Form, _Container) {
            return declare("lsmb/Reconciliation", [Form, _Container], {
                update: function(targetValue, prefix) {
                    query(prefix + " tbody tr.record").style("display", targetValue ? "" : "none");
@@ -16,7 +16,7 @@ define("lsmb/Reconciliation",
                    var s = "[name^='solution_"+j+"_']"; 
                    query(s).forEach(function(node) {
                        var res = node.id.split('-');
-                       var cb = Registry.byId("cleared-"+res[2]);
+                       var cb = registry.byId("cleared-"+res[2]);
                        cb.set("checked",node.innerText.length > 0) ;
                    });
                },
