@@ -110,6 +110,7 @@ var profile = (function(){
                     "lsmb/SubscribeSelect",
                     "lsmb/SubscribeShowHide",
                     "lsmb/TabularForm"
+                    "lsmb/Timecard",
                 ]
             }
         },
