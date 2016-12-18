@@ -51,8 +51,8 @@ define([
                               function() {
                                   self.show_main_div();
                               },
-                              function() {
-                                  self.report_error("Server return value invalid");
+                              function(error) {
+                                  self.report_error("Server return value invalid<br/>"+error);
                               });
                   },
                   load_form: function(url, options) {
