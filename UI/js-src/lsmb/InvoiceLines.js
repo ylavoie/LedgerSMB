@@ -8,8 +8,8 @@ require(
         return declare(
             "lsmb/InvoiceLines",
             [_WidgetBase, _Container], {
-                removeLine: function(widgetid) {
-                    this.removeChild(registry.byId(widgetid));
+                removeLine: function(widgetId) {
+                    this.removeChild(registry.byId(widgetId));
 
                     this.emit("changed",
                               { action: "removed" });
