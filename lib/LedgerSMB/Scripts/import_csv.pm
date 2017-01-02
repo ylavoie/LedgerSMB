@@ -20,6 +20,11 @@ use LedgerSMB::Template;
 use LedgerSMB::Form;
 use LedgerSMB::Setting;
 
+use Data::Printer filters => {
+    'LedgerSMB::PGNumber' => sub { $_[0]->to_output },
+    'LedgerSMB::PGDate'   => sub { $_[0]->to_output }
+};
+
 our $cols = {
    gl       =>  ['accno', 'debit', 'credit', 'source', 'memo'],
    ap_multi =>  ['vendor', 'amount', 'account', 'ap', 'description',
@@ -372,6 +377,7 @@ sub _process_timecard {
             if !$jc->{total};
         $jc->{checkedin} = $jc->{transdate} if !$jc->{checkedin};
         $jc->{checkedout} = $jc->{transdate} if !$jc->{checkedout};
+        warn p($request);
         LedgerSMB::Timecard->new(%$jc)->save;
     }
 }

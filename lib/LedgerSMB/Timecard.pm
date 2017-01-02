@@ -34,6 +34,11 @@ with 'LedgerSMB::PGObject';
 use LedgerSMB::MooseTypes;
 use LedgerSMB::Setting;
 
+use Data::Printer filters => {
+    'LedgerSMB::PGNumber' => sub { $_[0]->to_output },
+    'LedgerSMB::PGDate'   => sub { $_[0]->to_output }
+};
+
 =head1 PROPERTIES
 
 =over
@@ -78,7 +83,8 @@ This is the id of the part utilized (labor/overhead or service for time)
 
 has parts_id => (isa => 'Int', is => 'ro', required => '1',
                  lazy => '1', reader => '_get_part_id',
-                 default => sub { _get_part_id() });
+                 builder => '_get_part_id'
+);
 
 sub _get_part_id {
     my ($self) = @_;
@@ -206,7 +212,7 @@ has jctype => (is => 'ro', isa => 'Int', required => 0);
 =cut
 
 has curr => (is => 'ro', isa => 'Str', required => 1, 
-             default => 'CAD', #LedgerSMB::Setting->get('curr'),
+             default => '', #LedgerSMB::Setting->get('curr'),
              #TODO trigger => _trigger_curr # Update FX
              );
 
@@ -222,9 +228,6 @@ Retrieves the timecard with the specified ID and returns it.
 
 =cut
 
-use Data::Printer filters => {
-    'LedgerSMB::PGNumber' => sub { $_[0]->to_output }
-};
 sub get {
     my ($self, $id) = @_;
     my ($retval) = __PACKAGE__->call_procedure(
@@ -236,7 +239,6 @@ sub get {
     );
     $retval->{bu_class_id} = $buclass->{id};
     $retval->{partnumber} = $part->{partnumber};
-    $retval->{unitprice} = $part->{sellprice};
 warn p($retval);
     return __PACKAGE__->new(%$retval);
 }
