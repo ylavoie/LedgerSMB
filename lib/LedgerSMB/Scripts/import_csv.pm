@@ -15,13 +15,14 @@ package LedgerSMB::Scripts::import_csv;
 use strict;
 
 use Moose;
+with 'LedgerSMB::PGObject';
 use List::MoreUtils qw{ any };
 
 use LedgerSMB::Template;
 use LedgerSMB::Form;
 use LedgerSMB::Setting;
 
-my $default_currency = 'USD'; #LedgerSMB::Setting->get('curr');
+my $default_currency = LedgerSMB::Setting->get('curr');
 our $cols = {
    gl       =>  ['accno', 'debit', 'credit', 'source', 'memo'],
    ap_multi =>  ['vendor', 'amount', 'account', 'ap', 'description',
@@ -30,7 +31,7 @@ our $cols = {
                  'invnumber', 'transdate'],
    timecard =>  ['employee', 'business_unit_id', 'transdate', 'partnumber',
                  'description', 'qty', 'non_billable', 'sellprice', 'allocated',
-                'notes', 'jctype','curr'],
+                'notes', 'jctype', 'curr'],
    inventory => ['partnumber', 'onhand', 'purchase_price'],
    inventory_multi => ['date', 'partnumber', 'onhand', 'purchase_price'],
 };
@@ -369,7 +370,6 @@ sub _process_timecard {
             $jc->{$col} = $entry->[$counter];
             ++$counter;
         }
-        $jc->{parts_id} = LedgerSMB::Timecard::get_part_id(undef,$jc->{partnumber});
         $jc->{total} = $jc->{qty} + $jc->{non_billable}
             if !$jc->{total};
         $jc->{checkedin} = $jc->{transdate} if !$jc->{checkedin};

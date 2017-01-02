@@ -58,7 +58,7 @@ sub new {
         path     => 'UI',
         template => 'timecards/entry_filter',
         format   => 'HTML'
-    )->render_to_psgi($request);
+    )->render_to_psgi({ request => $request });
 }
 
 =item display
@@ -113,7 +113,7 @@ sub display {
         template => 'timecards/timecard',
         format   => 'HTML'
     );
-    return $template->render_to_psgi($request);
+    return $template->render_to_psgi({ request => $request });
 }
 
 =item timecard_screen
@@ -151,7 +151,7 @@ sub timecard_screen {
              template => 'timecards/timecard-week',
              format   => 'HTML'
          );
-         return $template->render_to_psgi($request);
+         return $template->render_to_psgi({ request => $request });
     }
 }
 
@@ -161,9 +161,9 @@ sub timecard_screen {
 
 sub save {
     my ($request) = @_;
-    $request->{parts_id} =  LedgerSMB::Timecard->get_part_id(
-           $request->{partnumber}
-    );
+#    $request->{parts_id} =  LedgerSMB::Timecard->get_part_id(
+#           $request->{partnumber}
+#    );
     $request->{jctype} = $request->{timecard_type} eq 'by_time'      ? 1
                        : $request->{timecard_type} eq 'by_materials' ? 2
                        : $request->{timecard_type} eq 'by_overhead'  ? 3
@@ -216,9 +216,9 @@ sub save_week {
                  for (qw(business_unit_id partnumber description qty curr
                                  non_billable));
             $hash->{non_billable} ||= 0;
-            $hash->{parts_id} =  LedgerSMB::Timecard->get_part_id(
-                     $hash->{partnumber}
-            );
+#            $hash->{parts_id} =  LedgerSMB::Timecard->get_part_id(
+#                     $hash->{partnumber}
+#            );
             $hash->{jctype} = $hash->{timecard_type} eq 'by_time'      ? 1
                             : $hash->{timecard_type} eq 'by_materials' ? 2
                             : $hash->{timecard_type} eq 'by_overhead'  ? 3
@@ -239,9 +239,9 @@ sub save_week {
 
 sub print {
     my ($request) = @_;
-    $request->{parts_id} =  LedgerSMB::Timecard->get_part_id(
-           $request->{partnumber}
-    );
+#    $request->{parts_id} =  LedgerSMB::Timecard->get_part_id(
+#           $request->{partnumber}
+#    );
     my $timecard = LedgerSMB::Timecard->new(%$request);
     my $template = LedgerSMB::Template->new(
         user     => $request->{_user},
@@ -253,7 +253,7 @@ sub print {
     );
 
     if (lc($request->{media}) eq 'screen') {
-        return $template->render_to_psgi($request,
+        return $template->render_to_psgi({ request => $request },
             extra_headers => [ 'Content-Disposition' =>
                   'attachment; filename="timecard-' . $request->{id}
                             . '.' . lc($request->{format} || 'HTML') . '"' ]);
@@ -275,7 +275,7 @@ This generates a report of timecards.
 sub timecard_report{
     my ($request) = @_;
     my $report = LedgerSMB::Report::Timecards->new(%$request);
-    return $report->render_to_psgi($request);
+    return $report->render_to_psgi({ request => $request });
 }
 
 =item generate_order
@@ -303,11 +303,7 @@ sub _get {
              'date');
     $tcard->{transdate}->is_time(0);
     $tcard->{transdate}->is_tz(0);
-    my ($part) = $tcard->call_procedure(
-         funcname => 'part__get_by_id', args => [$tcard->parts_id]
-    );
-    $tcard->{partnumber} = $part->{partnumber};
-    $tcard->{unitprice} = $part->{sellprice};
+    $tcard->{unitprice} = $tcard->{sellprice};
     return $tcard;
 }
 
@@ -339,6 +335,146 @@ sub delete {
     delete($request->{id});
     timecard_report();
 }
+
+# http://ubuntu-vm:5001/login.pl?action=login&company=lsmb_gayli#http://ubuntu-vm:5001/oe.pl?login=ylavoie&action=add&module=oe.pl&type=purchase_order&
+
+=pod
+sub project_purchase_order {
+
+    PE->project_sales_order( \%myconfig, \%$form );
+
+    if ( @{ $form->{all_years} } ) {
+        $form->{selectaccountingyear} = "<option></option>\n";
+        for ( @{ $form->{all_years} } ) {
+            $form->{selectaccountingyear} .= qq|<option>$_</option>\n|;
+        }
+        $form->{selectaccountingmonth} = "<option></option>\n";
+        for ( sort keys %{ $form->{all_month} } ) {
+            $form->{selectaccountingmonth} .=
+              qq|<option value=$_>|
+              . $locale->maketext( $form->{all_month}{$_} ) . qq|</option>\n|;
+        }
+
+        $selectfrom = qq|
+        <tr>
+      <th align=right>| . $locale->text('Period') . qq|</th>
+      <td colspan=3>
+      <select data-dojo-type="dijit/form/Select" id=month name=month>$form->{selectaccountingmonth}</select>
+      <select data-dojo-type="dijit/form/Select" id=year name=year>$form->{selectaccountingyear}</select>
+      <input name=interval class=radio type=radio data-dojo-type="dijit/form/RadioButton" value=0 checked>&nbsp;|
+          . $locale->text('Current') . qq|
+      <input name=interval class=radio type=radio data-dojo-type="dijit/form/RadioButton" value=1>&nbsp;|
+          . $locale->text('Month') . qq|
+      <input name=interval class=radio type=radio data-dojo-type="dijit/form/RadioButton" value=3>&nbsp;|
+          . $locale->text('Quarter') . qq|
+      <input name=interval class=radio type=radio data-dojo-type="dijit/form/RadioButton" value=12>&nbsp;|
+          . $locale->text('Year') . qq|
+      </td>
+    </tr>
+|;
+    }
+
+    $fromto = qq|
+        <tr>
+      <th align=right nowrap>| . $locale->text('Transaction Dates') . qq|</th>
+      <td>|
+      . $locale->text('From')
+      . qq| <input class="date" data-dojo-type="lsmb/DateTextBox" name=transdatefrom size=11 title="$myconfig{dateformat}">
+      |
+      . $locale->text('To')
+      . qq| <input class="date" data-dojo-type="lsmb/DateTextBox" name=transdateto size=11 title="$myconfig{dateformat}"></td>
+    </tr>
+    $selectfrom
+|;
+
+    if ( @{ $form->{all_project} } ) {
+        $form->{selectprojectnumber} = "<option></option>\n";
+        for ( @{ $form->{all_project} } ) {
+            $form->{selectprojectnumber} .=
+qq|<option value="$_->{control_code}--$_->{id}">$_->{control_code}--$_->{description}</option>\n|;
+        }
+    }
+    else {
+        $form->error( $locale->text('No open Projects!') );
+    }
+
+    if ( @{ $form->{all_employee} } ) {
+        $form->{selectemployee} = "<option></option>\n";
+        for ( @{ $form->{all_employee} } ) {
+            $form->{selectemployee} .=
+              qq|<option value="$_->{name}--$_->{id}">$_->{name}</option>\n|;
+        }
+
+        $employee = qq|
+              <tr>
+            <th align=right nowrap>| . $locale->text('Employee') . qq|</th>
+        <td><select data-dojo-type="dijit/form/Select" id=employee name=employee>$form->{selectemployee}</select></td>
+          </tr>
+|;
+    }
+
+    $form->{title} = $locale->text('Generate Sales Orders');
+    $form->{vc}    = "customer";
+    $form->{type}  = "sales_order";
+
+    $form->header;
+
+    print qq|
+<body class="lsmb $form->{dojo_theme}">
+
+<form method="post" data-dojo-type="lsmb/Form" action=$form->{script}>
+
+<table width=100%>
+  <tr>
+    <th class=listtop>$form->{title}</th>
+  </tr>
+  <tr height="5"></tr>
+  <tr valign=top>
+    <td>
+      <table>
+        <tr>
+      <th align=right>| . $locale->text('Project') . qq|</th>
+      <td colspan=3><select data-dojo-type="dijit/form/Select" id=projectnumber name=projectnumber>$form->{selectprojectnumber}</select></td>
+    </tr>
+    $employee
+    $fromto
+    <tr>
+      <th></th>
+        <td><input name=summary type=radio data-dojo-type="dijit/form/RadioButton" class=radio value=1> |
+      . $locale->text('Summary') . qq|
+        <input name=summary type=radio data-dojo-type="dijit/form/RadioButton" class=radio value=0 checked> |
+      . $locale->text('Detail') . qq|
+        </td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td><hr size=3 noshade></td>
+  </tr>
+</table>
+
+|;
+
+    $form->{nextsub} = "project_jcitems_list";
+    $form->hide_form(qw(path login sessionid nextsub type vc));
+
+    print qq|
+<button data-dojo-type="dijit/form/Button" type="submit" class="submit" name="action" value="continue">|
+      . $locale->text('Continue')
+      . qq|</button>
+
+</form>
+|;
+
+    print qq|
+
+</body>
+</html>
+|;
+
+}
+=cut
 
 =item refresh
 

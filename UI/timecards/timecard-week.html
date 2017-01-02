@@ -19,16 +19,16 @@ FOR hidden IN ['id', 'parts_id', 'in_edit'];
 PROCESS input element_data = {
     type = 'hidden'
     name = "$hidden_$dnum"
-   value = $hidden.$dnum
+   value = request.$hidden.$dnum
 };
 END;
 PROCESS input element_data = {
     type = 'hidden'
     name = "transdate_$dnum"
-    value = transdates.$dnum
+    value = request.transdates.$dnum
 };
 END;
-FOREACH bu IN b_units;
+FOREACH bu IN request.b_units;
     bu.text = bu.control_code _ ' -- ' _ bu.description;
 END;
 ?>
@@ -36,7 +36,7 @@ END;
 <table width="100%" cols=7 id="timecard-weekly"><tbody>
 <tr class="listtop">
 <?lsmb FOR dnum IN [0 .. 6] ?>
- <th><?lsmb transdates.$dnum ?></th>
+ <th><?lsmb request.transdates.$dnum ?></th>
 <?lsmb END; ?>
 </tr>
 <tr>
@@ -55,7 +55,7 @@ END;
             name  = "timecard_type_$dnum",
            label  = text('Time') 
             type  = "radio"
-         checked  = jctype.$dnum == 1 ? "checked" : undef
+         checked  = request.jctype.$dnum == 1 ? "checked" : undef
 "data-dojo-type"  = "lsmb/PublishRadioButton"
 "data-dojo-props" = "topic:'/timecard/type_$dnum'"
         }; ?><br><?lsmb
@@ -65,7 +65,7 @@ END;
             name  = "timecard_type_$dnum",
            label  = text('Materials') 
             type  = "radio"
-         checked  = jctype.$dnum == 2 ? "checked" : undef
+         checked  = request.jctype.$dnum == 2 ? "checked" : undef
 "data-dojo-type"  = "lsmb/PublishRadioButton"
 "data-dojo-props" = "topic:'/timecard/type_$dnum'"
         }; ?><br><?lsmb
@@ -75,7 +75,7 @@ END;
             name  = "timecard_type_$dnum",
            label  = text('Overhead') 
             type  = "radio"
-         checked  = jctype.$dnum == 3 ? "checked" : undef
+         checked  = request.jctype.$dnum == 3 ? "checked" : undef
 "data-dojo-type"  = "lsmb/PublishRadioButton"
 "data-dojo-props" = "topic:'/timecard/type_$dnum'"
         };
@@ -89,11 +89,11 @@ END;
 <td>
      <div><?lsmb text('Report in') ?> </div>
      <div><?lsmb
-        suffix = transdates.$dnum.replace('[./-]', '_') _ '_' _ lnum;
+        suffix = request.transdates.$dnum.replace('[./-]', '_') _ '_' _ lnum;
         PROCESS select element_data = {
                        name = "business_unit_id_$suffix"
-             default_values = [${"business_unit_id_$suffix"}]
-                    options = b_units
+             default_values = [request.${"business_unit_id_$suffix"}]
+                    options = request.b_units
                   text_attr = 'text'
                  value_attr = 'id'
      } ?>
@@ -105,7 +105,7 @@ END;
            name="partnumber_<?lsmb suffix ?>"
            id="partnumber_<?lsmb suffix ?>"
            size="15"
-           value="<?lsmb ${"partnumber_$suffix"} ?>"
+           value="<?lsmb request.${"partnumber_$suffix"} ?>"
            accesskey="p"
            title="[p]"
            class="control-code" />
@@ -116,8 +116,8 @@ END;
          name="description_<?lsmb suffix ?>"
          id="description_<?lsmb suffix ?>"
          cols="15"
-         class="description"><?lsmb ${"description_$suffix"} ?></div>
-<?lsmb IF jctype.$dnum == 1 OR jctype.$dnum == 3 ?>
+         class="description"><?lsmb request.${"description_$suffix"} ?></div>
+<?lsmb IF request.jctype.$dnum == 1 OR request.jctype.$dnum == 3 ?>
     <div id='in-time'></div>
     <div><?lsmb text('Time In') ?></div>
     <div><?lsmb PROCESS input element_data = {
@@ -125,7 +125,7 @@ END;
 "data-dojo-props" = "topic:'/timecard/clocked'"
            name = 'in_hour_$dnum'
              id = 'in-hour_$dnum'
-          value = in_hour.$dnum
+          value = request.in_hour.$dnum
            type = 'text'
           class = 'time-part'
            size = 3
@@ -135,7 +135,7 @@ END;
 "data-dojo-props" = "topic:'/timecard/clocked'"
            name = 'in_min_$dnum'
              id = 'in-min_$dnum'
-          value = in_min.$dnum
+          value = request.in_min.$dnum
            type = 'text'
           class = 'time-part'
            size = 3
@@ -147,7 +147,7 @@ END;
 "data-dojo-props" = "topic:'/timecard/clocked'"
            name = 'out_hour_$dnum'
              id = 'out-hour_$dnum'
-          value = out_hour.$dnum
+          value = request.out_hour.$dnum
            type = 'text'
           class = 'time-part'
            size = 3
@@ -157,7 +157,7 @@ END;
 "data-dojo-props" = "topic:'/timecard/clocked'"
            name = 'out_min_$dnum'
              id = 'out-min_$dnum'
-          value = out_min.$dnum
+          value = request.out_min.$dnum
            type = 'text'
           class = 'time-part'
            size = 3
@@ -171,26 +171,26 @@ END;
  "data-dojo-type" = "lsmb/PublishNumberTextBox"
 "data-dojo-props" = "topic:'/timecard/qty'"
        name = "qty_$suffix"
-      value = ${"qty_$suffix"}
+      value = request.${"qty_$suffix"}
       class = 'qty'
        size = 5 } ?></div>
   <div><?lsmb text('Extra Used') ?></div>
     <div><?lsmb PROCESS input element_data = {
        name = "non_billable_$suffix"
-      value = ${"non_billable_$suffix"}
+      value = request.${"non_billable_$suffix"}
       class = 'qty'
        size = 5 } ?></div>
     <div id='curr-lbl'><?lsmb text('Currency') ?></div>
     <div id='curr-input'><?lsmb 
         currencies2 = [];  
-        FOREACH curr IN currencies;
+        FOREACH curr IN request.currencies;
            currencies2.push({text = curr, value = curr });
         END;
 
                PROCESS select element_data = {
                    name = "curr_$suffix"
                 options = currencies2
-         default_values = [${"curr_$suffix"}]
+         default_values = [request.${"curr_$suffix"}]
   "data-dojo-type" = "lsmb/PublishSelect"
  "data-dojo-props" = "topic:'/timecard/curr'"
        }; ?></div>
@@ -198,7 +198,7 @@ END;
     <td><?lsmb PROCESS input element_data = {
          id = "unitprice_$suffix"
        name = "unitprice_$suffix"
-      value = unitprice.$dnum
+      value = request.unitprice.$dnum
        type = 'text'
       class = 'qty'
   "data-dojo-type" = "lsmb/PublishNumberTextBox"
@@ -208,19 +208,19 @@ END;
 <tr><th><?lsmb text('FX rate') ?></th>
     <td><?lsmb PROCESS input element_data = {
        name = "fxrate_$suffix"
-      value = fxrate.$dnum
+      value = request.fxrate.$dnum
        type = 'text'
       class = 'qty'
        size = 16 } ?></td>
 </td>
 <tr><th><?lsmb text('Sell Price') ?></th>
-    <td id=sellprice><?lsmb sellprice ?></td>
+    <td id=sellprice><?lsmb request.sellprice.$dnum ?></td>
 </tr>
 tr><th><?lsmb text('FX Sell Price') ?></th>
-    <td id=fxsellprice.$dnum><?lsmb fxsellprice.$dnum ?></td>
+    <td id=fxsellprice.$dnum><?lsmb request.fxsellprice.$dnum ?></td>
 </tr>
 <tr><th><?lsmb text('Allocated') ?></th>
-    <td><?lsmb allocated.$dnum ?></td>
+    <td><?lsmb request.allocated.$dnum ?></td>
 </tr>
 <tr><th align><?lsmb text('Notes') ?></th>
     <td colspan=3>
@@ -229,7 +229,7 @@ tr><th><?lsmb text('FX Sell Price') ?></th>
                      rows = 2
                      cols = 46
                      wrap = "soft"
-                     text = notes } ?>
+                     text = request.notes.$suffix } ?>
     </td>
 </tr>
 <?lsmb END ?>

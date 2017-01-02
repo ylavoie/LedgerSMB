@@ -32,7 +32,7 @@ package LedgerSMB::Timecard;
 use Moose;
 with 'LedgerSMB::PGObject';
 use LedgerSMB::MooseTypes;
-
+use LedgerSMB::Setting;
 
 =head1 PROPERTIES
 
@@ -62,13 +62,32 @@ The business unit class id.
 
 has bu_class_id => (isa => 'Int', is => 'ro', required => 0);
 
+=item partnumber int
+
+This is the part utilized (labor/overhead or service for time)
+
+=cut
+
+has partnumber => (isa => 'Str', is => 'rw', required => '1');
+
 =item parts_id int
 
 This is the id of the part utilized (labor/overhead or service for time)
 
 =cut
 
-has parts_id => (isa => 'Int', is => 'ro', required => '1');
+has parts_id => (isa => 'Int', is => 'ro', required => '1',
+                 lazy => '1', reader => '_get_part_id',
+                 default => sub { _get_part_id() });
+
+sub _get_part_id {
+    my ($self) = @_;
+    my ($ref) = __PACKAGE__->call_procedure(
+                    funcname => 'inventory__get_item_by_partnumber',
+                        args => [$self->partnumber]
+    );
+    return $ref->{id};
+}
 
 =item description text
 
@@ -186,7 +205,10 @@ has jctype => (is => 'ro', isa => 'Int', required => 0);
 
 =cut
 
-has curr => (is => 'ro', isa => 'Str', required => 1);
+has curr => (is => 'ro', isa => 'Str', required => 1, 
+             default => 'CAD', #LedgerSMB::Setting->get('curr'),
+             #TODO trigger => _trigger_curr # Update FX
+             );
 
 =back
 
@@ -200,30 +222,23 @@ Retrieves the timecard with the specified ID and returns it.
 
 =cut
 
+use Data::Printer filters => {
+    'LedgerSMB::PGNumber' => sub { $_[0]->to_output }
+};
 sub get {
     my ($self, $id) = @_;
     my ($retval) = __PACKAGE__->call_procedure(
          funcname => 'timecard__get', args => [$id]);
     my ($buclass) = __PACKAGE__->call_procedure(
          funcname => 'timecard__bu_class', args => [$id]);
-
-    $retval->{bu_class_id} = $buclass->{id};
-    return __PACKAGE__->new(%$retval);
-}
-
-=item get_part_id($partnumber)
-
-Returns the part id for the given partnumber
-
-=cut
-
-sub get_part_id {
-    my ($self, $partnumber) = @_;
-    my ($ref) = __PACKAGE__->call_procedure(
-                    funcname => 'inventory__get_item_by_partnumber',
-                        args => [$partnumber]
+    my ($part) = __PACKAGE__->call_procedure(
+         funcname => 'part__get_by_id', args => [$retval->{parts_id}]
     );
-    return $ref->{id};
+    $retval->{bu_class_id} = $buclass->{id};
+    $retval->{partnumber} = $part->{partnumber};
+    $retval->{unitprice} = $part->{sellprice};
+warn p($retval);
+    return __PACKAGE__->new(%$retval);
 }
 
 =item get_part_sellprice($partnumber)
