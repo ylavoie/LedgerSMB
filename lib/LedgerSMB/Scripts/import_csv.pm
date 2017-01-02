@@ -14,15 +14,12 @@ data.
 package LedgerSMB::Scripts::import_csv;
 use strict;
 
-use Moose;
-with 'LedgerSMB::PGObject';
 use List::MoreUtils qw{ any };
 
 use LedgerSMB::Template;
 use LedgerSMB::Form;
 use LedgerSMB::Setting;
 
-my $default_currency = LedgerSMB::Setting->get('curr');
 our $cols = {
    gl       =>  ['accno', 'debit', 'credit', 'source', 'memo'],
    ap_multi =>  ['vendor', 'amount', 'account', 'ap', 'description',
@@ -130,6 +127,7 @@ sub _aa_multi {
     for my $ref (@$entries){
         my $form = Form->new();
         $form->{dbh} = $request->{dbh};
+        my $default_currency = LedgerSMB::Setting->get('curr');
         $form->{rowcount} = 1;
         $form->{ARAP} = uc($arap);
         $form->{batch_id} = $batch->{id};
