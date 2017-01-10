@@ -14,6 +14,7 @@ define("lsmb/Timecard",
                defaultcurr: "",
                curr: "",
                transdate: "",
+               fxrate_enabled: 0,
                // We should stop event bubbling while updating - YL
                update: function(targetValue,topic) {
                    if (topic == 'type'){
@@ -36,6 +37,9 @@ define("lsmb/Timecard",
                    } else if (topic == 'part') {
                        this._refresh_screen();
                    } else if (topic == 'unitprice') {
+                   } else if (topic == 'fxrate') {
+                       var sellprice = self._currency_parse(dom.byId('sellprice').innerHTML);
+                       dom.byId('fxsellprice').innerHTML = self._currency_format(sellprice * data);
                    } else if (topic == 'qty') {
                        if (dom.byId('qty').value != targetValue) {
                            domattr.set('in-hour','value','');
@@ -49,7 +53,9 @@ define("lsmb/Timecard",
                        this.curr = targetValue;
                        this.transdate = dom.byId('transdate').value;
                        if (this.curr != this.defaultcurr) {
-                           this._getFXRate();
+                           if (this.fxrate_enabled) {
+                               this._getFXRate();
+                           }
                        } else {
                            domattr.set('fxrate','value','');
                        }

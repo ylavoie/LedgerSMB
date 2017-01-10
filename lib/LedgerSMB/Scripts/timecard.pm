@@ -89,6 +89,7 @@ sub display {
     @{$request->{b_units}} = LedgerSMB::Business_Unit->list(
         $request->{bu_class_id}, undef, 0, $request->{transdate}
     );
+    $request->{fxrate_enabled} = LedgerSMB::Setting->get('fxrate');
     my $curr = LedgerSMB::Setting->get('curr');
     @{$request->{currencies}} = split /:/, $curr;
     $request->{defaultcurr} = @{$request->{currencies}}[0];

@@ -290,12 +290,18 @@ def 'db_namespace',
     default => 'public',
     doc => '';
 
+
 def 'db_sslmode',
     section => 'database',
     default => undef,
     envvar => 'PGSSLMODE',
     doc => '';
 
+### Optional feature
+def 'fxrate',
+    section => 'main',
+    default => undef,
+    doc => qq||;
 
 ### SECTION  ---   debug
 

@@ -28,6 +28,7 @@ DEB_feature_PDF_utf8 := texlive-xetex
 DEB_feature_OpenOffice := libopenoffice-oodoc-perl
 DEB_feature_PGTAP := pgtap
 DEB_feature_XLS :=
+DEB_feature_fxrate :=
 
 # Core packages provided by Fedora 24
 RHEL_essential := perl-devel perl-CPAN perl-App-cpanminus
@@ -45,12 +46,14 @@ RHEL_feature_PDF := perl-TeX-Encode texlive
 RHEL_feature_PDF_utf8 := 
 RHEL_feature_OpenOffice := 
 RHEL_feature_XLS := 
+RHEL_feature_fxrate := 
 
 FBSD_essential := 
 FBSD_perlmodules := 
 FBSD_feature_PDF := 
 FBSD_feature_OpenOffice := 
 FBSD_feature_XLS := 
+FBSD_feature_rate := 
 
 APT_GET = sudo apt-get install
 YUM = sudo yum install
@@ -159,6 +162,7 @@ OS_feature_PDF        := deb_feature_PDF
 OS_feature_PDF_utf8   := deb_feature_PDF_utf8
 OS_feature_OpenOffice := deb_feature_OpenOffice
 OS_feature_XLS        := deb_feature_XLS
+OS_feature_fxrate     := deb_feature_fxrate
 OS_feature_PGTAP      := deb_feature_PGTAP
 endif
 ifeq ($(OSTYPE),REDHAT)
@@ -166,12 +170,14 @@ OS_feature_PDF        := rhel_feature_PDF
 OS_feature_PDF_utf8   := rhel_feature_PDF_utf8
 OS_feature_OpenOffice := rhel_feature_OpenOffice
 OS_feature_XLS        := rhel_feature_XLS
+OS_feature_fxrate     := rhel_feature_fxrate
 endif
 ifeq ($(OSTYPE),FREEBSD)
 OS_feature_PDF        := fbsd_feature_PDF
 OS_feature_PDF_utf8   := fbsd_feature_PDF_utf8
 OS_feature_OpenOffice := fbsd_feature_OpenOffice
 OS_feature_XLS        := fbsd_feature_XLS
+OS_feature_fxrate     := fbsd_feature_fxrate
 endif
 
 # make help
@@ -219,6 +225,7 @@ Help on using this Makefile
     - feature_PDF             : Install system and cpan packages for generating PDF/Postscript output
     - feature_PDF_utf8        : Install system and cpan packages for UTF8 ouput in PDF/Postscript output
     - feature_XLS             : Install system and cpan packages for generating XLS output
+    - feature_fxrate          : Install system and cpan packages to enable proxying FX Rates
     - feature_OpenOffice      : Install system and cpan packages for generating OpenOffice output
 
     #############################################################
@@ -235,6 +242,7 @@ Help on using this Makefile
     - deb_feature_PDF_utf8    : Installs texlive-xetex to allow UTF8 ouput in PDF/Postscript output
     - deb_feature_OpenOffice  : Installs deb package for generating OpenOffice output
     - deb_feature_XLS         : Installs deb package for generating XLS output
+    - deb_feature_fxrate      : Installs deb package to enable proxying FX Rates
 
     - rhel_essential          : installs just the "can't do without these" dependencies
     - rhel_perlmodules        : installs all known rpm packaged perl modules we depend on
@@ -242,6 +250,7 @@ Help on using this Makefile
     - rhel_feature_PDF_utf8   : Installs texlive-xetex (if available) to allow UTF8 ouput in PDF/Postscript output
     - rhel_feature_OpenOffice : Installs rpm package for generating OpenOffice output
     - rhel_feature_XLS        : Installs deb package for generating XLS output
+    - rhel_feature_fxrate     : Installs deb package to enable proxying FX Rates
 
 
 endef
@@ -348,7 +357,7 @@ endif
 debian: deb_essential deb_perlmodules
 #   make debian_all
 #       installs all apt dependencies for a debian system Including all features except deb_feature_PDF_utf8
-all_debian: debian deb_feature_PDF deb_feature_OpenOffice deb_feature_XLS
+all_debian: debian deb_feature_PDF deb_feature_OpenOffice deb_feature_XLS deb_feature_fxrate
 #   make deb_essential
 #       installs just the "can't do without these" dependencies
 deb_essential:
@@ -370,6 +379,10 @@ deb_feature_PDF_utf8: deb_feature_PDF
 deb_feature_XLS:
 	$(APT_GET) $(DEB_feature_XLS)
 #   make deb_feature_XLS
+#       Installs deb package to enable proxying FX Rates
+deb_feature_fxrate:
+	$(APT_GET) $(DEB_feature_fxrate)
+#   make deb_feature_fxrate
 #       Installs deb package for generating OpenOffice output
 deb_feature_OpenOffice:
 	$(APT_GET) $(DEB_feature_OpenOffice)
@@ -406,6 +419,10 @@ rhel_feature_PDF_utf8: rhel_feature_PDF
 #       Installs rpm package for generating XLS output
 rhel_feature_XLS:
 #	$(YUM) $(RHEL_feature_XLS)
+#   make rhel_feature_fxrate
+#       Installs rpm package to enable proxying FX RAtes
+rhel_feature_fxrate:
+#	$(YUM) $(RHEL_feature_fxrate)
 #   make rhel_feature_OpenOffice
 #       Installs rpm package for generating OpenOffice output
 rhel_feature_OpenOffice:
@@ -423,6 +440,7 @@ fbsd_feature_PDF:
 fbsd_feature_PDF_utf8:
 fbsd_feature_OpenOffice:
 fbsd_feature_XLS:
+fbsd_feature_fxrate:
 
 
 #   make cpan
@@ -449,6 +467,11 @@ feature_OpenOffice: $(OS_feature_OpenOffice)
 #       Install system and cpan packages for generating XLS output
 feature_XLS: $(OS_feature_XLS)
 	cpanm --quiet --notest --with-feature=XLS --installdeps .
+
+#   make feature_fxrate
+#       Install system and cpan packages to enable proxying FX Rates
+feature_fxrate: $(OS_feature_fxrate)
+	cpanm --quiet --notest --with-feature=fxrate --installdeps .
 
 
 postgres_user:
@@ -491,5 +514,6 @@ devtest:
 # - Run a test that verifies Dojo has loaded and is able to modify the DOM
 # - generate PDF of invoice
 # - generate XLS Doc of invoice
+# - get a FX rate cached and another uncached
 # - generate OpenOffice Doc of invoice
 # - Use Mountebank to send an email of the invoice

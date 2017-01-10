@@ -20,7 +20,6 @@ requires 'JSON';
 requires 'List::MoreUtils';
 requires 'Locale::Maketext::Lexicon', '0.62';
 requires 'Log::Log4perl';
-requires 'LWP::Simple';
 requires 'MIME::Lite';
 requires 'Moose';
 requires 'Moose::Role';
@@ -36,11 +35,9 @@ requires 'PGObject::Type::ByteString', '1.1.1';
 requires 'PGObject::Util::DBMethod';
 requires 'PGObject::Util::DBAdmin', '0.09';
 requires 'Plack::App::File';
-requires 'Plack::App::Proxy';
 requires 'Plack::Builder';
 requires 'Plack::Middleware::ConditionalGET'; # YLA
 requires 'Plack::Builder::Conditionals'; # YLA
-requires 'Plack::Middleware::Redirect';
 requires 'Plack::Middleware::Session';
 requires 'Plack::Response';
 requires 'Template', '2.14';
@@ -93,6 +90,18 @@ feature 'xls', "Microsoft Excel" =>
     sub {
         requires 'Spreadsheet::WriteExcel';
         requires 'Excel::Writer::XLSX';
+};
+
+feature 'fxrate' "Get current FX Rates from External site" =>
+    sub {
+        #Daily Rate is fetched from http://currencies.apps.grandtrunk.net/ and are cached upon usage.
+        #This service is free for personal and non-profit use. If you use it, consider dropping
+        #a line to the author or leave a comment at his blog post.
+        #Donations to cover hosting costs are always welcome.
+        #If you plan to make heavy use of this service, or want to use it for commercial purposes,
+        #contact him in advance.
+        requires 'LWP::Simple';
+        requires 'Plack::App::Proxy';
 };
 
 # Even with cpanm --notest, 'test' target of --installdeps
