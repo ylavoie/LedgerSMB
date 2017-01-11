@@ -7,10 +7,10 @@ define("lsmb/Timecard",
         "dojo/_base/array",
         "dojo/io-query",
         "dojo/request/xhr",
-        "dojo/json",
         "lsmb/Form"],
-       function(declare, topic, dom, domattr, registry, array, query, xhr, json, Form) {
+       function(declare, topic, dom, domattr, registry, array, query, xhr, Form) {
            return declare("lsmb/Timecard", Form, {
+               topic: null,
                defaultcurr: "",
                curr: "",
                transdate: "",
@@ -23,7 +23,7 @@ define("lsmb/Timecard",
                                        targetValue == 'by_overhead' ) ? ''
                                                                       : 'none');
                        dijit.byId("action_save").setAttribute('disabled', false);
-                       return;
+                       this._refresh_screen();
                    } else if (topic == 'clocked') {
                        var inh = dom.byId('in-hour').value;
                        var inm = dom.byId('in-min').value;
@@ -34,7 +34,7 @@ define("lsmb/Timecard",
                        var v = ( inh && inm && outh && outm && _out > _in ) ? (_out-_in)/60.0 : '';
                        domattr.set('total','value',v);
                        domattr.set('qty','value',v);
-                   } else if (topic == 'part') {
+                   } else if (topic == 'part-select/day') {
                        this._refresh_screen();
                    } else if (topic == 'unitprice') {
                    } else if (topic == 'fxrate') {
@@ -59,23 +59,38 @@ define("lsmb/Timecard",
                        } else {
                            domattr.set('fxrate','value','');
                        }
-                       this._refresh_screen();
                    }
-                   domattr.set('sellprice','value',dom.byId('qty').value
-                                                 * dom.byId('unitprice').value);
-                   domattr.set('fxsellprice','value',dom.byId('sellprice').value
-                                                   * dom.byId('fxrate').value);
+                   var qty = this._number_parse(dom.byId('qty').value);
+                   var unitprice = this._number_parse(dom.byId('unitprice').value);
+                   var fxrate = this._number_parse(dom.byId('fxrate').value);
+                   var sellprice = this._currency_format(qty * unitprice);
+                   dom.byId('sellprice').innerHTML = sellprice;
+                   if (this.curr == this.defaultcurr) {
+                       dom.byId('fxsellprice').innerHTML = '';
+                   } else {
+                       var fxsellprice = this._currency_format(qty * unitprice * fxrate);
+                       dom.byId('fxsellprice').innerHTML = fxsellprice;
+                   }
+               },
+               _number_parse: function (n) {
+                   return parseFloat(n)
+               },
+               _currency_parse: function (n) {
+                   return parseFloat(n)
+               },
+               _currency_format(n) {
+                  return n
                },
                _refresh_screen: function () {
-                   this.clickedAction = "refresh";
-                   this.submit();
-               },
-               _update_save: function(targetValue) {
-                   dijit.byId("action_save").setAttribute('disabled', false);
-                   dom.byId("action_refresh").click(); 
+                   if ( this.domNode ) {
+                       this.clickedAction = "refresh";
+                       this.submit();
+                   }
                },
                _display: function(s) {
                    var widget = dom.byId('in-time');
+                   if ( widget) widget.style = 'display:'+s;
+                   var widget = dom.byId('total');
                    if ( widget) widget.style = 'display:'+s;
                },
                _disableWidgets: function(state) {
@@ -105,7 +120,7 @@ define("lsmb/Timecard",
                    var self = this;
                    this.inherited(arguments);
 
-                   var topics = ['type','clocked','qty','curr','unitprice','part','date'];
+                   var topics = ['type','clocked','qty','curr','unitprice','fxrate','unit','date','part-select/day'];
                    topics.forEach(function(_topic) {
                        topic.subscribe(self.topic+_topic,
                             function(targetValue) {
@@ -113,11 +128,6 @@ define("lsmb/Timecard",
                             }
                        );
                    });
-                   topic.subscribe("channel:'/timecard/part-select/day'",
-                        function(targetValue) {
-                            self.update(targetValue,'part');
-                        }
-                   );
                    var in_id = dom.byId('id').value;
                    var in_edit = Number(dom.byId('in-edit').value);
 
