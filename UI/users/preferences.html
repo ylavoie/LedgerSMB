@@ -89,6 +89,16 @@ password_strings = 'title:"' _ text("Change Password") _
                       value_attr = 'file'
                      } ?></td>
               </tr>
+              <tr>
+                <th align="right"><?lsmb text('Timesheet frame') ?></th>
+                <td><?lsmb PROCESS select element_data={
+                      name = 'timesheetframe'
+                      options = user.timesheetframe
+                      default_values = [ user.prefs.timesheetframe ]
+                      text_attr = 'frame'
+                      value_attr = 'frame'
+                     } ?></td>
+              </tr>
 <?lsmb IF printers.defined ?>
               <tr>
                 <th align="right"><?lsmb text('Printer') ?></th>
