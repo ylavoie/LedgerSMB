@@ -693,7 +693,9 @@ create or replace function user__save_preferences(
         in_language text,
         in_stylesheet text,
         in_printer text,
-        in_timesheetframe text
+        in_timesheetframe text,
+        in_timesheettype text,
+        in_timesheetunit int
 ) returns bool as
 $$
 BEGIN
@@ -703,7 +705,9 @@ BEGIN
         language = in_language,
         stylesheet = in_stylesheet,
         printer = in_printer,
-        timesheetframe = in_timesheetframe
+        timesheetframe = in_timesheetframe,
+        timesheettype = in_timesheettype,
+        timesheetunit = in_timesheetunit
     WHERE id = (select id from users where username = SESSION_USER);
     RETURN FOUND;
 END;
@@ -715,7 +719,9 @@ COMMENT ON function user__save_preferences(
         in_language text,
         in_stylesheet text,
         in_printer text,
-        in_timesheetframe text
+        in_timesheetframe text,
+        in_timesheettype text,
+        in_timesheetunit int
 ) IS
 $$ Saves user preferences.  Returns true if successful, false if no preferences
 were found to update.$$;

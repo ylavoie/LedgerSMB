@@ -2330,7 +2330,9 @@ CREATE TABLE user_preference (
     printer text,
     dateformat text default 'yyyy-mm-dd' not null,
     numberformat text default '1000.00' not null,
-    timesheetframe text default 'Week' not null
+    timesheetframe text default 'Week' not null,
+    timesheettype text default 'Time',
+    timesheetunit int default 1
 );
 
 -- user_preference is here due to a dependency on language.code

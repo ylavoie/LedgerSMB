@@ -22,7 +22,8 @@
 */
 </script>
 <?lsmb FOR hidden IN ['id', 'parts_id', 'in_edit', 'defaultcurr', 'locale',
-                      'bu_class_id', 'partnumber', 'language1', 'decimal_places'];
+                      'bu_class_id', 'partnumber', 'language1',
+                      'decimal_places', 'numberformat'];
 PROCESS input element_data = {
     type = 'hidden'
    class = 'hidden'
@@ -30,12 +31,17 @@ PROCESS input element_data = {
    value = request.$hidden
 };
 END; ?>
-<div class="listtop"><?lsmb text('Time or Materials Card') ?></div>
+<div class="listtop"><?lsmb text('Time or Materials Card')
+                            _ ', Format: ' _ request.numberformat
+                            _ ', Places: ' _ request.decimal_places
+                            _ ', Locale: ' _ request.locale
+                            _ ', Language: ' _ request.language1
+?></div>
 <div id="formValue" name="formValue"></div>
 <div id="tableTimecard">
 <div class="listtop"><?lsmb text('Category') ?> :</div>
 <div class="input_row" id="timecard_type_radios">
-    <?lsmb
+    <div class='timecard-type'><?lsmb
         PROCESS input element_data={
            value  = 'by_time'
               id  = 'timecard_by_time'
@@ -74,18 +80,13 @@ END; ?>
         FOREACH bu IN request.b_units;
             bu.text = bu.control_code _ ' -- ' _ bu.description;
         END;
-        PROCESS select element_data = {
-                       name = "business_unit_id"
-                      label = text('Entered For')
-                      class = 'timecard-business-unit'
-             default_values = [request.business_unit_id]
-                    options = request.b_units
+        PROCESS business_unit_class label=text('Entered For')
                   text_attr = 'text'
                  value_attr = 'id'
                    required = 'required'
            "data-dojo-type" = "lsmb/PublishSelect"
           "data-dojo-props" = "topic:'/timecard/unit'"
-       } ?>
+  ?>
 </div>
 <div>
     <label for="partnumber" class="timecard-control-code"><?lsmb text('Partnumber') ?></label>
@@ -166,7 +167,7 @@ END; ?>
 </div>
 <div><?lsmb PROCESS input element_data = {
  "data-dojo-type" = "dijit/form/NumberTextBox"
-"data-dojo-props" = "constraints:{locale:'${request.locale}'}"
+"data-dojo-props" = "constraints:{pattern:'##.##',min:0,max:24,locale:'${request.language1}'}"
        name = 'total'
    readonly = 'readonly'
       label = text('Clocked')
@@ -177,7 +178,7 @@ END; ?>
 </div>
 <div><?lsmb PROCESS input element_data = {
  "data-dojo-type" = "lsmb/PublishNumberTextBox"
-"data-dojo-props" = "topic:'/timecard/qty',constraints:{min:0,locale:'${request.locale}'}"
+"data-dojo-props" = "topic:'/timecard/qty',constraints:{pattern:'##.##',min:0,max:24,locale:'${request.language1}'}"
                id = 'qty'
              name = 'qty'
             label = text('Chargeable')
@@ -188,7 +189,7 @@ END; ?>
 </div>
 <div><?lsmb PROCESS input element_data = {
  "data-dojo-type" = "dijit/form/NumberTextBox"
-"data-dojo-props" = "constraints:{min:0,locale:'${request.locale}'}"
+"data-dojo-props" = "constraints:{pattern:'##.##',min:0,max:24,locale:'${request.language1}'}"
        name = 'non-billable'
       label = text('Non-Chargeable')
       value = request.non_billable
@@ -219,7 +220,7 @@ END; ?>
        type = 'currency'
       class = 'timecard-qty'
   "data-dojo-type" = "lsmb/parts/PartSellprice"
- "data-dojo-props" = "channel:'/timecard/part-select/day',constraints:{fractional:true,min:0,locale:'${request.locale}',currency:'${request.defaultcurr}'}"
+ "data-dojo-props" = "channel:'/timecard/part-select/day',constraints:{min:0,locale:'${request.language1}',currency:'${request.defaultcurr}'}"
        size = 16 } ?>
 </div>
 <div><?lsmb PROCESS input element_data = {
@@ -231,12 +232,12 @@ END; ?>
       class = 'timecard-qty'
   attributes = { style = "text-align:right"}
   "data-dojo-type" = "lsmb/PublishNumberTextBox"
- "data-dojo-props" = "topic:'/timecard/fxrate',constraints:{fractional:true,min:0}"
+ "data-dojo-props" = "topic:'/timecard/fxrate',constraints:{fractional:true,min:0,locale:'${request.language1}'}"
        size = 16 } ?>
 </div>
 <div><?lsmb PROCESS input element_data = {
  "data-dojo-type" = "dijit/form/CurrencyTextBox"
- "data-dojo-props" = "constraints:{required:false,fractional:true,min:0,locale:'${request.locale}'}"
+ "data-dojo-props" = "constraints:{required:false,min:0,locale:'${request.language1}'}"
        name = 'sellprice'
       label = text('Sell Price')
    readonly = 'readonly'
@@ -248,7 +249,7 @@ END; ?>
 </div>
 <div><?lsmb PROCESS input element_data = {
  "data-dojo-type" = "dijit/form/CurrencyTextBox"
- "data-dojo-props" = "constraints:{required:false,fractional:true,min:0,locale:'${request.locale}',currency:'${request.defaultcurr}'}"
+ "data-dojo-props" = "constraints:{required:false,min:0,locale:'${request.language1}',currency:'${request.defaultcurr}'}"
        name = 'fxsellprice'
       label = text('FX Sell Price')
    readonly = 'readonly'
@@ -260,6 +261,7 @@ END; ?>
 </div>
 <div><?lsmb PROCESS input element_data = {
  "data-dojo-type" = "dijit/form/NumberTextBox"
+"data-dojo-props" = "constraints:{pattern:'##.##',min:0,max:24,locale:'${request.language1}'}"
        name = 'allocated'
       label = text('Allocated')
    readonly = 'readonly'

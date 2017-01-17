@@ -96,26 +96,26 @@ define("lsmb/Timecard",
                    this.non_billable = this._number_parse(registry.byId('non-billable').get('value'));
                    this._validate_field(targetValue);
                },
-               _number_parse(n) {
+               _number_parse: function(n) {
                   return number.parse(n, {
                       places: this.decimal_places,
                       locale: this.language
                     })
                },
-               _number_format(n) {
+               _number_format: function(n) {
                   return n;
                   return number.format(n, {
                       places: this.decimal_places,
                       locale: this.language
                     })
                },
-               _currency_parse(n) {
+               _currency_parse: function(n) {
                   return number.parse(n, {
                       places: this.decimal_places,
                       locale: this.language
                     })
                },
-               _currency_format(n) {
+               _currency_format: function(n) {
                   return n;
                   return number.format(n, {
                       places: this.decimal_places,

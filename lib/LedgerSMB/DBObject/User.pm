@@ -10,6 +10,7 @@ use strict;
 use warnings;
 
 use base qw(LedgerSMB::PGOld);
+use LedgerSMB::Business_Unit_Class;
 use Log::Log4perl;
 
 use Try::Tiny;
@@ -134,6 +135,7 @@ sub get_option_data {
         push @{$self->{numberformats}}, {format => $opt};
     }
     use warnings;
+    @{$self->{timesheetunits}} = LedgerSMB::Business_Unit_Class->list(1);
 
     my %country_codes = country_codes();
 
@@ -160,10 +162,6 @@ sub get_option_data {
             push @{$self->{printers}}, {printer => $item};
         }
     }
-
-    $self->{timesheetframe} = [];
-    push @{$self->{timesheetframe}}, {frame => 'Day'};
-    push @{$self->{timesheetframe}}, {frame => 'Week'};
 
     my ($pw_expiration) = $self->call_dbmethod(
             funcname => 'user__check_my_expiration');
@@ -295,6 +293,8 @@ sub remove {
 #             'dateformat',
 #             'numberformat'
 #             'timesheetframe'
+#             'timesheettype'
+#             'timesheetunit'
 #         ]
 #     );
 # }

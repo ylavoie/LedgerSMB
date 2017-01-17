@@ -89,16 +89,6 @@ password_strings = 'title:"' _ text("Change Password") _
                       value_attr = 'file'
                      } ?></td>
               </tr>
-              <tr>
-                <th align="right"><?lsmb text('Timesheet frame') ?></th>
-                <td><?lsmb PROCESS select element_data={
-                      name = 'timesheetframe'
-                      options = user.timesheetframe
-                      default_values = [ user.prefs.timesheetframe ]
-                      text_attr = 'frame'
-                      value_attr = 'frame'
-                     } ?></td>
-              </tr>
 <?lsmb IF printers.defined ?>
               <tr>
                 <th align="right"><?lsmb text('Printer') ?></th>
@@ -110,11 +100,78 @@ password_strings = 'title:"' _ text("Change Password") _
                      value_attr = 'printer'
                      }?></td>
               </tr>
-              <?lsmb END ?>
+<?lsmb END ?>
+  <tr><th class="listtop" colspan="2"><?lsmb text('Timesheets') ?></th></tr>
               <tr>
-                <td colspan="2"></td>
+                <th align="right"><?lsmb text('Frame') ?></th>
+                <td><?lsmb PROCESS input element_data={
+                       value  = 'Day'
+                        name  = 'timesheetframe',
+                       label  = text('Daily')
+                        type  = "radio"
+                     checked  = user.prefs.timesheetframe == 'Day' ? "checked" : undef
+                    } ?>
+                    <?lsmb PROCESS input element_data={
+                       value  = 'Week'
+                        name  = 'timesheetframe',
+                       label  = text('Weekly')
+                        type  = "radio"
+                     checked  = user.prefs.timesheetframe == 'Week' ? "checked" : undef
+                    } ?></td>
               </tr>
-              </tbody>
+              <tr>
+                <th align="right"><?lsmb text('Type') ?></th>
+                    <td><?lsmb
+                        PROCESS input element_data={
+                           value  = 'Unset'
+                              id  = 'timecard_unset'
+                            name  = 'timesheettype',
+                           label  = text('Unset')
+                            type  = "radio"
+                         checked  = user.prefs.timesheettype == '' ? "checked" : undef
+                        };
+                        PROCESS input element_data={
+                           value  = 'Time'
+                              id  = 'timecard_by_time'
+                            name  = 'timesheettype',
+                           label  = text('Time')
+                            type  = "radio"
+                         checked  = user.prefs.timesheettype == 'Time' ? "checked" : undef
+                        };
+                        PROCESS input element_data={
+                           value  = 'Materials'
+                              id  = 'timecard_by_materials'
+                            name  = 'timesheettype',
+                           label  = text('Materials')
+                            type  = "radio"
+                         checked  = user.prefs.timesheettype == 'Materials' ? "checked" : undef
+                        };
+                        PROCESS input element_data={
+                           value  = 'Overhead'
+                              id  = 'timecard_by_overhead'
+                            name  = 'timesheettype',
+                           label  = text('Overhead')
+                            type  = "radio"
+                         checked  = user.prefs.timesheettype == 'Overhead' ? "checked" : undef
+                        };
+                        ?></td>
+              </tr>
+              <tr>
+                <th align="right"><?lsmb text('Unit') ?></th>
+                <td><?lsmb PROCESS select element_data={
+                      name = 'timesheetunit',
+                      options = user.timesheetunits,
+                      default_values = [ user.prefs.timesheetunit ],
+                      text_attr = 'label',
+                      value_attr = 'id',
+                    } ?></td>
+              </tr>
+  <tr>
+  <td colspan="2">
+  </td>
+  </tr>
+  </form>
+</tbody>
             </table>
           </td>
         </tr>

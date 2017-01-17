@@ -50,11 +50,12 @@ This begins the timecard workflow.  The following may be set as a default:
 
 sub new {
     my ($request) = @_;
-    @{$request->{bu_class_list}} = LedgerSMB::Business_Unit_Class->list();
+    @{$request->{bu_class_list}} = LedgerSMB::Business_Unit_Class->list(1);
     my $tf = $request->{_user}->{timesheetframe};
     $request->{num_days} = $tf eq 'Week' ? 7
                          : $tf eq 'Day'  ? 1
                          : 0;
+    $request->{bu_class_id} = $request->{_user}->{timesheetunit};
     return LedgerSMB::Template->new_UI(
         user     => $request->{_user},
         locale   => $request->{_locale},
@@ -69,15 +70,31 @@ defaults.
 
 =cut
 
+#use Data::Printer;
 sub display {
     my ($request) = @_;
     $request->{qty} ||= 0;
     $request->{non_billable} ||= 0;
     $request->{in_edit} ||= 0;
-    $request->{language1} = $request->{_user}->{language};
-    $request->{locale} = lc($request->{language1});
-    $request->{locale} =~ s/_/-/;
+    $request->{jctype} ||= $request->{_user}->{timesheettype} eq 'Time'      ? 1
+                         : $request->{_user}->{timesheettype} eq 'Materials' ? 2
+                         : $request->{_user}->{timesheettype} eq 'Overhead'  ? 3
+                         : 0;
+    $request->{locale} = $request->{_user}->{language};
+    # Note numberformat equates to locales for NumberTextBox and CurrencyTextBox
+    # 1,000.00 1000.00 1.000,00 1000,00 1'000.00
+    #   us-us    en-uk   it-it    ca-fr   de-ch
+#    warn p($request->{_user});
+    $request->{language1} = $request->{_user}->{numberformat} eq '1,000.00' ? 'us-us'
+                          : $request->{_user}->{numberformat} eq  '1000.00' ? 'us-uk'
+                          : $request->{_user}->{numberformat} eq '1.000,00' ? 'it-it'
+                          : $request->{_user}->{numberformat} eq  '1000,00' ? 'ca-fr'
+                          : $request->{_user}->{numberformat} eq "1'000.00" ? 'de-ch'
+                          : '';
+    #warn p($request->{language1});
     $request->{decimal_places} = LedgerSMB::Setting->get('decimal_places');
+    $request->{numberformat} = '#,##0.' . ( '0' x $request->{decimal_places});
+
     if (defined $request->{checkedin} and $request->{checkedin}->is_time) {
         $request->{in_hour} = $request->{checkedin}->{hour};
         $request->{in_min} = $request->{checkedin}->{min};
@@ -275,7 +292,7 @@ sub generate_order {
     #TODO: Generate Purchase orders
 }
 
-=item _get
+=item get
 
 This routine retrieves a timecard and sends it to the display.
 
