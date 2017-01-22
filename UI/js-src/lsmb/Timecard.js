@@ -42,12 +42,12 @@ define("lsmb/Timecard",
                              ? (_out-_in)/60.0 : undefined;
                        if ( total != this.total ) {
                            this.total = total;
-                           registry.byId('total').set('value',this._number_format(this.total));
+                           registry.byId('total').set('value',this.total);
                            if ( this.total ) {
                                this.qty = this.total;
                                // We must prevent event bubbling - YL
                                //???.preventDefault();
-                               registry.byId('qty').set('value',this._number_format(this.qty));
+                               registry.byId('qty').set('value',this.qty);
                            }
                        }
                    } else if (topic == 'part-select/day') {
@@ -93,34 +93,8 @@ define("lsmb/Timecard",
                        this.fxsellprice = this.qty * this.unitprice * this.fxrate;
                        _sp.set('value',_sp.format(this.fxsellprice,{ currency: this.defaultcurr}));
                    }
-                   this.non_billable = this._number_parse(registry.byId('non-billable').get('value'));
+                   this.non_billable = registry.byId('non-billable').get('value');
                    this._validate_field(targetValue);
-               },
-               _number_parse: function(n) {
-                  return number.parse(n, {
-                      places: this.decimal_places,
-                      locale: this.language
-                    })
-               },
-               _number_format: function(n) {
-                  return n;
-                  return number.format(n, {
-                      places: this.decimal_places,
-                      locale: this.language
-                    })
-               },
-               _currency_parse: function(n) {
-                  return number.parse(n, {
-                      places: this.decimal_places,
-                      locale: this.language
-                    })
-               },
-               _currency_format: function(n) {
-                  return n;
-                  return number.format(n, {
-                      places: this.decimal_places,
-                      locale: this.language
-                    })
                },
                _refresh_screen: function () {
                    // Nothing currently

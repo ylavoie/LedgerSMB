@@ -70,7 +70,7 @@ defaults.
 
 =cut
 
-#use Data::Printer;
+use Data::Printer;
 sub display {
     my ($request) = @_;
     $request->{qty} ||= 0;
@@ -81,6 +81,7 @@ sub display {
                          : $request->{_user}->{timesheettype} eq 'Overhead'  ? 3
                          : 0;
     $request->{locale} = $request->{_user}->{language};
+    # This should go in the database. - YL
     # Note numberformat equates to locales for NumberTextBox and CurrencyTextBox
     # 1,000.00 1000.00 1.000,00 1000,00 1'000.00
     #   us-us    en-uk   it-it    ca-fr   de-ch
