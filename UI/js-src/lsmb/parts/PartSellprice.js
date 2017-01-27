@@ -38,9 +38,8 @@ define([
                         topic.subscribe(
                             this.channel,
                             function(selected) {
-                                var s = selected[self.searchAttr];
-                                s = number.parse(s, {locale: self.constraints.locale});
-                                self.set("value",self.format( s, { currency: self.constraints.currency } ));
+                                var s = parseFloat(selected[self.searchAttr]);
+                                self.set("value",self.format( s, { locale: self.constraints.locale, currency: self.constraints.currency } ));
                             }));
                     this.on("change",
                             function(newValue) {

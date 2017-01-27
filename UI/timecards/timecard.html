@@ -8,22 +8,11 @@
 <form data-dojo-type="lsmb/Timecard" action="timecard.pl" method="post"
       data-dojo-props="topic:'/timecard/'"
       data-dojo-event="validate"
+      id="form_timecard"
 >
-<script type="dojo/on" data-dojo-event="change">
-    console.dir(this);
-/*
-    if(this.validate()){
-        return confirm('Form is valid, press OK to submit');
-    }else{
-        alert('Form contains invalid data.  Please correct first');
-        return false;
-    }
-    return true;
-*/
-</script>
-<?lsmb FOR hidden IN ['id', 'parts_id', 'in_edit', 'defaultcurr', 'locale',
+<?lsmb FOR hidden IN ['id', 'parts_id', 'in_edit', 'defaultcurr',
                       'bu_class_id', 'partnumber', 'language1',
-                      'decimal_places', 'numberformat'];
+                      'decimal_places'];
 PROCESS input element_data = {
     type = 'hidden'
    class = 'hidden'
@@ -31,12 +20,7 @@ PROCESS input element_data = {
    value = request.$hidden
 };
 END; ?>
-<div class="listtop"><?lsmb text('Time or Materials Card')
-                            _ ', Format: ' _ request.numberformat
-                            _ ', Places: ' _ request.decimal_places
-                            _ ', Locale: ' _ request.locale
-                            _ ', Language: ' _ request.language1
-?></div>
+<div class="listtop"><?lsmb text('Time or Materials Card')?></div>
 <div id="formValue" name="formValue"></div>
 <div id="tableTimecard">
     <div class="listtop"><?lsmb text('Category') ?> :</div>
@@ -219,7 +203,7 @@ END; ?>
            type = 'currency'
           class = 'timecard-qty'
       "data-dojo-type" = "lsmb/parts/PartSellprice"
-     "data-dojo-props" = "channel:'/timecard/part-select/day',constraints:{pattern:'${request.numberformat}',min:0,currency:'${request.curr}'}"
+     "data-dojo-props" = "channel:'/timecard/part-select/day',constraints:{min:0,currency:'${request.curr}',locale:'${request.language1}'}"
            size = 16 } ?>
     </div>
     <div><?lsmb PROCESS input element_data = {

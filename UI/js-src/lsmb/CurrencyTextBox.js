@@ -8,29 +8,30 @@ define([
 
         return declare("lsmb.CurrencyTextBox", CurrencyTextBox, {
 
+            // Why can't I override only that
             _mixInDefaults: function(options) {
-                var _options = currency._mixInDefaults(options);
-                _options.locale = this.locale;
-                return _options;
+                this.inherited(arguments);
+                options.locale = this.locale;
+                return options;
             },
 
             // Override CurrencyTextBox._formatter to use user locale
-            _formatter: function(/*Number*/ value, /*__FormatOptions?*/ options){
-                var _options = currency._mixInDefaults(options);
-                _options.locale = this.locale;
-                return dnumber.format(value, _options);
+            _formatter: function(value, options){
+                return dnumber.format(value, this._mixInDefaults(options));
             },
 
-            _parser: function(/*String*/ expression, /*__ParseOptions?*/ options){
-                var _options = currency._mixInDefaults(options);
-                _options.locale = this.locale;
-                return dnumber.parse(expression, _options);
+            _parser: function(expression, options){
+                return dnumber.parse(expression, this._mixInDefaults(options));
             },
 
-            _regExpGenerator: function(/*dnumber.__RegexpOptions?*/ options){
-                var _options = currency._mixInDefaults(options);
-                _options.locale = this.locale;
-                return dnumber.regexp(currency._mixInDefaults(options)); // String
+            _regExpGenerator: function(options){
+                return dnumber.regexp(this._mixInDefaults(options)); // String
+            },
+
+            startup: function() {
+               var self = this;
+               this.inherited(arguments);
             }
-        });
+
+       });
     });

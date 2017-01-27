@@ -22,7 +22,6 @@ define("lsmb/Timecard",
                fxsellprice: undefined,
                language: '',
                jctype: undefined,
-               decimal_places: 2,
                // We should stop event bubbling while updating - YL
                _update: function(targetValue,topic) {
                    if (topic == 'type'){
@@ -52,7 +51,7 @@ define("lsmb/Timecard",
                        }
                    } else if (topic == 'part-select/day') {
                        this.unitprice = targetValue.sellprice;
-                       registry.byId('unitprice').format(this.unitprice,{ currency: this.curr});
+                       registry.byId('unitprice').set(this.unitprice);
                        this._refresh_screen();
                    } else if (topic == 'fxrate') {
                        this.fxrate = targetValue;
@@ -77,21 +76,20 @@ define("lsmb/Timecard",
                            _fx.set('value','');
                            _fx.setAttribute('readOnly', true);
                            this.fxrate = 0;
-                           registry.byId('sellprice').constraints.currency = this.curr;
                        } else {
                            _fx.setAttribute('readOnly', false);
-                           registry.byId('sellprice').constraints.currency = this.curr;
                        }
+                       registry.byId('sellprice').constraints.currency = this.curr;
                    }
                    this.sellprice = this.qty * this.unitprice;
                    var _sp = registry.byId('sellprice');
-                   _sp.set('value',_sp.format(this.sellprice,{ currency: this.curr}));
+                   _sp.set('value',this.sellprice);
                    _sp = registry.byId('fxsellprice');
                    if (this.curr == this.defaultcurr) {
                        _sp.set('value','');
                    } else {
                        this.fxsellprice = this.qty * this.unitprice * this.fxrate;
-                       _sp.set('value',_sp.format(this.fxsellprice,{ currency: this.defaultcurr}));
+                       _sp.set('value',this.fxsellprice);
                    }
                    this.non_billable = registry.byId('non-billable').get('value');
                    this._validate_field(targetValue);
@@ -111,9 +109,6 @@ define("lsmb/Timecard",
                        widget.set('disabled', state);
                    });
                },
-               validate: function() {
-                   console.log('Validated?');
-               },
                _validate_field: function(targetValue) {
                    var pn = registry.byId('partnumber').get('value');
                    var pd = registry.byId('description').get('value');
@@ -121,11 +116,9 @@ define("lsmb/Timecard",
                               && (pn || pd)
                               && this.qty
                               && this.sellprice
-                              && (this.defaultcurr == this.curr || this.fxsellprice);
+                              && (this.defaultcurr == this.curr || this.fxsellprice)
+                              && dijit.byId('form_timecard').validate;
                    dijit.byId('action_save').setAttribute('disabled', !enabled);
-               },
-               isValid: function () {
-                   return false;
                },
                startup: function() {
                    var self = this;
@@ -143,7 +136,6 @@ define("lsmb/Timecard",
                    self.curr = registry.byId('curr').get('value');
                    self.defaultcurr = dom.byId('defaultcurr').value;
                    self.language = dom.byId('language1').value;
-                   self.decimal_places = dom.byId('decimal-places').value;
 
                    var in_id = dom.byId('id').value;
                    var in_edit = Number(dom.byId('in-edit').value);

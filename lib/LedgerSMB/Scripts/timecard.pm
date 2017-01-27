@@ -70,7 +70,6 @@ defaults.
 
 =cut
 
-use Data::Printer;
 sub display {
     my ($request) = @_;
     $request->{qty} ||= 0;
@@ -85,16 +84,15 @@ sub display {
     # Note numberformat equates to locales for NumberTextBox and CurrencyTextBox
     # 1,000.00 1000.00 1.000,00 1000,00 1'000.00
     #   us-us    en-uk   it-it    ca-fr   de-ch
-#    warn p($request->{_user});
     $request->{language1} = $request->{_user}->{numberformat} eq '1,000.00' ? 'us-us'
                           : $request->{_user}->{numberformat} eq  '1000.00' ? 'us-uk'
                           : $request->{_user}->{numberformat} eq '1.000,00' ? 'it-it'
                           : $request->{_user}->{numberformat} eq  '1000,00' ? 'ca-fr'
                           : $request->{_user}->{numberformat} eq "1'000.00" ? 'de-ch'
                           : '';
-    #warn p($request->{language1});
+    # Formats set places in user preferences and decimal_places in global settings.
+    # Which prevails? - YL
     $request->{decimal_places} = LedgerSMB::Setting->get('decimal_places');
-    $request->{numberformat} = '#,##0.' . ( '0' x $request->{decimal_places});
 
     if (defined $request->{checkedin} and $request->{checkedin}->is_time) {
         $request->{in_hour} = $request->{checkedin}->{hour};
