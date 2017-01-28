@@ -7,7 +7,7 @@
 <form data-dojo-type="lsmb/Timecard-weekly" action="timecard.pl" method="post"
       data-dojo-props="topic:'ui/timecards/timecard_type'"
 >
-<?lsmb 
+<?lsmb
 PROCESS input element_data = {
     type = "hidden"
     name = "rowcount"
@@ -51,30 +51,30 @@ END;
     <td style="text-align:right" class="input_row" id="timecard_type_radios">
     <?lsmb
         PROCESS input element_data={
-           value  = "by_time.$dnum" 
-              id  = "timecard_by_time_$dnum" 
+           value  = "by_time.$dnum"
+              id  = "timecard_by_time_$dnum"
             name  = "timecard_type_$dnum",
-           label  = text('Time') 
+           label  = text('Time')
             type  = "radio"
          checked  = jctype.$dnum == 1 ? "checked" : undef
 "data-dojo-type"  = "lsmb/PublishRadioButton"
 "data-dojo-props" = "topic:'ui/timecards/timecard_type_$dnum'"
         }; ?><br><?lsmb
         PROCESS input element_data={
-           value  = "by_materials.$dnum" 
-              id  = "timecard_by_materials_$dnum" 
+           value  = "by_materials.$dnum"
+              id  = "timecard_by_materials_$dnum"
             name  = "timecard_type_$dnum",
-           label  = text('Materials') 
+           label  = text('Materials')
             type  = "radio"
          checked  = jctype.$dnum == 2 ? "checked" : undef
 "data-dojo-type"  = "lsmb/PublishRadioButton"
 "data-dojo-props" = "topic:'ui/timecards/timecard_type_$dnum'"
         }; ?><br><?lsmb
         PROCESS input element_data={
-           value  = "by_overhead.$dnum" 
-              id  = "timecard_by_overhead_$dnum" 
+           value  = "by_overhead.$dnum"
+              id  = "timecard_by_overhead_$dnum"
             name  = "timecard_type_$dnum",
-           label  = text('Overhead') 
+           label  = text('Overhead')
             type  = "radio"
          checked  = jctype.$dnum == 3 ? "checked" : undef
 "data-dojo-type"  = "lsmb/PublishRadioButton"
@@ -128,7 +128,7 @@ END;
            type = 'text'
           class = 'time-part'
            size = 3
-      maxlength = 2 } ?>&nbsp;: 
+      maxlength = 2 } ?>&nbsp;:
         <?lsmb PROCESS input element_data = {
            name = 'in_min_$dnum'
              id = 'in-min_$dnum'
@@ -137,7 +137,7 @@ END;
           class = 'time-part'
            size = 3
     maxlength = 2 } ?>
-     </div> 
+     </div>
     <div><?lsmb text('Time Out') ?></div>
     <div><?lsmb PROCESS input element_data = {
            name = 'out_hour_$dnum'
@@ -146,7 +146,7 @@ END;
            type = 'text'
           class = 'time-part'
            size = 3
-      maxlength = 2 } ?>&nbsp;: 
+      maxlength = 2 } ?>&nbsp;:
         <?lsmb PROCESS input element_data = {
            name = 'out_min_$dnum'
              id = 'out-min_$dnum'
@@ -155,7 +155,7 @@ END;
           class = 'time-part'
            size = 3
       maxlength = 2 } ?>
-     </div> 
+     </div>
     <div><?lsmb text('Clocked') ?></div>
     <div><?lsmb total ?></div>
 <?lsmb END # if is_service or is_timecard ?>
@@ -172,8 +172,8 @@ END;
       class = 'qty'
        size = 5 } ?></div>
     <div id='curr-lbl'><?lsmb text('Currency') ?></div>
-    <div id='curr-input'><?lsmb 
-        currencies2 = [];  
+    <div id='curr-input'><?lsmb
+        currencies2 = [];
         FOREACH curr IN currencies;
            currencies2.push({text = curr, value = curr });
         END;
