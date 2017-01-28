@@ -115,3 +115,4 @@ sub content_test {
 
 content_test($_) for @on_disk;
 done_testing;
+
