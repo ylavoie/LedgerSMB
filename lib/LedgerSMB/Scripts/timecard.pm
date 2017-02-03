@@ -91,8 +91,7 @@ sub display {
                           : $request->{_user}->{numberformat} eq "1'000.00" ? 'de-ch'
                           : '';
     # Formats set places in user preferences and decimal_places in global settings.
-    # Which prevails? - YL
-    $request->{decimal_places} = LedgerSMB::Setting->get('decimal_places');
+    $request->{decimal_places} = LedgerSMB::Setting->get('decimal_places') * 1;
 
     if (defined $request->{checkedin} and $request->{checkedin}->is_time) {
         $request->{in_hour} = $request->{checkedin}->{hour};

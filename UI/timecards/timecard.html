@@ -12,13 +12,13 @@
 >
 <?lsmb FOR hidden IN ['id', 'parts_id', 'in_edit', 'defaultcurr',
                       'bu_class_id', 'partnumber', 'language1',
-                      'decimal_places'];
-PROCESS input element_data = {
-    type = 'hidden'
-   class = 'hidden'
-    name = "$hidden"
-   value = request.$hidden
-};
+                      'decimal_places', 'jctype'];
+    PROCESS input element_data = {
+        type = 'hidden'
+       class = 'hidden'
+        name = "$hidden"
+       value = request.$hidden
+    };
 END; ?>
 <div class="listtop"><?lsmb text('Time or Materials Card')?></div>
 <div id="formValue" name="formValue"></div>
@@ -194,65 +194,75 @@ END; ?>
            }; ?>
     </div>
     <div><?lsmb PROCESS input element_data = {
-             id = 'unitprice'
-           name = 'unitprice'
-          label = text('Unit price')
-          value = request.unitprice
-      attributes = { style = "text-align:right"}
-       readonly = 'readonly'
-           type = 'currency'
-          class = 'timecard-qty'
-      "data-dojo-type" = "lsmb/parts/PartSellprice"
-     "data-dojo-props" = "channel:'/timecard/part-select/day',constraints:{min:0,currency:'${request.curr}',locale:'${request.language1}'}"
+                id = 'unitprice'
+              name = 'unitprice'
+             label = text('Unit price')
+             value = request.unitprice
+          readonly = 'readonly'
+              type = 'currency'
+             class = 'timecard-qty'
+        attributes = { style = "text-align:right"}
+  "data-dojo-type" = "lsmb/parts/PartSellprice"
+ "data-dojo-props" = "channel:'/timecard/part-select/day'," _
+                     "constraints:{min:0," _
+                     "places:'${request.decimal_places}'," _
+                     "currency:'${request.curr}'," _
+                     "locale:'${request.language1}'}"
+              size = 16 } ?>
+    </div>
+    <div><?lsmb PROCESS input element_data = {
+              name = 'fxrate'
+             label = text('FX rate')
+             value = request.fxrate
+          readonly = 'readonly'
+              type = 'text'
+             class = 'timecard-qty'
+        attributes = { style = "text-align:right"}
+  "data-dojo-type" = "lsmb/PublishNumberTextBox"
+ "data-dojo-props" = "topic:'/timecard/fxrate',constraints:{fractional:true,min:0,locale:'${request.language1}'}"
            size = 16 } ?>
     </div>
     <div><?lsmb PROCESS input element_data = {
-           name = 'fxrate'
-          label = text('FX rate')
-          value = request.fxrate
-       readonly = 'readonly'
-           type = 'text'
-          class = 'timecard-qty'
-      attributes = { style = "text-align:right"}
-      "data-dojo-type" = "lsmb/PublishNumberTextBox"
-     "data-dojo-props" = "topic:'/timecard/fxrate',constraints:{fractional:true,min:0,locale:'${request.language1}'}"
-           size = 16 } ?>
+              name = 'sellprice'
+             label = text('Sell Price')
+             value = request.sellprice
+          readonly = 'readonly'
+              type = 'text'
+             class = 'timecard-qty'
+        attributes = { style = "text-align:right"}
+  "data-dojo-type" = "lsmb/CurrencyTextBox"
+ "data-dojo-props" = "constraints:{required:false,min:0," _
+                     "places:'${request.decimal_places}'," _
+                     "currency:'${request.curr}'}," _
+                     "locale:'${request.language1}'"
+              size = 16 } ?>
     </div>
     <div><?lsmb PROCESS input element_data = {
-     "data-dojo-type" = "lsmb/CurrencyTextBox"
-     "data-dojo-props" = "constraints:{required:false,min:0,currency:'${request.curr}'},locale:'${request.language1}'"
-           name = 'sellprice'
-          label = text('Sell Price')
-       readonly = 'readonly'
-      attributes = { style = "text-align:right"}
-          class = 'timecard-qty'
-          value = request.sellprice
-           type = 'text'
-           size = 16 } ?>
+              name = 'fxsellprice'
+             label = text('FX Sell Price')
+             value = request.fxsellprice
+          readonly = 'readonly'
+              type = 'text'
+             class = 'timecard-qty'
+        attributes = { style = "text-align:right"}
+  "data-dojo-type" = "lsmb/CurrencyTextBox"
+ "data-dojo-props" = "constraints:{required:false,min:0," _
+                     "places:'${request.decimal_places}'," _
+                     "currency:'${request.defaultcurr}'}," _
+                     "locale:'${request.language1}'"
+              size = 16 } ?>
     </div>
     <div><?lsmb PROCESS input element_data = {
-     "data-dojo-type" = "lsmb/CurrencyTextBox"
-     "data-dojo-props" = "constraints:{required:false,min:0,currency:'${request.defaultcurr}'},locale:'${request.language1}'"
-           name = 'fxsellprice'
-          label = text('FX Sell Price')
-       readonly = 'readonly'
-      attributes = { style = "text-align:right"}
-          class = 'timecard-qty'
-          value = request.fxsellprice
-           type = 'text'
-           size = 16 } ?>
-    </div>
-    <div><?lsmb PROCESS input element_data = {
-     "data-dojo-type" = "dijit/form/NumberTextBox"
-    "data-dojo-props" = "constraints:{pattern:'#0',min:0,max:24,locale:'${request.language1}'}"
-           name = 'allocated'
-          label = text('Allocated')
-       readonly = 'readonly'
-      attributes = { style = "text-align:right"}
-          class = 'timecard-qty'
-          value = request.allocated
-           type = 'text'
-           size = 16 } ?>
+              name = 'allocated'
+             label = text('Allocated')
+          readonly = 'readonly'
+        attributes = { style = "text-align:right"}
+             class = 'timecard-qty'
+             value = request.allocated
+              type = 'text'
+  "data-dojo-type" = "dijit/form/NumberTextBox"
+ "data-dojo-props" = "constraints:{pattern:'#0',min:0,max:24,locale:'${request.language1}'}"
+              size = 16 } ?>
     </div>
     <div><?lsmb PROCESS textarea element_data = {
                          name = "notes"

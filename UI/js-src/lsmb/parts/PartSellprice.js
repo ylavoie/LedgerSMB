@@ -39,7 +39,9 @@ define([
                             this.channel,
                             function(selected) {
                                 var s = parseFloat(selected[self.searchAttr]);
-                                self.set("value",self.format( s, { locale: self.constraints.locale, currency: self.constraints.currency } ));
+                                self.set("value",self.format( s, { locale: self.constraints.locale,
+                                                                   places: parseInt(self.constraints.places),
+                                                                   currency: self.constraints.currency } ));
                             }));
                     this.on("change",
                             function(newValue) {
