@@ -326,7 +326,7 @@ sub _exclude_from_totals {
 sub run_report{
     my ($self) = @_;
     my $accno = $self->accno;
-    $accno =~ s/--.*//;
+    $accno =~ s/--.*// if $accno;
     $self->accno($accno);
     $self->approved;
     my @rows = $self->call_dbmethod(funcname => 'report__gl');

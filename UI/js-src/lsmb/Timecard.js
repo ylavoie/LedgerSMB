@@ -136,6 +136,7 @@ define("lsmb/Timecard",
                    self.curr = registry.byId('curr').get('value');
                    self.defaultcurr = dom.byId('defaultcurr').value;
                    self.language = dom.byId('language1').value;
+                   self.jctype = dom.byId('jctype').value;
 
                    var in_id = dom.byId('id').value;
                    var in_edit = Number(dom.byId('in-edit').value);
