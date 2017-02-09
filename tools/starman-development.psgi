@@ -9,6 +9,11 @@ BEGIN {
 
 package LedgerSMB::FCGI;
 
+use FindBin;
+use lib $FindBin::Bin;
+use lib $FindBin::Bin . '/../lib';
+use lib $FindBin::Bin . '/../old/lib';
+
 # Local packages
 #use LedgerSMB;
 use LedgerSMB::PSGI;
@@ -18,7 +23,6 @@ use Log::Log4perl;
 
 # Plack configuration
 use Plack::Builder;
-#use Plack::App::File;
 
 # Optimization
 #use Plack::Middleware::TemplateToolkit;
@@ -37,7 +41,7 @@ builder {
 #    enable 'ContentLength';
 
     enable 'Debug',  panels => [
-            qw(Parameters Environment Response Log4perl Session),   # Timer Memory ModuleVersions PerlConfig
+            qw(Parameters Environment Response Log4perl Session Timer Memory ModuleVersions PerlConfig),
               [ 'DBITrace', level => 2 ],
 #              [ 'Profiler::NYTProf', exclude => [qw(.*\.css .*\.png .*\.ico .*\.js .*\.gif)], minimal => 1 ],
 #           qw/Dancer::Settings Dancer::Logger Dancer::Version/
