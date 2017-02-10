@@ -114,6 +114,8 @@ before_install:
 
 install:
   - cpanm --quiet --notest --with-develop --with-feature=edi --with-feature=xls --installdeps .
+  - cpanm --quiet --notest http://www.yveslavoie.com/data/Weasel-0.11.tar.gz
+  - cpanm --quiet --notest http://www.yveslavoie.com/data/Weasel-Driver-Selenium2-0.07.tar.gz
   - cpan-install --coverage
 
 before_script:

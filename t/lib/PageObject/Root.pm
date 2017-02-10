@@ -1,5 +1,8 @@
 package PageObject::Root;
 
+use strict;
+use warnings;
+
 use Moose;
 extends 'Weasel::Element::Document';
 
@@ -50,11 +53,11 @@ sub click_and_wait_for_body {
 
 sub wait_for_body {
     my ($self) = @_;
-    my $ref;
-    $ref = $self->body if $self->has_body;
+    my $old_body;
+    $old_body = $self->body if $self->has_body;
     $self->clear_body;
 
-    $self->session->wait_for_stale($ref);
+    $self->session->wait_for_stale($old_body);
     $self->session->wait_for(
         sub {
             return $self->find('body.done-parsing', scheme => 'css') ? 1 : 0;
