@@ -17,6 +17,7 @@ requires 'DateTime::Format::Strptime';
 requires 'File::MimeInfo';
 requires 'HTTP::Exception'; # YLA
 requires 'JSON';
+requires 'JSON::PP', '2.274'; # Silence redefines
 requires 'List::MoreUtils';
 requires 'Locale::Maketext::Lexicon', '0.62';
 requires 'Log::Log4perl';
