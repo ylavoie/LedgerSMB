@@ -37,14 +37,19 @@ Then qr/ one tab called '(Person|Company)'/, sub {
   my $page = S->{ext_wsl}->page->body;
 };
 
-Given qr/a (.*+) with a (.+) ECA/, sub {
-};
-
 Then qr/ I see the '(.+)' Tab/, sub {
   my $tab = $1;
   ok(S->{ext_wsl}->page->find(".//*[\@role='tab' and text()='$tab']"),
     "the page has a tab named " . $tab)
 };
+
+#When qr/ I click on the Bank Accounts/, sub {
+#  my $tab = $1;
+#};
+
+#When qr/ I click on the Contact/, sub {
+#  my $tab = $1;
+#};
 
 #And qr/ click Save/, sub {
 #};
@@ -98,16 +103,16 @@ Then qr/ I see the '(.+)' Tab/, sub {
 #};
 
 #When qr/ I click 'Save' on the Credit Account tab/, sub {
+#  my $tab = $1;
 #};
 #When qr/ I click on the Addresses tab/, sub {
-#};
-#When qr/ I click on the Bank Accounts/, sub {
-#};
-#When qr/ I click on the Contact/, sub {
+#  my $tab = $1;
 #};
 #When qr/ I click on the Contacts\/Search menu/, sub {
+#  my $tab = $1;
 #};
 #When qr/ I click on the notes tab/, sub {
+#  my $tab = $1;
 #};
 #When qr/ I click the 'Test/, sub {
 #};

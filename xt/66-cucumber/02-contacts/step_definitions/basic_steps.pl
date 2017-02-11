@@ -16,6 +16,9 @@ Given qr/a (.+)\/(.+) Chart of Accounts/, sub {
     #      must = 'Accr. Benefits - 401K' if US
 };
 
+Given qr/a (.+) with a (.+) ECA/, sub {
+};
+
 # Given qr/a user named "(.*)" with a password "(.*)"/, sub {
 #     # note: the LedgerSMB extension has a *very* similar pattern!
 #     C->stash->{feature}->{user} = $1;
