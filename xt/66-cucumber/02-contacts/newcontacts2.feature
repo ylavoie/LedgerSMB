@@ -15,10 +15,11 @@ Scenario: Create a New Company as Vendor
      When I select the "Company" tab
       And enter a name of of "Testing, Inc"
       And select "United States" as the country
-      And click Save
-     Then I see the "Credit Account" Tab
-      And no credit accounts in the listing
-     When I click "Save" on the Credit Account tab
+      And click Generate Control Code
+     When I click Save
+#      And click Save
+#     Then I see the "Credit Account" Tab
+#      And no credit accounts in the listing
+#     When I click "Save" on the Credit Account tab
      Then I see a new line in the listing
       And the Customer Number field is now filled in.
-
