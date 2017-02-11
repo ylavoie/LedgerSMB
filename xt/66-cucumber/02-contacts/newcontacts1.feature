@@ -13,13 +13,15 @@ Scenario: Create a New Person as Customer
       And one tab called "Person"
       And one tab called "Company"
      When I select the "Person" tab
-      And enter a first name of "Test"
-      And enter a last name of "Another test"
+      And enter a given name of "Test"
+      And enter a surname of "Another test"
       And select "United States" as the country
-      And click Save
-     Then I see the "Credit Account" Tab
-      And no credit accounts in the listing
-     When I click "Save" on the Credit Account tab
+      And enter a birthdate of "1963-01-02"
+      And click Generate Control Code
+     When I click Save
+#      And click Save
+#     Then I see the "Credit Account" Tab
+#      And no credit accounts in the listing
+#     When I click "Save" on the Credit Account tab
      Then I see a new line in the listing
       And the Customer Number field is now filled in.
-
