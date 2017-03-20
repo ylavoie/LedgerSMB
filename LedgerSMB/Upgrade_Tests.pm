@@ -69,7 +69,7 @@ The first version to run this against
 
 has min_version => (is => 'ro', isa => 'Str', required => 1);
 
-=item max_version 
+=item max_version
 
 The maximum version to run this against
 
@@ -90,7 +90,7 @@ has appname => (is => 'ro', isa => 'Str', required => 1);
 
 Text of the query to run
 
-=cut 
+=cut
 
 has test_query => (is => 'ro', isa => 'Str', required => 1);
 
@@ -98,7 +98,7 @@ has test_query => (is => 'ro', isa => 'Str', required => 1);
 
 Repair query table to run once per result.
 
-=cut 
+=cut
 
 has table => (is => 'ro', isa => 'Str', required => 0);
 
@@ -161,18 +161,19 @@ Human readable instructions for test, localized.
 
 has instructions => (is => 'ro', isa => 'Str', required => 1);
 
+my $locale = LedgerSMB::App_State::Locale;
 
 # 1.2-1.3 tests
 
 push @tests, __PACKAGE__->new(
         test_query =>
            "select id, customernumber, name, address1, city, state, zipcode
-                   from customer where customernumber in 
+                   from customer where customernumber in
                     (SELECT customernumber from customer
                    GROUP BY customernumber
                    HAVING count(*) > 1)",
- display_name => $LedgerSMB::App_State::Locale->text('Unique Customernumber'),
- instructions => $LedgerSMB::App_State::Locale->text(
+ display_name => $locale->text('Unique Customernumber'),
+ instructions => $locale->text(
                    'Please make all customer numbers unique'),
          name => 'unique_customernumber',
  display_cols => ['customernumber', 'name', 'address1', 'city', 'state', 'zip'],
@@ -186,12 +187,12 @@ push @tests, __PACKAGE__->new(
 push @tests, __PACKAGE__->new(
         test_query =>
            "select id, vendornumber, name, address1, city, state, zipcode
-                   from vendor where vendornumber in 
+                   from vendor where vendornumber in
                     (SELECT vendornumber from vendor
                    GROUP BY vendornumber
                    HAVING count(*) > 1)",
- display_name => $LedgerSMB::App_State::Locale->text('Unique Vendornumber'),
- instructions => $LedgerSMB::App_State::Locale->text(
+ display_name => $locale->text('Unique Vendornumber'),
+ instructions => $locale->text(
                    'Please make all vendor numbers unique'),
          name => 'unique_vendornumber',
  display_cols => ['vendornumber', 'name', 'address1', 'city', 'state', 'zip'],
@@ -204,8 +205,8 @@ push @tests, __PACKAGE__->new(
 
 push @tests, __PACKAGE__->new(
    test_query => "SELECT * FROM employee WHERE employeenumber IS NULL",
- display_name => $LedgerSMB::App_State::Locale->text('No Null employeenumber'),
- instructions => $LedgerSMB::App_State::Locale->text(
+ display_name => $locale->text('No Null employeenumber'),
+ instructions => $locale->text(
                    'Enter employee numbers where they are missing'),
          name => 'null_employeenumber',
  display_cols => ['login', 'name', 'employeenumber'],
@@ -220,8 +221,8 @@ push @tests, __PACKAGE__->new(
    test_query => "SELECT * FROM employee
                    WHERE not name ~ '[[:alnum:]_]'::text",
          name => 'minimal_employee_name_requirements',
- display_name => $LedgerSMB::App_State::Locale->text("Employee name doesn't meet minimal requirements (e.g. non-empty, alphanumeric)"),
- instructions => $LedgerSMB::App_State::Locale->text(
+ display_name => $locale->text("Employee name doesn't meet minimal requirements (e.g. non-empty, alphanumeric)"),
+ instructions => $locale->text(
      'Make sure every name consists of alphanumeric characters (and underscores) only and is at least one character long'),
  display_cols => ['login', 'name', 'employeenumber'],
        column => 'name',
@@ -232,14 +233,14 @@ push @tests, __PACKAGE__->new(
 );
 
 push @tests, __PACKAGE__->new(
-   test_query => 'SELECT * FROM employee 
-                   WHERE employeenumber IN 
-                         (SELECT employeenumber FROM employee 
+   test_query => 'SELECT * FROM employee
+                   WHERE employeenumber IN
+                         (SELECT employeenumber FROM employee
                         GROUP BY employeenumber
                           HAVING count(*) > 1)',
          name => 'duplicate_employee_numbers',
- display_name => $LedgerSMB::App_State::Locale->text('Duplicate employee numbers'),
- instructions => $LedgerSMB::App_State::Locale->text(
+ display_name => $locale->text('Duplicate employee numbers'),
+ instructions => $locale->text(
                    'Make employee numbers unique'),
  display_cols => ['login', 'name', 'employeenumber'],
        column => 'employeenumber',
@@ -250,14 +251,15 @@ push @tests, __PACKAGE__->new(
 );
 
 push @tests, __PACKAGE__->new(
-   test_query => "select * from parts where obsolete is not true 
-                  and partnumber in 
-                  (select partnumber from parts 
+   test_query => "select * from parts where obsolete is not true
+                  and partnumber in
+                  (select partnumber from parts
                   WHERE obsolete is not true
-                  group by partnumber having count(*) > 1)",
+                  group by partnumber having count(*) > 1)
+                  order by partnumber",
          name => 'duplicate_partnumbers',
- display_name => $LedgerSMB::App_State::Locale->text('Unique nonobsolete partnumbers'),
- instructions => $LedgerSMB::App_State::Locale->text(
+ display_name => $locale->text('Unique nonobsolete partnumbers'),
+ instructions => $locale->text(
                    'Make non-obsolete partnumbers unique'),
  display_cols => ['partnumber', 'description', 'sellprice'],
        column => 'partnumber',
@@ -271,8 +273,8 @@ push @tests, __PACKAGE__->new(
    test_query => 'SELECT * from ar where invnumber in (
                    select invnumber from ar
                    group by invnumber having count(*) > 1)',
- display_name => $LedgerSMB::App_State::Locale->text('Unique AR Invoice numbers'),
- instructions => $LedgerSMB::App_State::Locale->text(
+ display_name => $locale->text('Unique AR Invoice numbers'),
+ instructions => $locale->text(
                    'Make invoice numbers unique'),
          name => 'unique_ar_invnumbers',
  display_cols =>  ['invnumber', 'transdate', 'amount', 'netamount', 'paid'],
@@ -287,11 +289,13 @@ push @tests, __PACKAGE__->new(
 
 push @tests, __PACKAGE__->new(
    test_query => "select * from acc_trans WHERE amount IS NULL",
- display_name => $LedgerSMB::App_State::Locale->text('No NULL Amounts'),
+ display_name => $locale->text('No NULL Amounts'),
          name => 'no_null_ac_amounts',
  display_cols => ["trans_id", "chart_id", "transdate"],
- instructions => $LedgerSMB::App_State::Locale->text(
-                   '?????'),
+ instructions => $locale->text(
+                   'There are NULL values in the amounts column of your
+source database. Please either find professional help to migrate your
+database, or delete the offending rows through PgAdmin III or psql'),
       appname => 'ledgersmb',
   min_version => '1.2',
   max_version => '1.4'
@@ -299,35 +303,35 @@ push @tests, __PACKAGE__->new(
 
 push @tests, __PACKAGE__->new(
    test_query => "-- Select transactions without charts where removing them would unbalance tha transaction
-					WITH ac1 AS (
-					SELECT DISTINCT trans_id, chart_id, MIN(transdate) as transdate, ROUND(CAST(SUM(amount) AS NUMERIC),2) AS amount
-						FROM acc_trans
-						WHERE trans_id IN (
-							SELECT trans_id FROM (
-								SELECT trans_id, SUM(amount) as amount from acc_trans
-								WHERE chart_id IS NULL
-								GROUP BY trans_id) as a
-							WHERE a.amount <> 0)
-						AND chart_id IS NULL
-						GROUP BY trans_id, chart_id
-						ORDER BY trans_id, transdate
-				),
-				-- Hint the user about the type of the remaining entries
-				ac2 AS (
-					SELECT DISTINCT ac.trans_id,SUBSTR(c.link,1,2) AS type
-					FROM acc_trans ac
-					JOIN chart c ON chart_id = c.id
-					WHERE trans_id IN ( SELECT trans_id FROM ac1)
-					AND c.link ~ 'amount'
-				)
-				-- Present data
-				SELECT * from ac1
-				LEFT JOIN ac2 ON (ac1.trans_id = ac2.trans_id)
-				ORDER BY ac1.trans_id",
- display_name => $LedgerSMB::App_State::Locale->text('No unassigned amounts in Transactions'),
+                        WITH ac1 AS (
+                        SELECT DISTINCT trans_id, chart_id, MIN(transdate) as transdate, ROUND(CAST(SUM(amount) AS NUMERIC),2) AS amount
+                                FROM acc_trans
+                                WHERE trans_id IN (
+                                        SELECT trans_id FROM (
+                                                SELECT trans_id, SUM(amount) as amount from acc_trans
+                                                WHERE chart_id IS NULL
+                                                GROUP BY trans_id) as a
+                                        WHERE a.amount <> 0)
+                                AND chart_id IS NULL
+                                GROUP BY trans_id, chart_id
+                                ORDER BY trans_id, transdate
+                ),
+                -- Hint the user about the type of the remaining entries
+                ac2 AS (
+                        SELECT DISTINCT ac.trans_id,SUBSTR(c.link,1,2) AS type
+                        FROM acc_trans ac
+                        JOIN chart c ON chart_id = c.id
+                        WHERE trans_id IN ( SELECT trans_id FROM ac1)
+                        AND c.link ~ 'amount'
+                )
+                -- Present data
+                SELECT * from ac1
+                LEFT JOIN ac2 ON (ac1.trans_id = ac2.trans_id)
+                ORDER BY ac1.trans_id",
+ display_name => $locale->text('No unassigned amounts in Transactions'),
          name => 'no_unbalanced_ac_transactions',
  display_cols => ["trans_id", "type", "chart_id", "transdate", "amount"],
- instructions => $LedgerSMB::App_State::Locale->text(
+ instructions => $locale->text(
                    'The following transactions have unassigned amounts'),
 		table => 'acc_trans',
 selectable_values => "SELECT concat(accno,' -- ',description) AS id, id as value
@@ -346,13 +350,14 @@ push @tests, __PACKAGE__->new(
    test_query => "select * from entity_credit_account
                    where meta_number in
                        (select meta_number from entity_credit_account
-                        group by meta_number having count(*) > 1)",
- display_name => $LedgerSMB::App_State::Locale->text('No duplicate meta_numbers'),
+                        group by meta_number having count(*) > 1)
+                   order by meta_number",
+ display_name => $locale->text('No duplicate meta_numbers'),
          name => 'no_meta_number_dupes',
  display_cols => [ 'meta_number', 'description' ],
        column => 'meta_number',
         table => 'entity_credit_account',
- instructions => $LedgerSMB::App_State::Locale->text("Make sure all meta numbers are unique."),
+ instructions => $locale->text("Make sure all meta numbers are unique."),
       appname => 'ledgersmb',
   min_version => '1.2',
   max_version => '1.4'
@@ -362,29 +367,34 @@ push @tests, __PACKAGE__->new(
    test_query => "select distinct gifi_accno from chart
                    where not exists (select 1
                                        from gifi
-                                      where gifi.accno = chart.gifi_accno)",
- display_name => $LedgerSMB::App_State::Locale->text('GIFI accounts not in "gifi" table'),
+                                      where gifi.accno = chart.gifi_accno)
+                         and gifi_accno is not null
+                         and gifi_accno !~ '^\\s*\$'",
+ display_name => $locale->text('GIFI accounts not in "gifi" table'),
          name => 'missing_gifi_table_rows',
  display_cols => [ 'gifi_accno' ],
         table => 'chart',
- instructions => $LedgerSMB::App_State::Locale->text("Please use the 1.2 UI to add the GIFI accounts"),
+ instructions => $locale->text("Please use the 1.2 UI to add the GIFI accounts"),
       appname => 'ledgersmb',
   min_version => '1.2',
   max_version => '1.2'
 );
 
 push @tests, __PACKAGE__->new(
-   test_query => "select distinct gifi_accno from chart
+   test_query => "select distinct gifi_accno as accno from chart
                    where not exists (select 1
                                        from gifi
                                       where gifi.accno = chart.gifi_accno)
                          and gifi_accno is not null
-                         and gifi_accno <> ''",
- display_name => $LedgerSMB::App_State::Locale->text('GIFI accounts not in "gifi" table'),
+                         and gifi_accno !~ '^\\s*\$'",
+ display_name => $locale->text('GIFI accounts not in "gifi" table'),
          name => 'missing_gifi_table_rows',
- display_cols => [ 'gifi_accno' ],
-        table => 'chart',
- instructions => $LedgerSMB::App_State::Locale->text("Please use the SQL-Ledger UI to add the GIFI accounts"),
+ display_cols => [ 'accno', 'description' ],
+        table => 'gifi',
+       column => 'description',
+    id_column => 'accno',
+     id_where => 'description IS NULL AND accno',
+ instructions => $locale->text("Please add the missing GIFI accounts"),
       appname => 'sql-ledger',
   min_version => '2.7',
   max_version => '3.0'
@@ -395,42 +405,46 @@ push @tests, __PACKAGE__->new(
    test_query => "select distinct gifi_accno from account
                    where not exists (select 1
                                        from gifi
-                                      where gifi.accno = account.gifi_accno)",
- display_name => $LedgerSMB::App_State::Locale->text('GIFI accounts not in "gifi" table'),
+                                      where gifi.accno = account.gifi_accno)
+                         and gifi_accno is not null
+                         and gifi_accno !~ '^\\s*\$'",
+ display_name => $locale->text('GIFI accounts not in "gifi" table'),
          name => 'missing_gifi_table_rows',
  display_cols => [ 'gifi_accno' ],
         table => 'account',
- instructions => $LedgerSMB::App_State::Locale->text("Please use the 1.3/1.4 UI to add the GIFI accounts"),
+ instructions => $locale->text("Please use the 1.3/1.4 UI to add the GIFI accounts"),
       appname => 'ledgersmb',
   min_version => '1.3',
   max_version => '1.4'
 );
 
 
-=pod 
+#=pod
 
- push @tests, __PACKAGE__->new(
-    test_query => "select * from customer where arap_accno_id is null",
-    display_name => $LedgerSMB::App_State::Locale->text('Empty AR account'),
-    name => 'no_null_ar_accounts',
-    display_cols => [ 'id', 'name', 'contact' ],
-    appname => 'sql-ledger',
-    min_version => '2.7',
-    max_version => '3.0'
-    );
+#  push @tests, __PACKAGE__->new(
+#     test_query => "select * from customer where arap_accno_id is null",
+#   display_name => $locale->text('Empty AR account'),
+#           name => 'no_null_ar_accounts',
+#   display_cols => [ 'id', 'name', 'contact' ],
+#   instructions => $locale->text("Please correct the empty AR accounts"),
+#        appname => 'sql-ledger',
+#    min_version => '2.7',
+#    max_version => '3.0'
+#     );
 
- push @tests, __PACKAGE__->new(
-    test_query => "select * from vendor where arap_accno_id is null",
-    display_name => $LedgerSMB::App_State::Locale->text('Empty AP account'),
-    name => 'no_null_ap_accounts',
-    display_cols => [ 'id', 'name', 'contact' ],
-    appname => 'sql-ledger',
-    min_version => '2.7',
-    max_version => '3.0'
-    );
-*/
+#  push @tests, __PACKAGE__->new(
+#     test_query => "select * from vendor where arap_accno_id is null",
+#   display_name => $locale->text('Empty AP account'),
+#           name => 'no_null_ap_accounts',
+#   display_cols => [ 'id', 'name', 'contact' ],
+#   instructions => $locale->text("Please correct the empty AP accounts"),
+#        appname => 'sql-ledger',
+#    min_version => '2.7',
+#    max_version => '3.0'
+#     );
+#*/
 
-=cut
+#=cut
 
 
 push @tests,__PACKAGE__->new(
@@ -438,10 +452,10 @@ push @tests,__PACKAGE__->new(
                     from chart
                    where charttype = 'A'
                      and category not in ('A', 'L', 'Q', 'I', 'E')",
-    display_name => $LedgerSMB::App_State::Locale->text('Unsupported account categories'),
+    display_name => $locale->text('Unsupported account categories'),
     name => 'unsupported_account_types',
     display_cols => ['category', 'accno', 'description'],
- instructions => $LedgerSMB::App_State::Locale->text(
+ instructions => $locale->text(
                    'Please make sure all accounts have a category of
 (A)sset, (L)iability, e(Q)uity, (I)ncome or (E)xpense.'),
     column => 'category',
@@ -451,24 +465,25 @@ push @tests,__PACKAGE__->new(
     max_version => '3.0'
     );
 
-# push @tests,__PACKAGE__->new(
-#     test_query => "select *
-#                     from chart
-#                    where charttype = 'A'
-#                      and link ~ ':?(AR|AP|IC)(:|$)'",
-#     display_name => $LedgerSMB::App_State::Locale->text('Unsupported account link combinations'),
-#     name => 'unsupported_account_links',
-#     display_cols => ['accno', 'description', 'link'],
-#  instructions => $LedgerSMB::App_State::Locale->text(
-#                    'An account can either be a summary account (which have a
-# link of "AR", "AP" or "IC" value) or be linked to dropdowns (having any
-# number of "AR_*", "AP_*" and/or "IC_*" links concatenated by colons (:).'),
-#     column => 'category',
-#     table => 'chart',
-#     appname => 'sql-ledger',
-#     min_version => '2.7',
-#     max_version => '3.0'
-#     );
+push @tests,__PACKAGE__->new(
+    test_query => "select *
+                    from chart
+                   where charttype = 'A'
+                     and link ~ '(^|:)(AR|AP|IC)(:|\$)'
+                     and link ~ '(AR|AP|IC)[^:]'",
+    display_name => $locale->text('Unsupported account link combinations'),
+    name => 'unsupported_account_links',
+    display_cols => ['accno', 'description', 'link'],
+ instructions => $locale->text(
+                   'An account can either be a summary account (which have a
+link of "AR", "AP" or "IC" value) or be linked to dropdowns (having any
+number of "AR_*", "AP_*" and/or "IC_*" links concatenated by colons (:).'),
+    column => 'category',
+    table => 'chart',
+    appname => 'sql-ledger',
+    min_version => '2.7',
+    max_version => '3.0'
+    );
 
 push @tests,__PACKAGE__->new(
     test_query => "select *
@@ -478,10 +493,10 @@ push @tests,__PACKAGE__->new(
                             from chart cn
                            where cn.charttype = 'H'
                              and cn.accno < c.accno)",
-    display_name => $LedgerSMB::App_State::Locale->text('Accounts without heading'),
+    display_name => $locale->text('Accounts without heading'),
     name => 'no_header_accounts',
     display_cols => ['accno', 'description', 'link'],
- instructions => $LedgerSMB::App_State::Locale->text(
+ instructions => $locale->text(
                    'Please go into the SQL-Ledger UI and create/rename a
 heading which sorts alphanumerically before the first account by accno'),
     table => 'chart',
@@ -492,13 +507,30 @@ heading which sorts alphanumerically before the first account by accno'),
 
 push @tests,__PACKAGE__->new(
     test_query => "select *
+                    from customer
+                   where customernumber is null",
+    display_name => $locale->text('Empty customernumbers'),
+    name => 'no_empty_customernumbers',
+    display_cols => ['id', 'customernumber', 'name'],
+ instructions => $locale->text(
+                   'Please make sure there are no empty customer numbers.'),
+    column => 'customernumber',
+    table => 'customer',
+    appname => 'sql-ledger',
+    min_version => '2.7',
+    max_version => '3.0'
+    );
+
+
+push @tests,__PACKAGE__->new(
+    test_query => "select *
                     from chart
                    where charttype = 'A'
                      and category not in ('A', 'L', 'Q', 'I', 'E')",
-    display_name => $LedgerSMB::App_State::Locale->text('Unsupported account categories'),
+    display_name => $locale->text('Unsupported account categories'),
     name => 'unsupported_account_types',
     display_cols => ['category', 'accno', 'description'],
- instructions => $LedgerSMB::App_State::Locale->text(
+ instructions => $locale->text(
                    'Please make sure all accounts have a category of
 (A)sset, (L)iability, e(Q)uity, (I)ncome or (E)xpense.'),
     column => 'category',
@@ -513,10 +545,10 @@ push @tests,__PACKAGE__->new(
 #                     from chart
 #                    where charttype = 'A'
 #                      and link ~ ':?\\(AR|AP|IC\\)\\(:|$\\)'",
-#     display_name => $LedgerSMB::App_State::Locale->text('Unsupported account link combinations'),
+#     display_name => $locale->text('Unsupported account link combinations'),
 #     name => 'unsupported_account_links',
 #     display_cols => ['accno', 'description', 'link'],
-#  instructions => $LedgerSMB::App_State::Locale->text(
+#  instructions => $locale->text(
 #                    'An account can either be a summary account (which have a
 # link of "AR", "AP" or "IC" value) or be linked to dropdowns (having any
 # number of "AR_*", "AP_*" and/or "IC_*" links concatenated by colons (:).'),
@@ -535,10 +567,10 @@ push @tests,__PACKAGE__->new(
                             from chart cn
                            where cn.charttype = 'H'
                              and cn.accno < c.accno)",
-    display_name => $LedgerSMB::App_State::Locale->text('Accounts without heading'),
+    display_name => $locale->text('Accounts without heading'),
     name => 'no_header_accounts',
     display_cols => ['accno', 'description', 'link'],
- instructions => $LedgerSMB::App_State::Locale->text(
+ instructions => $locale->text(
                    'Please go into the SQL-Ledger UI and create/rename a
 heading which sorts alphanumerically before the first account by accno'),
     table => 'chart',
@@ -553,14 +585,31 @@ push @tests,__PACKAGE__->new(
                    where customernumber in (select customernumber
                                               from customer
                                              group by customernumber
-                                             having count(*) > 1)",
-    display_name => $LedgerSMB::App_State::Locale->text('Double customernumbers'), 
+                                             having count(*) > 1)
+                    order by customernumber",
+    display_name => $locale->text('Double customernumbers'),
     name => 'no_double_customernumbers',
     display_cols => ['id', 'customernumber', 'name'],
- instructions => $LedgerSMB::App_State::Locale->text(
+ instructions => $locale->text(
                    'Please make all customer numbers unique'),
     column => 'customernumber',
     table => 'customer',
+    appname => 'sql-ledger',
+    min_version => '2.7',
+    max_version => '3.0'
+    );
+
+push @tests,__PACKAGE__->new(
+    test_query => "select *
+                    from vendor
+                   where vendornumber is null",
+    display_name => $locale->text('Empty vendornumbers'),
+    name => 'no_empty_vendornumbers',
+    display_cols => ['id', 'vendornumber', 'name'],
+ instructions => $locale->text(
+                   'Please make sure there are no empty vendor numbers.'),
+    column => 'vendornumber',
+    table => 'vendor',
     appname => 'sql-ledger',
     min_version => '2.7',
     max_version => '3.0'
@@ -573,10 +622,10 @@ push @tests,__PACKAGE__->new(
                                               from vendor
                                              group by vendornumber
                                              having count(*) > 1)",
-    display_name => $LedgerSMB::App_State::Locale->text('Double vendornumbers'), 
+    display_name => $locale->text('Double vendornumbers'),
     name => 'no_double_vendornumbers',
     display_cols => ['id', 'vendornumber', 'name'],
- instructions => $LedgerSMB::App_State::Locale->text(
+ instructions => $locale->text(
                    'Please make all vendor numbers unique'),
     column => 'vendornumber',
     table => 'vendor',
@@ -589,10 +638,10 @@ push @tests, __PACKAGE__->new(
     test_query => "select *
                      from employee
                     where employeenumber is null",
-    display_name => $LedgerSMB::App_State::Locale->text('Null employee numbers'),
+    display_name => $locale->text('Null employee numbers'),
     name => 'no_null_employeenumbers',
     display_cols => ['id', 'login', 'name', 'employeenumber'],
- instructions => $LedgerSMB::App_State::Locale->text(
+ instructions => $locale->text(
                    'Please make sure all employees have an employee number'),
     column => 'employeenumber',
     table => 'employee',
@@ -608,11 +657,11 @@ push @tests, __PACKAGE__->new(
                                                from employee
                                               group by employeenumber
                                               having count(*) > 1)",
-    display_name => $LedgerSMB::App_State::Locale->text('Null employee numbers'),
+    display_name => $locale->text('Null employee numbers'),
     name => 'no_duplicate_employeenumbers',
     display_cols => ['id', 'login', 'name', 'employeenumber'],
     column => 'employeenumber',
- instructions => $LedgerSMB::App_State::Locale->text(
+ instructions => $locale->text(
                    'Please make all employee numbers unique'),
     table => 'employee',
     appname => 'sql-ledger',
@@ -628,12 +677,12 @@ push @tests, __PACKAGE__->new(
                                          group by invnumber
                                          having count(*) > 1)
                    order by invnumber",
-    display_name => $LedgerSMB::App_State::Locale->text('Non-unique invoice numbers'),
+    display_name => $locale->text('Non-unique invoice numbers'),
     name => 'no_duplicate_ar_invoicenumbers',
     display_cols => ['id', 'invnumber', 'transdate', 'duedate', 'datepaid',
                      'ordnumber', 'quonumber', 'approved'],
     column => 'invnumber',
- instructions => $LedgerSMB::App_State::Locale->text(
+ instructions => $locale->text(
                    'Please make all AR invoice numbers unique'),
     table => 'ar',
     appname => 'sql-ledger',
@@ -668,10 +717,10 @@ push @tests, __PACKAGE__->new(
     test_query => "select *
                      from makemodel
                     where model is null",
-    display_name => $LedgerSMB::App_State::Locale->text('Null model numbers'),
+    display_name => $locale->text('Null model numbers'),
     name => 'no_null_modelnumbers',
     display_cols => ['parts_id', 'make', 'model'],
- instructions => $LedgerSMB::App_State::Locale->text(
+ instructions => $locale->text(
                    'Please make sure all modelsnumbers are non-empty'),
     column => 'model',
     table => 'makemodel',
@@ -685,11 +734,11 @@ push @tests, __PACKAGE__->new(
     test_query => "select *
                      from makemodel
                     where make is null",
-    display_name => $LedgerSMB::App_State::Locale->text('Null make numbers'),
+    display_name => $locale->text('Null make numbers'),
     name => 'no_null_makenumbers',
     display_cols => ['parts_id', 'make', 'model'],
     column => 'make',
-    instructions => $LedgerSMB::App_State::Locale->text(
+    instructions => $locale->text(
                    'Please make sure all make numbers are non-empty'),
     table => 'makemodel',
     appname => 'sql-ledger',
@@ -704,11 +753,11 @@ push @tests, __PACKAGE__->new(
                     where not exists (select 1
                                         from pricegroup
                                        where id = pricegroup_id)
-					and pricegroup_id <> 0",
-    display_name => $LedgerSMB::App_State::Locale->text('Non-existing customer pricegroups in partscustomer'),
+                                        and pricegroup_id <> 0",
+    display_name => $locale->text('Non-existing customer pricegroups in partscustomer'),
     name => 'partscustomer_pricegroups_exist',
     display_cols => ['parts_id', 'credit_id', 'pricegroup_id'],
- instructions => $LedgerSMB::App_State::Locale->text(
+ instructions => $locale->text(
                    'Please fix the pricegroup data in your partscustomer table (no UI available)'),
     table => 'partscustomer',
     appname => 'sql-ledger',
@@ -716,17 +765,109 @@ push @tests, __PACKAGE__->new(
     max_version => '3.0'
     );
 
-#  ### On the vendor side, SL doesn't use pricegroups
+push @tests, __PACKAGE__->new(
+    test_query => "select *
+                     from chart
+                    where not charttype in ('H', 'A')",
+    display_name => $locale->text('Unknown charttype; should be H(eader)/A(ccount)'),
+    name => 'unknown_charttype',
+    display_cols => ['accno', 'charttype', 'description'],
+    column => 'charttype',
+ instructions => $locale->text(
+                   'Please fix the presented rows to either be "H" or "A"'),
+    table => 'chart',
+    appname => 'sql-ledger',
+    min_version => '2.7',
+    max_version => '3.0'
+    );
+
+
+push @tests, __PACKAGE__->new(
+    test_query => "select *
+                     from chart
+                    where charttype = 'A'
+                          and category not in ('A','L','E','I','Q')",
+    display_name => $locale->text('Unknown account category (should be A(sset)/L(iability)/E(xpense)/I(ncome)/(e)Q(uity))'),
+    name => 'unknown_account_category',
+    display_cols => ['accno', 'category', 'description'],
+    column => 'category',
+ instructions => $locale->text(
+                   'Please fix the pricegroup data in your partscustomer table (no UI available)'),
+    table => 'chart',
+    appname => 'sql-ledger',
+    min_version => '2.7',
+    max_version => '3.0'
+    );
+
+
+push @tests, __PACKAGE__->new(
+    test_query => "select count(*)
+                     from chart
+                    where charttype = 'H'
+                    having count(*) < 1",
+    display_name => $locale->text('Unknown '),
+    name => 'no_headers_defined',
+    display_cols => ['accno', 'charttype', 'description'],
+ instructions => $locale->text(
+                   'Please add at least one header to your CoA which sorts before all other account numbers (in the standard SL UI)'),
+    table => 'chart',
+    appname => 'sql-ledger',
+    min_version => '2.7',
+    max_version => '3.0'
+    );
+
+
+push @tests, __PACKAGE__->new(
+    test_query => "select *
+                     from chart
+                    where charttype = 'A'
+                          and accno < (select min(accno)
+                                        from chart
+                                       where charttype = 'H')",
+    display_name => $locale->text(''),
+    name => 'insufficient_headings',
+    display_cols => ['accno', 'description'],
+ instructions => $locale->text(
+                   'Please add a header to the CoA which sorts before the listed accounts (usually "0000" works) (in the standard SL UI)'),
+    table => 'chart',
+    appname => 'sql-ledger',
+    min_version => '2.7',
+    max_version => '3.0'
+    );
+
+
+push @tests, __PACKAGE__->new(
+    test_query => "select *
+                     from tax t
+                     join chart c on t.chart_id = c.id
+                    where c.id in (select chart_id
+                                     from tax
+                                 group by chart_id, validto
+                                   having count(*) > 1)",
+    display_name => $locale->text(''),
+    name => 'tax_rates_unique_end_dates',
+    display_cols => ['accno', 'description', 'validto', 'rate'],
+ instructions => $locale->text(
+                   'Multiple tax rates with the same end date have been detected for a tax account;'),
+    table => 'tax',
+    appname => 'sql-ledger',
+    min_version => '2.7',
+    max_version => '3.0'
+    );
+
+
+
+ ### On the vendor side, SL doesn't use pricegroups
 # push @tests, __PACKAGE__->new(
 #     test_query => "select *
 #                      from partsvendor
 #                     where not exists (select 1
 #                                         from pricegroup
 #                                        where id = pricegroup_id)",
-#     display_name => $LedgerSMB::App_State::Locale->text('Non-existing vendor pricegroups in partsvendor'),
+#     display_name => $locale->text('Non-existing vendor pricegroups in partsvendor'),
 #     name => 'partsvendor_pricegroups_exist',
 #     display_cols => ['parts_id', 'credit_id', 'pricegroup_id'],
-#  instructions => $LedgerSMB::App_State::Locale->text(
+#  instructions => $locale->text(
 #                    'Please fix the pricegroup data in your partsvendor table (no UI available)'),
 #     table => 'partsvendor',
 #     appname => 'sql-ledger',

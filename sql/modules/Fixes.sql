@@ -1,5 +1,5 @@
--- SQL Fixes for upgrades.  These must be safe to run repeatedly, or they must 
--- fail transactionally.  Please:  one transaction per fix.  
+-- SQL Fixes for upgrades.  These must be safe to run repeatedly, or they must
+-- fail transactionally.  Please:  one transaction per fix.
 --
 -- These will be cleaned up going back no more than one beta.
 
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS file_incoming (
    check (file_class = 7),
    unique(id),
    primary key (ref_key, file_name, file_class),
-   check (ref_key = 0) 
+   check (ref_key = 0)
 ) inherits (file_base);
 
 
@@ -50,7 +50,7 @@ $$ Always must be 0, and we have no primary key since these files all
 are for interal incoming use, not categorized.$$;
 
 COMMENT ON TABLE file_incoming IS
-$$ This is essentially a spool for files to be reviewed and attached.  It is 
+$$ This is essentially a spool for files to be reviewed and attached.  It is
 important that the names are somehow guaranteed to be unique, so one may want to prepend them with an email equivalent or the like.$$;
 
 COMMIT;
@@ -61,7 +61,7 @@ BEGIN
     THEN
         CREATE SEQUENCE lot_tracking_number;
         COMMIT;
-END IF;
+    END IF;
 END$DO$;
 
 BEGIN;
@@ -73,10 +73,10 @@ CREATE TABLE IF NOT EXISTS mfg_lot (
     stock_date date not null default now()::date
 );
 
-COMMENT ON TABLE mfg_lot IS 
+COMMENT ON TABLE mfg_lot IS
 $$ This tracks assembly restocks.  This is designed to work with old code and
 may change as we refactor the parts.$$;
-    
+
 CREATE TABLE IF NOT EXISTS mfg_lot_item (
     id serial not null unique,
     mfg_lot_id int not null references mfg_lot(id),
@@ -103,9 +103,8 @@ BEGIN
     THEN
         ALTER TABLE entity_employee ADD is_manager bool DEFAULT FALSE;
         UPDATE entity_employee SET is_manager = true WHERE role = 'manager';
-
         COMMIT;
-END IF;
+    END IF;
 END$DO$;
 
 -- Fixes after 1.4.0 below this point.  Fixes above to be deleted after 1.4.10
@@ -116,22 +115,22 @@ CREATE TABLE IF NOT EXISTS fixed_acc_trans (LIKE acc_trans);
 COMMIT;
 
 BEGIN;
-INSERT INTO fixed_acc_trans 
+INSERT INTO fixed_acc_trans
 SELECT * FROM acc_trans
 WHERE transdate IS NULL;
 
-update acc_trans 
-   set transdate = (select transdate 
+update acc_trans
+   set transdate = (select transdate
                       from (select id, transdate from ar
                              union
                             select id, transdate from ap
                              union
                             select id, transdate from gl
-                            ) gl 
+                            ) gl
                      where gl.id = acc_trans.trans_id
                            and not exists (select 1 from account_checkpoint cp
                                              where end_date > gl.transdate)
-                   ) 
+                   )
  where transdate is null;
 COMMIT;
 
@@ -172,29 +171,36 @@ COMMIT;
 BEGIN;
 ALTER TABLE BATCH DROP CONSTRAINT "batch_locked_by_fkey";
 
-ALTER TABLE BATCH ADD FOREIGN KEY (locked_by) references session (session_id) 
+ALTER TABLE BATCH ADD FOREIGN KEY (locked_by) references session (session_id)
 ON DELETE SET NULL;
 
 COMMIT;
 
 DO $DO$
 BEGIN
-IF EXISTS (
-    SELECT 1
-    FROM   pg_class c
-    JOIN   pg_namespace n ON n.oid = c.relnamespace
-    WHERE  c.relname = 'entity_credit_account'
-    AND    n.nspname = 'public' -- 'public' by default
+    IF EXISTS (
+        SELECT 1
+        FROM   pg_class c
+        JOIN   pg_namespace n ON n.oid = c.relnamespace
+        WHERE  c.relname = 'entity_credit_account'
+        AND    n.nspname = 'public' -- 'public' by default
+        )
+    AND EXISTS (
+        SELECT 1
+        FROM pg_proc p
+        JOIN   pg_namespace n ON n.oid = p.pronamespace
+        WHERE p.proname='setting_get'
+        AND    n.nspname = 'public' -- 'public' by default
     ) THEN
         UPDATE entity_credit_account
            SET curr = (select s from unnest(string_to_array((setting_get('curr')).value, ':')) s limit 1)
          WHERE curr IS NULL;
         COMMIT;
-END IF;
+    END IF;
 END$DO$;
 
 BEGIN;
-UPDATE menu_node set position = (position * -1) - 1 
+UPDATE menu_node set position = (position * -1) - 1
  where parent IN (172, 156) and position > 1;
 UPDATE menu_node set position = position * -1 where position < 0;
 
@@ -239,7 +245,7 @@ BEGIN
     THEN
         ALTER TABLE person ADD COLUMN birthdate date;
         COMMIT;
-END IF;
+    END IF;
 END$DO$;
 
 DO $DO$
@@ -250,18 +256,18 @@ BEGIN
     THEN
         ALTER TABLE person ADD COLUMN personal_id text;
         COMMIT;
-END IF;
+    END IF;
 END$DO$;
 
 -- Removing batch printing menu options
 BEGIN;
-DELETE FROM menu_acl 
- WHERE node_id IN (select node_id from menu_attribute 
+DELETE FROM menu_acl
+ WHERE node_id IN (select node_id from menu_attribute
                     where attribute = 'module' and value = 'bp.pl');
-DELETE FROM menu_attribute 
- WHERE node_id IN (select node_id from menu_attribute 
+DELETE FROM menu_attribute
+ WHERE node_id IN (select node_id from menu_attribute
                     where attribute = 'module' and value = 'bp.pl');
-DELETE FROM menu_node 
+DELETE FROM menu_node
  WHERE id NOT IN (select node_id from menu_attribute);
 
 DELETE FROM menu_acl
@@ -273,7 +279,7 @@ DELETE FROM menu_attribute
  WHERE node_id IN (select node_id from menu_attribute
                     where attribute = 'menu' and node_id not in
                           (select parent from menu_node));
-DELETE FROM menu_node 
+DELETE FROM menu_node
  WHERE id NOT IN (select node_id from menu_attribute);
 COMMIT;
 
@@ -285,7 +291,7 @@ BEGIN
     THEN
         ALTER TABLE ar ADD COLUMN is_return bool default false;
         COMMIT;
-END IF;
+    END IF;
 END$DO$;
 
 DO $DO$
@@ -296,7 +302,7 @@ BEGIN
     THEN
         ALTER TABLE ap ADD COLUMN is_return bool default false;
         COMMIT;
-END IF;
+    END IF;
 END$DO$;
 
 BEGIN;
@@ -325,47 +331,62 @@ BEGIN
     THEN
         ALTER TABLE invoice ADD vendor_sku text;
         COMMIT;
-END IF;
+    END IF;
 END$DO$;
+
 BEGIN;
-UPDATE invoice SET vendor_sku = (select min(partnumber) from partsvendor
-                                  where parts_id = invoice.parts_id
-                                        AND credit_id = (
-                                                 select entity_credit_account
-                                                   from ap
-                                                  where ap.id = invoice.trans_id
-                                        )
-                                )
- WHERE trans_id in (select id from ap);
+    UPDATE invoice SET vendor_sku = (select min(partnumber) from partsvendor
+                                      where parts_id = invoice.parts_id
+                                            AND credit_id = (
+                                                     select entity_credit_account
+                                                       from ap
+                                                      where ap.id = invoice.trans_id
+                                            )
+                                    )
+     WHERE trans_id in (select id from ap);
 COMMIT;
 
 DO $DO$
 BEGIN
-IF EXISTS (
-    SELECT 1
-    FROM pg_constraint c
-    JOIN   pg_namespace n ON n.oid = c.connamespace
-    WHERE conname = 'ar_invnumber_key'
-    AND    n.nspname = 'public' -- 'public' by default
+    IF EXISTS (
+        SELECT 1
+        FROM pg_constraint c
+        JOIN   pg_namespace n ON n.oid = c.connamespace
+        WHERE conname = 'ar_invnumber_key'
+        AND    n.nspname = 'public' -- 'public' by default
     ) THEN
         ALTER TABLE ar DROP CONSTRAINT ar_invnumber_key;
         COMMIT;
-END IF;
+    END IF;
 END$DO$;
 
 DO $DO$
 BEGIN
-IF NOT EXISTS (
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint c
+        JOIN   pg_namespace n ON n.oid = c.connamespace
+        WHERE conname LIKE 'ar_check1' -- Will stop working is another constraint is aded before
+        AND    n.nspname = 'public' -- 'public' by default
+    ) THEN
+        ALTER TABLE ar ADD CHECK(invnumber is not null OR not approved);
+        COMMIT;
+    END IF;
+END$DO$;
+
+DO $DO$
+BEGIN
+    IF NOT EXISTS (
     SELECT 1
-    FROM   pg_class c
-    JOIN   pg_namespace n ON n.oid = c.relnamespace
-    WHERE  c.relname = 'ar_invnumber_key_p' AND relkind='i'
-    AND    n.nspname = 'public' -- 'public' by default
+    FROM   pg_indexes
+    WHERE  indexname = 'ar_invnumber_key_p'
+    AND    tablename='ar'
+    AND    schemaname = 'public'
     ) THEN
         ALTER TABLE ar ADD CHECK(invnumber is not null OR not approved);
         CREATE UNIQUE INDEX ar_invnumber_key_p ON ar(invnumber) where invnumber is not null;
         COMMIT;
-END IF;
+    END IF;
 END$DO$;
 
 DO $DO$
@@ -376,7 +397,7 @@ BEGIN
     THEN
         ALTER TABLE ar ADD setting_sequence TEXT;
         COMMIT;
-END IF;
+    END IF;
 END$DO$;
 
 BEGIN;
@@ -415,7 +436,7 @@ BEGIN
     THEN
         ALTER TABLE account_heading ADD COLUMN category CHAR(1);
         COMMIT;
-END IF;
+    END IF;
 END$DO$;
 
 BEGIN;
@@ -440,42 +461,43 @@ COMMIT;
 
 DO $DO$
 BEGIN
-IF NOT EXISTS (
-    SELECT 1
-    FROM   pg_class c
-    JOIN   pg_namespace n ON n.oid = c.relnamespace
-    WHERE  c.relname = 'business_unit_ac_entry_id_idx' AND relkind='i'
-    AND    n.nspname = 'public' -- 'public' by default
+    IF NOT EXISTS (
+        SELECT 1
+        FROM   pg_class c
+        JOIN   pg_namespace n ON n.oid = c.relnamespace
+        WHERE  c.relname = 'business_unit_ac_entry_id_idx' AND relkind='i'
+        AND    n.nspname = 'public' -- 'public' by default
     ) THEN
         CREATE INDEX business_unit_ac_entry_id_idx ON business_unit_ac (entry_id);
         COMMIT;
-END IF;
+    END IF;
 END$DO$;
+
 DO $DO$
 BEGIN
-IF NOT EXISTS (
-    SELECT 1
-    FROM   pg_class c
-    JOIN   pg_namespace n ON n.oid = c.relnamespace
-    WHERE  c.relname = 'business_unit_inv_entry_id_idx' AND relkind='i'
-    AND    n.nspname = 'public' -- 'public' by default
+    IF NOT EXISTS (
+        SELECT 1
+        FROM   pg_class c
+        JOIN   pg_namespace n ON n.oid = c.relnamespace
+        WHERE  c.relname = 'business_unit_inv_entry_id_idx' AND relkind='i'
+        AND    n.nspname = 'public' -- 'public' by default
     ) THEN
         CREATE INDEX business_unit_inv_entry_id_idx ON business_unit_inv(entry_id);
         COMMIT;
-END IF;
+    END IF;
 END$DO$;
 DO $DO$
 BEGIN
-IF NOT EXISTS (
-    SELECT 1
-    FROM   pg_class c
-    JOIN   pg_namespace n ON n.oid = c.relnamespace
-    WHERE  c.relname = 'business_unit_oitem_entry_id_idx' AND relkind='i'
-    AND    n.nspname = 'public' -- 'public' by default
+    IF NOT EXISTS (
+        SELECT 1
+        FROM   pg_class c
+        JOIN   pg_namespace n ON n.oid = c.relnamespace
+        WHERE  c.relname = 'business_unit_oitem_entry_id_idx' AND relkind='i'
+        AND    n.nspname = 'public' -- 'public' by default
     ) THEN
         CREATE INDEX business_unit_oitem_entry_id_idx ON business_unit_oitem(entry_id);
         COMMIT;
-END IF;
+    END IF;
 END$DO$;
 
 
@@ -541,7 +563,7 @@ COMMIT;
 
 BEGIN;
 UPDATE menu_node SET position = position * -1 where parent = 0 and position > 16;
-UPDATE menu_node SET position = 1 + (position * -1) 
+UPDATE menu_node SET position = 1 + (position * -1)
  where parent = 0 and position < 0;
 
 INSERT INTO menu_node (id, parent, position, label)
@@ -570,7 +592,7 @@ BEGIN
         ALTER TABLE recurring ADD COLUMN recurring_interval interval;
         UPDATE recurring SET recurring_interval = (repeat || ' ' || unit)::interval;
         COMMIT;
-END IF;
+    END IF;
 END$DO$;
 
 DO $DO$
@@ -581,7 +603,7 @@ BEGIN
     THEN
         ALTER TABLE recurring DROP COLUMN repeat;
         COMMIT;
-END IF;
+    END IF;
 END$DO$;
 
 DO $DO$
@@ -592,7 +614,7 @@ BEGIN
     THEN
         ALTER TABLE recurring DROP COLUMN unit;
         COMMIT;
-END IF;
+    END IF;
 END$DO$;
 
 END;

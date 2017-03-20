@@ -1,6 +1,6 @@
 =head1 NAME
 
-LedgerSMB::Scripts::setup
+LedgerSMB::Scripts::setup - web entry points for database administration
 
 =head1 SYNOPSIS
 
@@ -8,6 +8,8 @@ The workflows for creating new databases, updating old ones, and running
 management tasks.
 
 =head1 METHODS
+
+=over
 
 =cut
 
@@ -17,6 +19,9 @@ management tasks.
 # these are maintained inside the LedgerSMB::Database package.
 #
 package LedgerSMB::Scripts::setup;
+
+use strict;
+use warnings;
 
 use Locale::Country;
 use LedgerSMB::Auth;
@@ -29,10 +34,9 @@ use LedgerSMB::Sysconfig;
 use LedgerSMB::Template::DB;
 use LedgerSMB::Setting;
 use Try::Tiny;
-use strict;
-use Data::Dumper;
 
 my $logger = Log::Log4perl->get_logger('LedgerSMB::Scripts::setup');
+my $MINOR_VERSION = '1.4';
 
 sub __default {
 
@@ -131,16 +135,12 @@ my @login_actions_dispatch_table =
 sub login {
     use LedgerSMB::Locale;
     my ($request) = @_;
-    $logger->trace("\$request=$request \$request->{dbh}=$request->{dbh} request=".Data::Dumper::Dumper(\$request));
     if (!$request->{database}){
         list_databases($request);
         return;
     }
     my $database = _get_database($request);
-    $logger->trace("\$database=".Data::Dumper::Dumper(\$database));
     my $server_info = $database->server_version;
-    $logger->trace("\$server_info=".Data::Dumper::Dumper(\$server_info));
-    
     my $version_info = $database->get_info();
 
     _init_db($request);
@@ -154,28 +154,27 @@ sub login {
     } else {
 	my $dispatch_entry;
 
-	foreach $dispatch_entry (@login_actions_dispatch_table) {
-	    if ($version_info->{appname} eq $dispatch_entry->{appname}
-		&& ($version_info->{version} eq $dispatch_entry->{version}
-		    || ! defined $dispatch_entry->{version})) {
-		my $field;
+        foreach $dispatch_entry (@login_actions_dispatch_table) {
+            if ($version_info->{appname} eq $dispatch_entry->{appname}
+                && ($version_info->{version} eq $dispatch_entry->{version}
+                    || ! defined $dispatch_entry->{version})) {
+                my $field;
+                foreach $field (qw|operation message next_action|) {
+                    $request->{$field} =
+                       $request->{_locale}->text($dispatch_entry->{$field});
+                }
 
-		foreach $field (qw|operation message next_action|) {
-		    $request->{$field} =
-		       $request->{_locale}->text($dispatch_entry->{$field});
-		}
-		last;
-	    }
-	}
+                last;
+            }
+        }
 
-
-	if (! defined $request->{next_action}) {
-	    $request->{message} = $request->{_locale}->text(
-		'Unknown database found.'
-		);
-	    $request->{operation} = $request->{_locale}->text('Cancel?');
-	    $request->{next_action} = 'cancel';
-	} elsif ($request->{next_action} eq 'rebuild_modules') {
+        if (! defined $request->{next_action}) {
+            $request->{message} = $request->{_locale}->text(
+                'Unknown database found.'
+                );
+            $request->{operation} = $request->{_locale}->text('Cancel?');
+            $request->{next_action} = 'cancel';
+        } elsif ($request->{next_action} eq 'rebuild_modules') {
             # we found the current version
             # check we don't have stale migrations around
             my $dbh = $database->dbh();
@@ -194,9 +193,9 @@ sub login {
         }
     }
     my $template = LedgerSMB::Template->new(
-            path => 'UI/setup',
-            template => 'confirm_operation',
-	    format => 'HTML',
+        path => 'UI/setup',
+        template => 'confirm_operation',
+        format => 'HTML',
     );
     $template->render($request);
 
@@ -266,12 +265,12 @@ Copies db to the name of $request->{new_name}
 sub copy_db {
     my ($request) = @_;
     my $database = _get_database($request);
-    my $rc = $database->copy($request->{new_name}) 
+    my $rc = $database->copy($request->{new_name})
            || die 'An error occurred. Please check your database logs.' ;
     my $dbh = LedgerSMB::Database->new(
            {%$database, (company_name => $request->{new_name})}
     )->dbh;
-    $dbh->prepare("SELECT setting__set('role_prefix', 
+    $dbh->prepare("SELECT setting__set('role_prefix',
                                coalesce((setting_get('role_prefix')).value, ?))"
     )->execute("lsmb_$database->{company_name}__");
     $dbh->commit;
@@ -318,7 +317,7 @@ sub _begin_backup {
 
 =item run_backup
 
-Runs the backup.  If backup_type is set to email, emails the 
+Runs the backup.  If backup_type is set to email, emails the
 
 =cut
 
@@ -332,7 +331,7 @@ sub run_backup {
     my $mimetype;
 
     if ($request->{backup} eq 'roles'){
-       $backupfile = $database->base_backup; 
+       $backupfile = $database->base_backup;
        $mimetype   = 'text/x-sql';
     } elsif ($request->{backup} eq 'db'){
        $backupfile = $database->db_backup;
@@ -345,17 +344,18 @@ sub run_backup {
 
     if ($request->{backup_type} eq 'email'){
         my $csettings = $LedgerSMB::Company_Config::settings;
-	my $mail = new LedgerSMB::Mailer(
-		from          => $LedgerSMB::Sysconfig::backup_email_from,
-		to            => $request->{email},
-		subject       => "Email of Backup",
-		message       => 'The Backup is Attached',
-	);
-	$mail->attach(
+        my $mail = new LedgerSMB::Mailer(
+            from          => $LedgerSMB::Sysconfig::backup_email_from,
+            to            => $request->{email},
+            subject       => "Email of Backup",
+            message       => 'The Backup is Attached',
+            );
+        $mail->attach(
             mimetype => $mimetype,
             filename => $backupfile,
             file     => $backupfile,
-	);        $mail->send;
+            );
+        $mail->send;
         unlink $backupfile;
         my $template = LedgerSMB::Template->new(
             path => 'UI/setup',
@@ -382,7 +382,7 @@ sub run_backup {
     } else {
         $request->error($request->{_locale}->text("Don't know what to do with backup"));
     }
- 
+
 }
 
 =item revert_migration
@@ -406,7 +406,7 @@ sub revert_migration {
     $dbh->do("DROP SCHEMA public CASCADE");
     $dbh->do("ALTER SCHEMA $src_schema RENAME TO public");
     $dbh->commit();
-    
+
     my $template = LedgerSMB::Template->new(
         path => 'UI/setup',
         template => 'complete_migration_revert',
@@ -415,7 +415,7 @@ sub revert_migration {
 
     $template->render($request);
 }
-   
+
 =item _get_template_directories
 
 Returns set of template directories available.
@@ -458,7 +458,7 @@ sub template_screen {
 =item load_templates
 
 This bulk loads the templates.  Expectated inputs are template_dir and
-optionally only_templates (which if true returns to the confirmation screen 
+optionally only_templates (which if true returns to the confirmation screen
 and not the user creation screen.
 
 =cut
@@ -512,11 +512,11 @@ sub _get_linked_accounts {
 
 my %info_applicable_for_upgrade = (
     'default_ar' => [ 'ledgersmb/1.2',
-		      'sql-ledger/2.7', 'sql-ledger/2.8', 'sql-ledger/3.0' ],
+                      'sql-ledger/2.7', 'sql-ledger/2.8', 'sql-ledger/3.0' ],
     'default_ap' => [ 'ledgersmb/1.2',
-		      'sql-ledger/2.7', 'sql-ledger/2.8', 'sql-ledger/3.0' ],
+                      'sql-ledger/2.7', 'sql-ledger/2.8', 'sql-ledger/3.0' ],
     'default_country' => [ 'ledgersmb/1.2',
-			   'sql-ledger/2.7', 'sql-ledger/2.8', 'sql-ledger/3.0' ]
+                           'sql-ledger/2.7', 'sql-ledger/2.8', 'sql-ledger/3.0' ]
     );
 
 =item applicable_for_upgrade
@@ -524,7 +524,7 @@ my %info_applicable_for_upgrade = (
 Checks settings for applicability for a given upgrade, for the form.
 
 =cut
-	
+
 sub applicable_for_upgrade {
     my ($info, $upgrade) = @_;
 
@@ -571,7 +571,7 @@ sub upgrade_info {
 	    sort { $a->{country} cmp $b->{country} } @{$request->{countries}};
 	unshift @{$request->{countries}}, {};
     }
-    
+
     my $retval = 0;
     foreach my $key (keys %info_applicable_for_upgrade) {
 	$retval++
@@ -580,7 +580,7 @@ sub upgrade_info {
     return $retval;
 }
 
-=item upgrade 
+=item upgrade
 
 
 =cut
@@ -603,9 +603,9 @@ sub upgrade {
     my $locale = $request->{_locale};
 
     for my $check (LedgerSMB::Upgrade_Tests->get_tests()){
-        next if ($check->min_version gt $dbinfo->{version}) 
-	    || ($check->max_version lt $dbinfo->{version})
-	    || ($check->appname ne $dbinfo->{appname});
+        next if ($check->min_version gt $dbinfo->{version})
+            || ($check->max_version lt $dbinfo->{version})
+            || ($check->appname ne $dbinfo->{appname});
         my $sth = $request->{dbh}->prepare($check->test_query);
         $sth->execute()
 	    or die "Failed to execute pre-migration check " . $check->name;
@@ -630,7 +630,7 @@ sub upgrade {
         $request->{dbh}->begin_work();
 
         __PACKAGE__->can($upgrade_run_step{$upgrade_type})->($request);
-    } 
+    }
 
 }
 
@@ -645,47 +645,48 @@ sub _failed_check {
     my $count = 1;
     my $hiddens = {table => $check->table,
                     edit => $check->column,
-			   id_column => $check->{id_column},
-			    id_where => $check->{id_where},
+               id_column => $check->{id_column},
+                id_where => $check->{id_where},
                 database => $request->{database}};
     my $header = {};
     for (@{$check->display_cols}){
         $header->{$_} = $_;
     }
-	my @selectable_values = ();
-	if ( $check->selectable_values ) {
-		my $sth = $request->{dbh}->prepare($check->selectable_values);
-		$sth->execute()
-		or die "Failed to execute pre-migration check " . $check->name;
-		while (my $row = $sth->fetchrow_hashref('NAME_lc')) {
-			push @selectable_values, { value => $row->{value},
-										text => $row->{id}
-			};
-		}
-		$hiddens->{selectable_values} = \@selectable_values;
-	}
-    while (my $row = $sth->fetchrow_hashref('NAME_lc')){
-		  $row->{$check->column} = ( $check->column && $check->selectable_values )
-								 ? { select => {
-												name => $check->column . "_$row->{trans_id}",
-												id => $row->{trans_id},
-												options => \@selectable_values,
-												default_blank => 1,
-								   }}
-								 : { input => {
-												name => $check->column . "_$row->{id}",
-												value => $row->{$check->column},
-												type => 'text',
-												size => 15,
-								   }};
-          push @$rows, $row;
-          $hiddens->{"id_$count"} = $row->{$check->id_column},
-          ++$count;
+    my @selectable_values = ();
+    if ( $check->selectable_values ) {
+        my $sth = $request->{dbh}->prepare($check->selectable_values);
+        $sth->execute()
+        or die "Failed to execute pre-migration check " . $check->name;
+        while (my $row = $sth->fetchrow_hashref('NAME_lc')) {
+            push @selectable_values, { value => $row->{value},
+                                        text => $row->{id}
+            };
+        }
+        $hiddens->{selectable_values} = \@selectable_values;
+    }
+    while (my $row = $sth->fetchrow_hashref('NAME_lc')) {
+        $row->{$check->column} =
+           ( $check->column && $check->selectable_values )
+           ? { select => {
+                   name => $check->column . "_$row->{trans_id}",
+                   id => $row->{trans_id},
+                   options => \@selectable_values,
+                   default_blank => 1,
+           } }
+           : { input => {
+                   name => $check->column . "_$row->{id}",
+                   value => $row->{$check->column},
+                   type => 'text',
+                   size => 15,
+           }};
+        push @$rows, $row;
+        $hiddens->{"id_$count"} = $row->{$check->id_column},
+        ++$count;
    }
     $sth->finish();
 
     $hiddens->{count} = $count;
-#    $hiddens->{edit} = $check->column;	# Why again. Set in module beginning
+    $hiddens->{edit} = $check->column;
 
     my $buttons = [
            { type => 'submit',
@@ -707,7 +708,7 @@ sub _failed_check {
 
 =item fix_tests
 
-Handles input from the failed test function and then re-runs the migrate db 
+Handles input from the failed test function and then re-runs the migrate db
 script.
 
 =cut
@@ -725,7 +726,7 @@ sub fix_tests{
     my $sth = $request->{dbh}->prepare(
             "UPDATE $table SET $edit = ? where $where = ?"
     );
-    
+
     for my $count (1 .. $request->{count}){
         warn $count;
         my $id = $request->{"id_$count"};
@@ -734,7 +735,7 @@ sub fix_tests{
     }
     $sth->finish();
     $request->{dbh}->commit;
-#    $request->{dbh}->begin_work;
+    $request->{dbh}->begin_work;
     upgrade($request);
 }
 
@@ -800,7 +801,7 @@ sub select_coa {
             map +{ code => $_ },
             sort(grep !/^(\.|[Ss]ample.*)/,
                  readdir(COA));
-        closedir(COA); 
+        closedir(COA);
     }
 
     my $template = LedgerSMB::Template->new(
@@ -808,7 +809,7 @@ sub select_coa {
             template => 'select_coa',
 	    format => 'HTML',
     );
-    $template->render($request);    
+    $template->render($request);
 }
 
 
@@ -842,11 +843,11 @@ sub _render_new_user {
 
     # One thing to remember here is that the setup.pl does not get the
     # benefit of the automatic db connection.  So in order to build this
-    # form, we have to manage that ourselves. 
+    # form, we have to manage that ourselves.
     #
     # However we get the benefit of having had to set the environment
     # variables for the Pg connection above, so don't need to pass much
-    # info. 
+    # info.
     #
     # Also I am opting to use the lower-level call_procedure interface
     # here in order to avoid creating objects just to get argument
@@ -856,11 +857,11 @@ sub _render_new_user {
     _init_db($request);
     $request->{dbh}->{AutoCommit} = 0;
 
-    @{$request->{salutations}} 
-    = $request->call_procedure(procname => 'person__list_salutations' ); 
-    
-    @{$request->{countries}} 
-    = $request->call_procedure(procname => 'location_list_country' ); 
+    @{$request->{salutations}}
+    = $request->call_procedure(procname => 'person__list_salutations' );
+
+    @{$request->{countries}}
+    = $request->call_procedure(procname => 'location_list_country' );
     for my $country (@{$request->{countries}}){
         if (lc($request->{coa_lc}) eq lc($country->{short_name})){
            $request->{country_id} = $country->{id};
@@ -918,11 +919,11 @@ sub save_user {
             );
            $request->{pls_import} = 1;
 
-           @{$request->{salutations}} 
+           @{$request->{salutations}}
             = $request->call_procedure(procname => 'person__list_salutations' );
-         
-           @{$request->{countries}} 
-              = $request->call_procedure(procname => 'location_list_country' ); 
+
+           @{$request->{countries}}
+              = $request->call_procedure(procname => 'location_list_country' );
 
            my $locale = $request->{_locale};
 
@@ -947,7 +948,7 @@ sub save_user {
                 $request->call_procedure(procname => 'admin__get_roles')
          ){
              $request->call_procedure(procname => 'admin__add_user_to_role',
-                                      args => [ $request->{username}, 
+                                      args => [ $request->{username},
                                                 $role->{rolname}
                                               ]);
          }
@@ -960,7 +961,7 @@ sub save_user {
         );
    }
    $request->{dbh}->commit;
-   $request->{dbh}->begin_work;
+#    $dbh->begin_work; # Already in a transaction
 
    rebuild_modules($request);
 }
@@ -978,18 +979,18 @@ sub process_and_run_upgrade_script {
     my $rc;
 
     $dbh->do("CREATE SCHEMA $LedgerSMB::Sysconfig::db_namespace")
-	or die "Failed to create schema $LedgerSMB::Sysconfig::dbn_amespace (" . $dbh->errstr . ")";
+	or die "Failed to create schema $LedgerSMB::Sysconfig::db_namespace (" . $dbh->errstr . ")";
     $dbh->commit;
-    $dbh->begin_work;
+#    $dbh->begin_work; # Already in a transaction
 
     $database->load_base_schema({
 	log     => $temp . "_stdout",
 	errlog  => $temp . "_stderr"
-				});
+    });
     $database->load_modules('LOADORDER', {
 	log     => $temp . "_stdout",
 	errlog  => $temp . "_stderr"
-			    });
+    });
 
     $dbh->do(qq(
        INSERT INTO defaults (setting_key, value)
@@ -1000,10 +1001,10 @@ sub process_and_run_upgrade_script {
                      VALUES ('migration_src_schema', '$src_schema')
      ));
     $dbh->commit;
-    $dbh->begin_work;
+#    $dbh->begin_work; # Already in a transaction
 
     my $dbtemplate = LedgerSMB::Template->new(
-        user => {}, 
+        user => {},
         path => 'sql/upgrade',
         template => $template,
         no_auto_output => 1,
@@ -1039,7 +1040,7 @@ sub process_and_run_upgrade_script {
                 from users WHERE username IN (select rolname from pg_roles)");
 
     $dbh->commit;
-    $dbh->begin_work;
+#    $dbh->begin_work; # Already in a transaction
 }
 
 
@@ -1060,7 +1061,7 @@ sub run_upgrade {
     $dbh->do("ALTER SCHEMA $LedgerSMB::Sysconfig::db_namespace RENAME TO lsmb$v");
 
     process_and_run_upgrade_script($request, $database, "lsmb$v",
-				   "$dbinfo->{version}-1.4");
+                   "$dbinfo->{version}-$MINOR_VERSION");
 
     if ($v ne '1.2'){
 	$request->{only_templates} = 1;
@@ -1089,7 +1090,7 @@ sub run_sl28_migration {
     # process_and_run_upgrade_script commits the transaction
 
     process_and_run_upgrade_script($request, $database, "sl28",
-				   'sl2.8-1.4');
+                   "sl2.8-$MINOR_VERSION");
 
     create_initial_user($request);
 }
@@ -1109,7 +1110,7 @@ sub run_sl30_migration {
     # process_and_run_upgrade_script commits the transaction
 
     process_and_run_upgrade_script($request, $database, "sl30",
-				   'sl3.0-1.4');
+                                   "sl3.0-$MINOR_VERSION");
 
     create_initial_user($request);
 }
@@ -1123,11 +1124,11 @@ sub create_initial_user {
     my ($request) = @_;
 
    my $database = _init_db($request) unless $request->{dbh};
-   @{$request->{salutations}} 
-    = $request->call_procedure(procname => 'person__list_salutations' ); 
-          
-   @{$request->{countries}} 
-    = $request->call_procedure(procname => 'location_list_country' ); 
+   @{$request->{salutations}}
+    = $request->call_procedure(procname => 'person__list_salutations' );
+
+   @{$request->{countries}}
+    = $request->call_procedure(procname => 'location_list_country' );
 
    my $locale = $request->{_locale};
 
@@ -1170,10 +1171,10 @@ sub edit_user_roles {
 
     $user_obj->{username} = $user_rec[0]->{username};
 
-    my $template = LedgerSMB::Template->new( 
-        user => $request->{_user}, 
-        template => 'edit_user', 
-        format => 'HTML', 
+    my $template = LedgerSMB::Template->new(
+        user => $request->{_user},
+        template => 'edit_user',
+        format => 'HTML',
         path=>'UI/setup',
     );
     my $template_data = {
@@ -1181,7 +1182,7 @@ sub edit_user_roles {
                            user => $user_obj,
                           roles => @all_roles,
             };
-    
+
     $template->render($template_data);
 }
 
@@ -1221,7 +1222,7 @@ sub reset_password {
     edit_user_roles($request);
 }
 
-    
+
 
 =item cancel
 
@@ -1249,7 +1250,7 @@ sub rebuild_modules {
     $database->load_modules('LOADORDER', {
 	log     => $temp . "_stdout",
 	errlog  => $temp . "_stderr"
-			    });
+    });
 
     my $dbh = $request->{dbh};
     my $sth = $dbh->prepare(
@@ -1264,7 +1265,7 @@ sub rebuild_modules {
 
 }
 
-=item complete 
+=item complete
 
 Gets the info and adds shows the complete screen.
 
@@ -1288,7 +1289,7 @@ sub complete {
 
 =head1 COPYRIGHT
 
-Copyright (C) 2011 LedgerSMB Core Team.  This file is licensed under the GNU 
+Copyright (C) 2011 LedgerSMB Core Team.  This file is licensed under the GNU
 General Public License version 2, or at your option any later version.  Please
 see the included License.txt for details.
 
