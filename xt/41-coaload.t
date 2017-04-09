@@ -5,6 +5,10 @@ use warnings;
 
 use lib 'xt/41-coaload';
 
+use Test::Requires {
+    'Parallel::ForkManager' => 0,
+};
+
 use Test::Most; # To check missing
 
 use Test::Class::Moose::Load qw(xt/41-coaload);
