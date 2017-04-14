@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use Test::More tests => 208;
 use File::Find;
+use Class::Unload;
 
 my @on_disk;
 sub collect {
@@ -17,7 +18,6 @@ sub collect {
     push @on_disk, $module
 }
 find(\&collect, 'lib/LedgerSMB/', 'old/lib/LedgerSMB/');
-
 
 my @exception_modules =
     (
@@ -52,32 +52,51 @@ my @exception_modules =
 # USE STATEMENTS BELOW AS HELPERS TO REFRESH THE TABLE
 #use Data::Dumper;
 #print STDERR Dumper(\@on_disk);
+# Old code isn't unloadable
+my @oldmodules =
+    (
+          'LedgerSMB::AA', 'LedgerSMB::AM', 'LedgerSMB::IC', 'LedgerSMB::IR',
+          'LedgerSMB::GL', 'LedgerSMB::OE', 'LedgerSMB::PE',
+          'LedgerSMB::IS', 'LedgerSMB::Form', 'LedgerSMB::old_code',
+          'LedgerSMB::PGOld',
+    );
+# Suspect modules, those should be unloadabla it we want them to behave as
+# libraries
+my @suspect =
+    (
+          'LedgerSMB::File', 'LedgerSMB::PGObject', 'LedgerSMB::Entity',
+          'LedgerSMB::Report', 'LedgerSMB::Report::File',
+          'LedgerSMB::Business_Unit', 'LedgerSMB::Business_Unit_Class',
+          'LedgerSMB::Report::Hierarchical',
+          'LedgerSMB::Report::Axis',
+          'LedgerSMB::Report::PNL',
+          'LedgerSMB::Budget',
+          'LedgerSMB::Scripts::reports',
+          'LedgerSMB::Part',
+          'LedgerSMB::DBObject::Admin',
+    );
 my @modules =
     (
           'LedgerSMB::App_State',
           'LedgerSMB::DBH', 'LedgerSMB::I18N',
           'LedgerSMB::Locale', 'LedgerSMB::Mailer', 'LedgerSMB::Session',
-          'LedgerSMB::User', 'LedgerSMB::Entity',
-          'LedgerSMB::GL', 'LedgerSMB::Group', 'LedgerSMB::Timecard',
-          'LedgerSMB::PE', 'LedgerSMB::App_Module', 'LedgerSMB::Budget',
-          'LedgerSMB::Business_Unit', 'LedgerSMB::Business_Unit_Class',
+          'LedgerSMB::User',
+          'LedgerSMB::Group', 'LedgerSMB::Timecard',
+          'LedgerSMB::App_Module',
           'LedgerSMB::MooseTypes', 'LedgerSMB::PriceMatrix',
-          'LedgerSMB::File', 'LedgerSMB::Report',
           'LedgerSMB::Template', 'LedgerSMB::Company_Config',
           'LedgerSMB::Contact', 'LedgerSMB::Database',
-          'LedgerSMB::PGObject', 'LedgerSMB::Auth',
-          'LedgerSMB::AA', 'LedgerSMB::AM', 'LedgerSMB::Batch',
-          'LedgerSMB::IC', 'LedgerSMB::IR', 'LedgerSMB::PGDate',
-          'LedgerSMB::PGNumber', 'LedgerSMB::PGOld', 'LedgerSMB::Request',
+          'LedgerSMB::Auth',
+          'LedgerSMB::Batch', 'LedgerSMB::PGDate',
+          'LedgerSMB::PGNumber', 'LedgerSMB::Request',
           'LedgerSMB::Setting', 'LedgerSMB::Tax', 'LedgerSMB::Upgrade_Tests',
-          'LedgerSMB::Form', 'LedgerSMB::IS',
-          'LedgerSMB::Num2text', 'LedgerSMB::OE', 'LedgerSMB::Auth::DB',
+          'LedgerSMB::Num2text', 'LedgerSMB::Auth::DB',
           'LedgerSMB::DBObject::Asset_Class', 'LedgerSMB::DBObject::Draft',
           'LedgerSMB::DBObject::EOY', 'LedgerSMB::DBObject::Part',
           'LedgerSMB::DBObject::Pricelist', 'LedgerSMB::DBObject::TaxForm',
           'LedgerSMB::DBObject::TransTemplate', 'LedgerSMB::DBObject::Menu',
           'LedgerSMB::DBObject::User', 'LedgerSMB::DBObject::Account',
-          'LedgerSMB::DBObject::Admin', 'LedgerSMB::DBObject::Asset',
+          'LedgerSMB::DBObject::Asset',
           'LedgerSMB::DBObject::Asset_Report', 'LedgerSMB::DBObject::Date',
           'LedgerSMB::DBObject::Reconciliation',
           'LedgerSMB::Report::Listings::TemplateTrans',
@@ -96,7 +115,6 @@ my @modules =
           'LedgerSMB::File::Transaction',
           'LedgerSMB::Inventory::Adjust',
           'LedgerSMB::Inventory::Adjust_Line',
-          'LedgerSMB::old_code', 'LedgerSMB::Part',
           'LedgerSMB::Payroll::Deduction_Type',
           'LedgerSMB::Payroll::Income_Type',
           'LedgerSMB::PSGI::Preloads',
@@ -104,12 +122,11 @@ my @modules =
           'LedgerSMB::Reconciliation::CSV',
           'LedgerSMB::Reconciliation::ISO20022',
           'LedgerSMB::FileFormats::ISO20022::CAMT053',
-          'LedgerSMB::Report::Axis',
-          'LedgerSMB::Report::File', 'LedgerSMB::Report::GL',
+          'LedgerSMB::Report::GL',
           'LedgerSMB::Report::Orders', 'LedgerSMB::Report::Timecards',
           'LedgerSMB::Report::Balance_Sheet', 'LedgerSMB::Report::Dates',
           'LedgerSMB::Report::Trial_Balance', 'LedgerSMB::Report::Aging',
-          'LedgerSMB::Report::COA', 'LedgerSMB::Report::PNL',
+          'LedgerSMB::Report::COA',
           'LedgerSMB::Report::Assets::Net_Book_Value',
           'LedgerSMB::Report::Budget::Search',
           'LedgerSMB::Report::Budget::Variance',
@@ -118,7 +135,6 @@ my @modules =
           'LedgerSMB::Report::Contact::Search',
           'LedgerSMB::Report::File::Incoming',
           'LedgerSMB::Report::File::Internal',
-          'LedgerSMB::Report::Hierarchical',
           'LedgerSMB::Report::Inventory::Activity',
           'LedgerSMB::Report::Inventory::Partsgroups',
           'LedgerSMB::Report::Inventory::Pricegroups',
@@ -168,7 +184,7 @@ my @modules =
           'LedgerSMB::Scripts::invoice', 'LedgerSMB::Scripts::journal',
           'LedgerSMB::Scripts::login', 'LedgerSMB::Scripts::order',
           'LedgerSMB::Scripts::payment', 'LedgerSMB::Scripts::payroll',
-          'LedgerSMB::Scripts::reports', 'LedgerSMB::Scripts::setup',
+          'LedgerSMB::Scripts::setup',
           'LedgerSMB::Scripts::template', 'LedgerSMB::Scripts::transtemplate',
           'LedgerSMB::Scripts::user', 'LedgerSMB::Scripts::contact',
           'LedgerSMB::Scripts::drafts', 'LedgerSMB::Scripts::recon',
@@ -185,6 +201,8 @@ my @modules =
 
 my %modules;
 $modules{$_} = 1 for @modules;
+$modules{$_} = 1 for @suspect;
+$modules{$_} = 1 for @oldmodules;
 $modules{$_} = 1 for @exception_modules;
 
 my @untested_modules;
@@ -198,8 +216,23 @@ ok(scalar(@untested_modules) eq 0, 'All on-disk modules are tested')
 
 use_ok('LedgerSMB::Sysconfig')
     || BAIL_OUT('System Configuration could be loaded!');
-for my $module (@modules) {
+
+sub check_module {
+    my $module = shift;
+    my $unload = shift // 1;
     use_ok($module);
+    diag "Suspect module $_, should be unloadable" if !$unload;
+    Class::Unload->unload( $module ) if $unload;
+}
+
+for (sort @oldmodules) {
+    check_module($_,0);
+}
+for (sort @suspect) {
+    check_module($_,0);
+}
+for (sort @modules) {
+    check_module($_);
 }
 SKIP: {
     eval{ require Template::Plugin::Latex} ||
@@ -207,7 +240,7 @@ SKIP: {
     eval{ require Template::Latex} ||
     skip 'Template::Latex not installed', 1;
 
-    use_ok('LedgerSMB::Template::LaTeX');
+    check_module('LedgerSMB::Template::LaTeX');
 }
 
 SKIP: {
@@ -217,29 +250,30 @@ SKIP: {
     eval { require OpenOffice::OODoc };
     skip 'OpenOffice::OODoc not installed', 1 if $@;
 
-    use_ok('LedgerSMB::Template::ODS');
+    check_module('LedgerSMB::Template::ODS');
 }
 
 SKIP: {
         eval { require XML::Simple };
 
         skip 'XML::Simple not installed', 1 if $@;
-        use_ok('LedgerSMB::REST_Format::xml');
+        check_module('LedgerSMB::REST_Format::xml');
 }
 
 SKIP: {
         eval { require CGI::Emulate::PSGI };
 
         skip 'CGI::Emulate::PSGI not installed', 1 if $@;
-        use_ok('LedgerSMB::PSGI');
+        check_module('LedgerSMB::PSGI');
 }
 
 SKIP: {
     eval { require X12::Parser };
 
     skip 'X12::Parser not installed', 3 if $@;
-    for ('LedgerSMB::X12', 'LedgerSMB::X12::EDI850', 'LedgerSMB::X12::EDI894') {
-        use_ok($_);
+    check_module('LedgerSMB::X12',0);
+    for ('LedgerSMB::X12::EDI850', 'LedgerSMB::X12::EDI894') {
+        check_module($_);
     }
 }
 
