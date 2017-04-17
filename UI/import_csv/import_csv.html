@@ -44,17 +44,17 @@
                  value = request.description
                  } ?>
         </div>
-        <?lsmb IF request.type == "gl" || request.type == "inventory"  ?>
-        <div class="inputrow" id="daterow">
-          <?lsmb PROCESS input element_data = {
-                 type = "text"
-                 class = "date"
-                 title = text("Transaction Date") #'
-                 label = "_none_"
-                 name = "transdate"
-                 value = request.transdate
-                 size = 12
-                 } ?>
+        <?lsmb IF request.transdate ?>
+            <div class="inputrow" id="daterow">
+              <?lsmb PROCESS input element_data = {
+                     type = "text"
+                     class = "date"
+                     title = text("Transaction Date") #'
+                     label = "_none_"
+                     name = "transdate"
+                     value = request.transdate
+                     size = 12
+                     } ?>
         </div>
         <?lsmb END; ?>
       </div>
