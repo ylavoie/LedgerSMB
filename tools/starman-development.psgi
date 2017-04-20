@@ -1,10 +1,7 @@
-#!/usr/bin/plackup 
+#!/usr/bin/plackup
 
 BEGIN {
-    if ( $ENV{'LSMB_WORKINGDIR'}
-         && -f "$ENV{'LSMB_WORKINGDIR'}/lib/LedgerSMB.pm" ) {
-        chdir $ENV{'LSMB_WORKINGDIR'};
-    }    if ( $ENV{PLACK_ENV} && $ENV{PLACK_ENV} eq 'development' ) {
+    if ( $ENV{PLACK_ENV} && $ENV{PLACK_ENV} eq 'development' ) {
         $ENV{PLACK_SERVER}       = 'Standalone';
         $ENV{METACPAN_WEB_DEBUG} = 1;
     }
@@ -12,10 +9,12 @@ BEGIN {
 
 package LedgerSMB::FCGI;
 
+no lib '.';
+
 use FindBin;
+use lib $FindBin::Bin . '/..'; # For our 'old code'-"require"s
 use lib $FindBin::Bin . '/../lib';
 use lib $FindBin::Bin . '/../old/lib';
-use CGI::Emulate::PSGI;
 
 # Application specific
 use LedgerSMB;
@@ -34,14 +33,14 @@ use Plack::Builder;
 
 # Development specific
 use Plack::Middleware::Debug::Log4perl;
-use Plack::Middleware::InteractiveDebugger;
+#use Plack::Middleware::InteractiveDebugger;
 #use Plack::Middleware::Debug::TemplateToolkit;
 
 Log::Log4perl::init(\$LedgerSMB::Sysconfig::log4perl_config);
 
 builder {
 
-    enable 'InteractiveDebugger';
+#    enable 'InteractiveDebugger';
 
 #    enable 'ContentLength';
 
