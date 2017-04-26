@@ -227,6 +227,9 @@ END # BLOCK -?>
 <?lsmb END #BLOCK ?>
 
 <?lsmb- BLOCK date_period_div ?>
+    <?lsmb
+        IF !required.defined(); required = 'false';         END;
+    ?>
         <div class="input_row">
           <div class="input_group">
               <label><?lsmb text('Period') ?></label>
@@ -237,12 +240,14 @@ END # BLOCK -?>
                 PROCESS select element_data = {
                        name = "from_month"
                        id = "from_month"
+                       required=required
                        options = all_months};
 
                 PROCESS select element_data = {
                        name="from_year"
                        id="from_year"
                        options = all_years
+                       required=required
                        text_attr = "date_get_all_years"
                        value_attr = "date_get_all_years"};
 

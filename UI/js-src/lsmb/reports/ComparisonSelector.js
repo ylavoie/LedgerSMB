@@ -47,12 +47,22 @@ define(["dojo/_base/declare",
                           }));
                    this._update_display('');
                },
+               _set_required: function(domNode,value) {
+                   /*
+                   var dn = dom.byId(domNode);
+                   var dr = registry.findWidgets(dn);
+                   for ( var i = 0 ; i < dr.count ; i++ )
+                      dr[i].set("required", value);
+                  */
+               },
                _update_display: function(count) {
                    var self = this;
 
                    if (count === "" || this.mode === "by-periods") {
                        style.set(dom.byId("comparison_dates"),
                                  "display", "none");
+                       self._set_required("comparison_dates", false);
+                       self._set_required("comparison-periods", true);
                        return;
                    }
                    else {
@@ -60,6 +70,8 @@ define(["dojo/_base/declare",
                        if (isNaN(count)) return; // invalid input
 
                        style.set(dom.byId("comparison_dates"), "display", "");
+                       self._set_required("comparison_dates", true);
+                       self._set_required("comparison-periods", false);
                        for (var i = 1; i <= 9; i++) {
                            style.set(dom.byId("comparison_dates_" + i),
                                      "display", (i <= count) ? "" : "none");
