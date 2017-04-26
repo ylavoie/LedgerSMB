@@ -133,6 +133,7 @@ sub process {
     my $arghash = $parent->get_template_args($extension,$binmode);
     my $output = "$parent->{outputfile}";
     $output =~ s/$extension/$format/;
+    $output .= '.' . $format if $output !~ /\.[a-z]$/;
     $arghash->{LATEX_FORMAT} = $format;
 
     $Template::Latex::DEBUG = 1 if $parent->{debug};
