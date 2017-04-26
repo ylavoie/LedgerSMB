@@ -187,6 +187,9 @@
 <?lsmb # SELECT ELEMENT ?>
 <?lsmb BLOCK select ?>
   <?lsmb IF element_data;  # Only process element if one exists.
+              IF !element_data.required.defined();
+                  element_data.required = 'false';
+              END;
               IF !element_data.title.defined();
                   element_data.title = element_data.label;
               END; ?>
