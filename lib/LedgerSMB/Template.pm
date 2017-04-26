@@ -198,6 +198,9 @@ sub available_formats {
     if ($LedgerSMB::Sysconfig::template_xlsx){
         push @retval, 'XLSX';
     }
+    if ($LedgerSMB::Sysconfig::template_csv){
+        push @retval, 'CSV';
+    }
     if ($LedgerSMB::Sysconfig::template_ods){
         push @retval, 'ODS';
     }
