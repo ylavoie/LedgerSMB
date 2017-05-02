@@ -132,6 +132,7 @@ sub _format_cleanup_handler {
     my ($t, $format) = @_;
 }
 
+use Data::Dumper;
 sub _xls_process {
     my ($filename, $template) = @_;
 
@@ -161,7 +162,6 @@ sub _xls_process {
         );
     $parser->parse($template);
     _handle_subtree($parser->root);
-    #$parser->purge;
     $workbook->close;
 }
 

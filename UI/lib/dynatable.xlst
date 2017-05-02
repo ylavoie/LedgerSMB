@@ -1,15 +1,14 @@
 <?lsmb- BLOCK dynatable;
 
-ROWCOUNT = 1;
+    ROWCOUNT = 1;
 
-IF tbody.rows.size;
-  ROWCOUNT = ROWCOUNT + tbody.rows.size;
-END;
+    IF tbody.rows.size;
+      ROWCOUNT = ROWCOUNT + tbody.rows.size;
+    END;
 
-IF tfoot.rows.size;
-  ROWCOUNT = ROWCOUNT + tbody.rows.size;
-END;
-
+    IF tfoot.rows.size;
+      ROWCOUNT = ROWCOUNT + tbody.rows.size;
+    END;
 -?>
 <worksheet name="<?lsmb attributes.id ?>" rows="<?lsmb ROWCOUNT ?>" columns="<?lsmb columns.size + 1 ?>">
 <format bottom="5" bg_color="lime" bottom_color="magenta">
