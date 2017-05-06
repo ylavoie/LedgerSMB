@@ -6,65 +6,19 @@
         <div id="version_info"><?lsmb text("LedgerSMB [_1]", version) ?></div>
         <div id="company_info"><?lsmb text("Logged into [_1]", company) ?></div>
         <div id="login_info"><?lsmb text("Logged in as [_1]", login) ?></div>
-        <div id="top_menu" class="menu_open" data-dojo-type="dijit/Menu">
-        <?lsmb
-        level = 0; levels = [];
-        FOREACH item = menu_items;
-            IF item.label == 'New Window';
-                class = 'class="menu-new-window"';
-            ELSIF item.module;
-                class = 'class="menu-terminus"';
-            ELSE;
-                class = 'class="t-submenu"';
-            END;
-            "<!--" _ item.label _": " _ item.parent _ ", " _ item.level _ " => " _ item.menu _ "level: " _ level _ "-->\n";
-            IF item.menu;
-                levels.push(level);
-                level = item.childs;
-                "<div data-dojo-type='dijit/PopupMenuItem'>";
-                "<span>" _ text(item.label) _ "</span>";
-                '<div data-dojo-type="dijit/Menu" id="menu_' _ item.id _ '">';
-            ELSE;
-                "<div id='menu_" _ item.id _ "' data-dojo-type='dijit/MenuItem'>";
-                '<a href="';
-                IF item.module;
-                    item.module _ "?login=" _ login _ "&amp;";
-                    FOREACH arg IN item.args;
-                        arg _ "&amp;";
-                    END;
-                END;
-                '" ';
-                IF item.module && (item.module != 'menu.pl') &&
-                        ('login.pl' != item.module);
-                ELSIF 'New Window' == item.label;
-                        "target = 'new'";
-                ELSIF 'login.pl' == item.module;
-                        "target = '_top'";
-                END;
-                ' id="a_' _ item.id _ '"' _ class _ ">";
-                '<span>' _ text(item.label) _ "</span>";
-                "</a></div>";
-                level = level - 1;
-            END;
-            WHILE level <= 0 && levels.size;
-                level = levels.pop - 1;
-                "</div></div>";
-            END;
-#            IF item.menu && (item.label != 'New Window');
-#                '<div id="sub_' _ item.id _ '" class="submenu" data-dojo-type="dijit/MenuItem"></div>';
-#            END;
-            "\n";
-        END; ?>
-        </div>
-        <script>
-            // Require the Menu and MenuItem class, and the dojo/parser,
-            // and make sure the DOM is ready
-            require([
-                "dijit/Menu",
-                "dijit/MenuItem",
-                "dojo/parser",
-                "dojo/domReady!"
-            ], function(Menu, MenuItem, parser){
-                parser.parse();
-            });
-        </script>
+
+        <div data-dojo-type="lsmb/menus/MenuRestStore" data-dojo-id="menuTree"></div>
+
+        <ul id="menuTree_menu" data-dojo-type="dijit/Menu"
+            data-dojo-props='style:"display: none;", targetNodeIds: "menuTree", selector: ".dijitTreeNode"'>
+            <li data-dojo-type="dijit/MenuItem">
+                <script type="dojo/connect" data-dojo-event="onClick">
+                        // get a hold of the dijit.TreeNode that was the source of this open event
+                        var tn = dijit.byNode(this.getParent().currentTarget);
+
+                        // now print the data store item that backs the tree node
+                        console.debug("menu click for item: ", tn.item.name);
+                </script>
+                <?lsmb text("LedgerSMB Menu") ?>
+            </li>
+        </ul>

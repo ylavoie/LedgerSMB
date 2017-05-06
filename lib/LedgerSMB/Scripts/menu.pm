@@ -126,6 +126,31 @@ sub expanding_menu {
 }
 
 
+=item menuitems_json
+
+Returns the menu items in JSON format
+
+=back
+
+
+=cut
+
+sub menuitems_json {
+    my ($request) = @_;
+
+#    $request->{title} = "LedgerSMB $request->{VERSION} -- ".
+#    "$request->{login} -- $request->{company}";
+
+    my $menu = LedgerSMB::DBObject::Menu->new({base => $request});
+    $menu->generate();
+
+    return $request->to_json( [$menu->{menu_items}] );
+}
+
+=pod
+
+=over
+
 =head1 Copyright (C) 2007 The LedgerSMB Core Team
 
 Licensed under the GNU General Public License version 2 or later (at your
