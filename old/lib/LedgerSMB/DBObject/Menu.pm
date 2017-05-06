@@ -65,6 +65,22 @@ sub generate_section {
     return @{$self->{menu_items}};
 }
 
+=item generate_item()
+
+This class acts like Menu::Generate except it returns only a single menu item
+$object->{id}.
+
+=cut
+
+sub generate_item {
+    my ($self) = shift @_;
+
+    @{$self->{menu_items}} = $self->call_dbmethod(funcname => 'menu_item');
+    $self->__generate;
+
+    return @{$self->{menu_items}};
+}
+
 =item will_expire_soon()
 
 This method returns true if the user's password will expire soon

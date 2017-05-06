@@ -16,3 +16,16 @@
 
         <div id="top_menu" data-dojo-type="lsmb/menus/Tree">
         </div>
+        <ul id="menuTree_menu" data-dojo-type="lsmb/menus/MenuRestStore" dojo-trace-api=1
+            data-dojo-props='style:"display: none;"'>
+            <li data-dojo-type="dijit/MenuItem">
+                <script type="dojo/connect" data-dojo-event="onClick">
+                        // get a hold of the dijit.TreeNode that was the source of this open event
+                        var tn = dijit.byNode(this.getParent().currentTarget);
+
+                        // now print the data store item that backs the tree node
+                        console.debug("menu click for item: ", tn.item.name);
+                </script>
+                Click me
+            </li>
+        </ul>
