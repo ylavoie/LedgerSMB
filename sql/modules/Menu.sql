@@ -12,13 +12,16 @@ CREATE TYPE menu_item AS (
    label varchar,
    path varchar,
    parent int,
-   args text[]
+   args text[],
+   childs int
 );
 
 
 
 CREATE OR REPLACE FUNCTION menu_generate() RETURNS SETOF menu_item AS
 $$
+        WITH t (position,id,level,label,path,parent,to_args)
+        AS (
                WITH RECURSIVE tree (path, id, parent, level, positions)
                                AS (select id::text as path, id, parent,
                                            0 as level, position::text
@@ -80,7 +83,14 @@ $$
                                            like c.path::text || ',%')
             GROUP BY n.position, n.id, c.level, n.label, c.path, c.positions,
                      n.parent
-            ORDER BY string_to_array(c.positions, ',')::int[]
+            ORDER BY string_to_array(c.positions, ',')::int[])
+        SELECT t.*,ch.childs from t
+        LEFT JOIN (
+            SELECT parent, level, count(*)::int AS childs
+            FROM t
+            GROUP BY parent,level
+        ) AS ch ON t.id = ch.parent
+
 $$ language sql;
 
 COMMENT ON FUNCTION menu_generate() IS
