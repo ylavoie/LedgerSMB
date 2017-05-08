@@ -6,9 +6,11 @@
         <div id="version_info"><?lsmb text("LedgerSMB [_1]", version) ?></div>
         <div id="company_info"><?lsmb text("Logged into [_1]", company) ?></div>
         <div id="login_info"><?lsmb text("Logged in as [_1]", login) ?></div>
+        <div id="login" style='display:none'><?lsmb login ?></div>
+        <div id="open" style='display:none'><?lsmb open ?></div>
 
         <div id="menuTree" data-dojo-type="dijit/Tree" data-dojo-id=id="menuTree"></div>
-        <div id="menuTree_menu" data-dojo-type="lsmb/menus/MenuRestStore"
+        <ul id="menuTree_menu" data-dojo-type="lsmb/menus/MenuRestStore"
             data-dojo-props='style:"display: none;"'>
             <li data-dojo-type="dijit/MenuItem">
                 <script type="dojo/connect" data-dojo-event="onClick">
@@ -18,6 +20,6 @@
                         // now print the data store item that backs the tree node
                         console.debug("menu click for item: ", tn.item.name);
                 </script>
-                <?lsmb text("LedgerSMB Menu") ?>
+                Click me
             </li>
-        </div>
+        </ul>

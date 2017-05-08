@@ -1,14 +1,14 @@
-define([
+define(["dojo/_base/declare",
     "dojo/store/JsonRest", "dojo/store/Observable",
 //    "dojo/store/Memory", "dojo/store/Cache",
     "dijit/Tree", "dijit/tree/ObjectStoreModel",
     "dijit/tree/dndSource",
-    "dijit/Menu", "dojo/domReady!"
-], function(JsonRest, Observable,
+    "dijit/Menu", "dojo/dom", "dojo/domReady!"
+], function(declare, JsonRest, Observable,
 //    Memory, Cache,
     Tree, ObjectStoreModel,
     dndSource,
-    Menu
+    Menu, dom
 ){
     // set up the store to get the tree data, plus define the method
     // to query the children of a node
@@ -54,17 +54,52 @@ define([
         }
     });
 
+    // Custom TreeNode class (based on dijit.TreeNode) that allows rich text labels
+    var MyTreeNode = declare(Tree._TreeNode, {
+        _setLabelAttr: {node: "labelNode", type: "innerHTML"}
+    });
+
     var tree = new Tree({
         model: model,
         dndController: dndSource,
-//        showRoot: false,
-//        openOnClick: true
+        showRoot: false,
+        openOnClick: true,
+        _createTreeNode: function(args){
+           return new MyTreeNode(args);
+        },
+        onClick: function(item){
+            // Get the URL from the item, and navigate to it
+            var url = "";
+            if ( item.module ) {
+                url += item.module + "?login=" + dom.byId("login").textContent + "&amp;";
+                for ( var i = 0 ; i < item.args.length ; i++ ) {
+                    url += item.args[i] + "&amp;";
+                }
+                if ( item.menu ) {
+                    url += "id=" + item.id + "&amp;open=" + dom.byId("open").textContent;
+                }
+            }
+//            if (item.module && (item.module != 'menu.pl') && ('login.pl' != item.module)) {
+//            } else
+            url += ('New Window' == item.label) ? "target = 'new'"
+                 : ('login.pl' == item.module)  ? "target = '_top'"
+                 : "";
+            url += 'id="a_' + item.id + '"';
+            url += 'class="'
+                 + (item.label == 'New Window') ? 'menu-new-window'
+                 : item.module                  ? 'menu-terminus'
+                 :                                't-submenu'
+                 + '"' + item.label + "</a>";   // text(item.label)
+            location.href = url;
+//            if ( item.module ) {
+//            }
+        }
     }, 'menuTree'); // make sure you have a target HTML element with this id
     console.dir(tree);
 
     var menu = new Menu({
         targetNodeIds: ['menuTree'],
-//        selector: "rowNode"
+        selector: ".dijitTreeNode"
     });
     console.dir(menu);
     return menu;
