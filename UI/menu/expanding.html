@@ -7,10 +7,9 @@
         <div id="company_info"><?lsmb text("Logged into [_1]", company) ?></div>
         <div id="login_info"><?lsmb text("Logged in as [_1]", login) ?></div>
 
-        <div data-dojo-type="lsmb/menus/MenuRestStore" data-dojo-id="menuTree"></div>
-
-        <ul id="menuTree_menu" data-dojo-type="dijit/Menu"
-            data-dojo-props='style:"display: none;", targetNodeIds: "menuTree", selector: ".dijitTreeNode"'>
+        <div id="menuTree" data-dojo-type="dijit/Tree" data-dojo-id=id="menuTree"></div>
+        <div id="menuTree_menu" data-dojo-type="lsmb/menus/MenuRestStore"
+            data-dojo-props='style:"display: none;"'>
             <li data-dojo-type="dijit/MenuItem">
                 <script type="dojo/connect" data-dojo-event="onClick">
                         // get a hold of the dijit.TreeNode that was the source of this open event
@@ -21,4 +20,4 @@
                 </script>
                 <?lsmb text("LedgerSMB Menu") ?>
             </li>
-        </ul>
+        </div>

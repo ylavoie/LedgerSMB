@@ -13,10 +13,9 @@ CREATE TYPE menu_item AS (
    path varchar,
    parent int,
    args text[],
-   childs int
+   childs int,
+   children int[]
 );
-
-
 
 CREATE OR REPLACE FUNCTION menu_generate() RETURNS SETOF menu_item AS
 $$
@@ -38,7 +37,7 @@ $$
                 FROM tree c
                 JOIN menu_node n USING(id)
                 JOIN menu_attribute ma ON (n.id = ma.node_id)
-               WHERE n.id IN (select node_id
+               WHERE n.id=0 OR n.id IN (select node_id
                                 FROM menu_acl acl
                           LEFT JOIN pg_roles pr on pr.rolname = acl.role_name
                                WHERE CASE WHEN role_name
@@ -84,9 +83,9 @@ $$
             GROUP BY n.position, n.id, c.level, n.label, c.path, c.positions,
                      n.parent
             ORDER BY string_to_array(c.positions, ',')::int[])
-        SELECT t.*,ch.childs from t
+        SELECT t.*,ch.childs, ch.children from t
         LEFT JOIN (
-            SELECT parent, level, count(*)::int AS childs
+            SELECT parent, level, count(*)::int AS childs, array_agg(id) as children
             FROM t
             GROUP BY parent,level
         ) AS ch ON t.id = ch.parent
@@ -111,6 +110,18 @@ $$ This function returns all menu  items which are children of in_parent_id
 It is thus similar to menu_generate() but it only returns the menu items
 associated with nodes directly descendant from the parent.  It is used for
 menues for frameless browsers.$$;
+
+CREATE OR REPLACE FUNCTION menu_item(in_id int) RETURNS SETOF menu_item
+AS $$
+SELECT * FROM menu_generate() where id = $1;
+$$ language sql;
+
+COMMENT ON FUNCTION menu_item(int) IS
+$$ This function returns a specific menu item of in_id
+(the only input parameter).
+
+It is thus similar to menu_generate() but it only returns the menu item
+requested.  It is used for lazy loading of menues.$$;
 
 CREATE OR REPLACE FUNCTION
 menu_insert(in_parent_id int, in_position int, in_label text)

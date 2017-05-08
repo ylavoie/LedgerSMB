@@ -138,13 +138,17 @@ Returns the menu items in JSON format
 sub menuitems_json {
     my ($request) = @_;
 
-#    $request->{title} = "LedgerSMB $request->{VERSION} -- ".
-#    "$request->{login} -- $request->{company}";
-
     my $menu = LedgerSMB::DBObject::Menu->new({base => $request});
-    $menu->generate();
 
-    return $request->to_json( [$menu->{menu_items}] );
+    if ( defined($request->{id}) && $request->{id} ne "" ) {
+        my ($item) = $menu->generate_item;
+        return $request->to_json( $item );
+    } elsif ( defined($request->{parent_id}) && $request->{parent_id} ne "" ) {
+        $menu->generate_section;
+    } else {
+        $menu->generate(1); # Keep the root item
+    }
+    return $request->to_json( [@{$menu->{menu_items}}] );
 }
 
 =pod
