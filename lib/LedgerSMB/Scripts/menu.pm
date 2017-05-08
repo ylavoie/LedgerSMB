@@ -141,8 +141,8 @@ sub menuitems_json {
     my $menu = LedgerSMB::DBObject::Menu->new({base => $request});
 
     if ( defined($request->{id}) && $request->{id} ne "" ) {
-        my ($item) = $menu->generate_item;
-        return $request->to_json( $item );
+        $menu->generate_item;
+        return $request->to_json( $menu->{menu_items} );
     } elsif ( defined($request->{parent_id}) && $request->{parent_id} ne "" ) {
         $menu->generate_section;
     } else {
