@@ -101,7 +101,7 @@ define(["dojo/_base/declare",
                 return (!item || item.menu) ? (opened ? "dijitFolderOpened" : "dijitFolderClosed") : "dijitLeaf"
             },
             onClick: function(item){
-                location.href = item.url;
+                location.hash = item.url;
             }
         }, 'menuTree'); // make sure you have a target HTML element with this id
         // Connect to tree onLoad to do work once it has initialized
