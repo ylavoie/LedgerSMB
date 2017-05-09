@@ -13,7 +13,6 @@ CREATE TYPE menu_item AS (
    path varchar,
    parent int,
    args text[],
-   childs int,
    children int[]
 );
 
@@ -83,9 +82,9 @@ $$
             GROUP BY n.position, n.id, c.level, n.label, c.path, c.positions,
                      n.parent
             ORDER BY string_to_array(c.positions, ',')::int[])
-        SELECT t.*,ch.childs, ch.children from t
+        SELECT t.*, ch.children from t
         LEFT JOIN (
-            SELECT parent, level, count(*)::int AS childs, array_agg(id) as children
+            SELECT parent, level, array_agg(id) as children
             FROM t
             GROUP BY parent,level
         ) AS ch ON t.id = ch.parent
