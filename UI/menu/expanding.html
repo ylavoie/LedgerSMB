@@ -15,9 +15,9 @@
         <div id="login" style='display:none'><?lsmb login ?></div>
         <div id="open" style='display:none'><?lsmb open ?></div>
         <hr>
-        <div id="menuTree" data-dojo-type="dijit/Tree" data-dojo-id=id="menuTree"></div>
-        <ul id="menuTree_menu" data-dojo-type="lsmb/menus/MenuRestStore"
-            data-dojo-props='style:"display: none;"' dojo-trace-api='1'>
+        <div id="menuTree"></div>
+        <ul id="menuTree_menu" data-dojo-type="lsmb/menus/MenuRestStore" dojo-trace-api=1
+            data-dojo-props='style:"display: none;"'>
             <li data-dojo-type="dijit/MenuItem">
                 <script type="dojo/connect" data-dojo-event="onClick">
                         // get a hold of the dijit.TreeNode that was the source of this open event
