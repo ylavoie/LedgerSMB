@@ -13,6 +13,21 @@ li.menu_open > ul {
     text-align: center;
 }
 
+/*
+ * dijitTreeIcon & dijitTreeExpando are redundant
+ * Select the former for + signs or the latter for folder icons
+ */
+/*
+.dijitTreeIcon {
+    background-image: none;
+    width: 0
+}
+*/
+.claro .dijitTreeExpando {
+    background-image: none;
+    width: 0
+}
+
 .header_table {
     margin-left: auto;
     margin-right: auto;
