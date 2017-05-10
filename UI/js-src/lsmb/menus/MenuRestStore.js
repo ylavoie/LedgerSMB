@@ -2,12 +2,14 @@ define(["dojo/_base/declare",
     "dojo/store/JsonRest", "dojo/store/Observable",
     "dojo/store/Memory", "lsmb/menus/Cache",
     "dijit/Tree", "dijit/tree/ObjectStoreModel",
-    "dijit/Menu", "dijit/MenuSeparator", "dijit/PopupMenuItem",
+    "dijit/Menu", "dijit/MenuSeparator",
+    "dijit/MenuItem", "dijit/PopupMenuItem", "dijit/CheckedMenuItem",
     "dojo/when", "dojo/dom", "dojo/ready"
 ], function(declare, JsonRest, Observable,
     Memory, Cache,
     Tree, ObjectStoreModel,
-    Menu, MenuSeparator, PopupMenuItem,
+    Menu, MenuSeparator,
+    MenuItem, PopupMenuItem, CheckedMenuItem,
     when, dom, ready
 ){
   return declare(
@@ -22,16 +24,16 @@ define(["dojo/_base/declare",
                 return this.target;
             },
         });
-        var memoryStore = new Memory({idProperty: "id"});
-        var store = new Cache(restStore, memoryStore);
-        // Overwrite the standard getter
+        var cacheStore = new Memory({idProperty: "id"});
+        restStore = new lsmbStoreCache(restStore, cacheStore);
 
-        // give store Observable interface so Tree can track updates
-        // store = new Observable(store);
+        // give prefStore Observable interface so Tree can track updates
+        var prefStore = new Memory({idProperty: "id"});
+        prefStore = new Observable(prefStore);
 
         // create model to interface Tree to store
-        var model = new ObjectStoreModel({
-            store: store,
+        var restModel = new ObjectStoreModel({
+            store: restStore,
             // Utility routines
             mayHaveChildren: function(object){
                 // if true, we might be missing the data, false and nothing should be done
@@ -74,12 +76,36 @@ define(["dojo/_base/declare",
             }
         });
 
+        // create model to interface Tree to store
+        var prefModel = new ObjectStoreModel({
+            store: prefStore,
+            // Utility routines
+            mayHaveChildren: function(object){
+                // if true, we might be missing the data, false and nothing should be done
+                return ("children" in object) && object["children"] ;
+            },
+            getChildren: function(object, onComplete, onError){
+                // Supply a getChildren() method to store for the data model where
+                // children objects point to their parent (aka relational model)
+                return object.children;
+             },
+            getRoot: function(onItem, onError){
+                // get the root object, we will do a get() and callback the result
+                this.store.get('0').then(onItem, onError);
+            },
+            getLabel: function(object){
+                // just get the name (note some models makes use of 'labelAttr' as opposed to simply returning the key 'name')
+                return object.label;
+            }
+        });
+
         var tree = new Tree({
-            model: model,
+            model: restModel,
             persist: false,
             autoExpand: false,
             showRoot: false,
             openOnClick: true,
+            },            //TODO: Alter CSS to make it not-displayble
             getIconClass: function(/*dojo.data.Item*/ item, /*Boolean*/ opened){
                 return (!item || item.menu) ? (opened ? "dijitFolderOpened" : "dijitFolderClosed") : "dijitLeaf"
             },
@@ -88,9 +114,65 @@ define(["dojo/_base/declare",
             }
         }, 'menuTree'); // make sure you have a target HTML element with this id
         tree.startup();
+        var preftree = new Tree({
+            model: prefModel,
+            persist: false,
+            autoExpand: false,
+            showRoot: false,
+            openOnClick: true,
+            _createTreeNode: function(args){
+                return new MyTreeNode(args);
+            },
+            getIconClass: function(/*dojo.data.Item*/ item, /*Boolean*/ opened){
+                return (!item || item.menu) ? (opened ? "dijitFolderOpened" : "dijitFolderClosed") : "dijitLeaf"
+            },
+            onClick: function(item){
+                location.hash = item.url;
+            }
+        }, 'prefTree'); // make sure you have a target HTML element with this id
+        prefTree.startup();
         var menu = new Menu({
-            targetNodeIds: ['menuTree'],
+            targetNodeIds: ['prefTree','menuTree']
         });
+        prefMenu = new Menu();
+/*
+        menu.addChild(new dijit.MenuItem({
+            label: "Simple menu item"
+        }));
+        menu.addChild(new MenuItem({
+            label: "Menu Item With an icon",
+            iconClass: "dijitEditorIcon dijitEditorIconCut",
+            onClick: function(){alert('i was clicked')}
+        }));
+*/
+        menu.addChild(new CheckedMenuItem({
+            label: "Prefered Menu"
+        }));
+/*
+        menu.addChild(new MenuSeparator());
+
+        var pSubMenu = new Menu();
+        pSubMenu.addChild(new MenuItem({
+            label: "Submenu item"
+        }));
+        pSubMenu.addChild(new MenuItem({
+            label: "Submenu item"
+        }));
+        menu.addChild(new PopupMenuItem({
+            label: "Submenu",
+            popup: pSubMenu
+        }));
+*/
+        dojo.connect(tree, "onClick", tree, function(item,nodeWidget,e){
+            console.log("is expandable?: ", nodeWidget.isExpandable, e.target);
+
+            if( nodeWidget.isExpandable ) {
+                    this._onExpandoClick({node:nodeWidget});
+            }
+            console.log("item : ", item);
+
+        });
+        menu.startup();
         return menu;
     }
  });
