@@ -165,6 +165,7 @@ use Try::Tiny;
 use Carp;
 use DBI;
 use JSON ();
+use JSON::XS;
 
 use base qw(LedgerSMB::Request);
 our $VERSION = '1.6.0-dev';
