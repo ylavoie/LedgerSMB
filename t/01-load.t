@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 203;
+use Test::More tests => 204;
 use File::Find;
 
 my @on_disk;
@@ -94,6 +94,7 @@ my @modules =
           'LedgerSMB::Inventory::Adjust',
           'LedgerSMB::Inventory::Adjust_Line',
           'LedgerSMB::old_code', 'LedgerSMB::Part',
+          'LedgerSMB::REST::MenuREST',
           'LedgerSMB::Payroll::Deduction_Type',
           'LedgerSMB::Payroll::Income_Type',
           'LedgerSMB::PSGI::Preloads',

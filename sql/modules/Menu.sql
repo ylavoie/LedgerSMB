@@ -13,12 +13,41 @@ CREATE TYPE menu_item AS (
    path varchar,
    parent int,
    args text[],
+   preferred boolean,
    children int[]
 );
 
+CREATE OR REPLACE FUNCTION menu_preferred(in_id int, in_preferred boolean)
+RETURNS BOOLEAN AS
+$$
+    WITH u AS (
+        UPDATE user_preference up
+           SET menus = (CASE WHEN in_preferred
+                                  THEN ARRAY(SELECT DISTINCT UNNEST(ARRAY_APPEND(menus,in_id)) ORDER BY 1)
+                             WHEN NOT in_preferred
+                                  THEN ARRAY_REMOVE(menus,in_id)
+                        END)
+         WHERE up.id = (
+            SELECT up.id
+            FROM user_preference up
+            INNER JOIN users ON up.id = users.id
+            WHERE users.username = SESSION_USER
+        )
+        RETURNING 1
+   )
+   SELECT EXISTS (SELECT * FROM u)
+$$ language sql;
+
+COMMENT ON FUNCTION menu_preferred(int,boolean) IS
+$$
+This function inserts or removes the menu in_id from the preferred list.
+It is used to generate the preferred menu for the web interface.
+$$;
+
+
 CREATE OR REPLACE FUNCTION menu_generate() RETURNS SETOF menu_item AS
 $$
-        WITH t (position,id,level,label,path,parent,to_args)
+        WITH t (position,id,level,label,path,parent,to_args,preferred)
         AS (
                WITH RECURSIVE tree (path, id, parent, level, positions)
                                AS (select id::text as path, id, parent,
@@ -32,7 +61,13 @@ $$
                                       FROM menu_node n
                                       JOIN tree t ON t.id = n.parent)
                 SELECT n.position, n.id, c.level, n.label, c.path, n.parent,
-                       to_args(array[ma.attribute, ma.value])
+                       to_args(array[ma.attribute, ma.value]),
+                       ARRAY[n.id] && (
+                            SELECT up.menus
+                            FROM user_preference up
+                            INNER JOIN users ON up.id = users.id
+                            WHERE users.username = SESSION_USER
+                       ) AS preferred
                 FROM tree c
                 JOIN menu_node n USING(id)
                 JOIN menu_attribute ma ON (n.id = ma.node_id)
@@ -86,7 +121,7 @@ $$
         LEFT JOIN (
             SELECT parent, level, array_agg(id) as children
             FROM t
-            GROUP BY parent,level
+            GROUP BY parent,level,preferred
         ) AS ch ON t.id = ch.parent
 
 $$ language sql;

@@ -29,6 +29,8 @@ use Plack::App::File;
 use Plack::Middleware::ConditionalGET;
 use Plack::Builder::Conditionals;
 
+# REST
+use LedgerSMB::REST::MenuREST;
 
 local $@; # localizes just for initial load.
 eval { require LedgerSMB::Template::LaTeX; };
@@ -206,6 +208,10 @@ sub setup_url_space {
     my $psgi_app = \&psgi_app;
 
     return builder {
+        mount "/api" => builder {
+            mount "/menus" => LedgerSMB::REST::MenuREST->new()->to_app;
+        };
+
         enable match_if path(qr!.+\.(css|js|png|ico|jp(e)?g|gif)$!),
             'ConditionalGET';
 
@@ -244,8 +250,6 @@ sub setup_url_space {
     };
 
 }
-
-
 
 
 =back

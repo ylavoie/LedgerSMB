@@ -141,19 +141,30 @@ Returns the menu items in JSON format
 
 sub menuitems_json {
     my ($request) = @_;
-
+    # There must be a better way
+    my $method = $request->{_auth}->{env}->{REQUEST_METHOD};
     my $menu = LedgerSMB::DBObject::Menu->new({base => $request});
 
-    #TODO: Localize Menus here before sending to client
-    if ( defined($request->{id}) && $request->{id} ne "" ) {
-        my ($item) = $menu->generate_item;
-        return $request->to_json( $item );
-    } elsif ( defined($request->{parent_id}) && $request->{parent_id} ne "" ) {
-        $menu->generate_section;
-    } else {
-        $menu->generate(1); # Keep the root item
+    if ( $method eq 'GET' ) {
+
+        #TODO: Localize Menus here before sending to client
+        if ( defined($request->{id}) && $request->{id} ne "" ) {
+            my ($item) = $menu->generate_item;
+            return $request->to_json( $item );
+        } elsif ( defined($request->{parent_id}) && $request->{parent_id} ne "" ) {
+            $menu->generate_section;
+        } else {
+            $menu->generate(1); # Keep the root item
+        }
+        return $request->to_json( [@{$menu->{menu_items}}] );
+    } elsif ( $method eq 'PUT' ) {
+        if ( defined($request->{id}) && $request->{id} ne ""
+          && defined($request->{preferred}) && $request->{preferred} =~ /[01]/ ) {
+            my $status = $menu->menu_preferred($request->{id},$request->{preferred});
+            return [200, [], []] if $status;
+        }
     }
-    return $request->to_json( [@{$menu->{menu_items}}] );
+    return [400, [], []];
 }
 
 =pod
