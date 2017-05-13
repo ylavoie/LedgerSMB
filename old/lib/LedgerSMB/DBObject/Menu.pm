@@ -81,6 +81,13 @@ sub generate_item {
     return @{$self->{menu_items}};
 }
 
+sub menu_preferred {
+    my ($self,$id,$preferred) = shift @_;
+
+    $self->{menu_preferred_result} = $self->call_dbmethod(funcname => 'menu_preferred');
+    return $self->{menu_preferred_result};
+}
+
 =item will_expire_soon()
 
 This method returns true if the user's password will expire soon

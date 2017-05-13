@@ -38,6 +38,7 @@ requires 'PGObject::Type::ByteString', '1.1.1';
 requires 'PGObject::Util::DBMethod';
 requires 'PGObject::Util::DBAdmin', '0.09';
 requires 'Plack::App::File';
+requires 'Plack::App::REST';
 requires 'Plack::Builder';
 requires 'Plack::Builder::Conditionals';
 requires 'Plack::Middleware::ConditionalGET';
@@ -102,12 +103,17 @@ feature 'debug', "Debug pane" =>
 # will be included, so put our testing requirements in develop...
 on 'develop' => sub {
     requires 'App::Prove', '3.36';
+    requires 'COATest';
+    requires 'File::Find::Rule';
+    requires 'File::Find::Rule::Perl';
     requires 'File::Util';
     recommends 'HTML::Lint';    # Provided by HTML::Lint::Pluggable
     #requires 'HTML::Lint::Parser', '>= 2.26';
     requires 'HTML::Lint::Pluggable';
     recommends 'HTML::Lint::Pluggable::HTML5';      # Dynamic Plugin
     recommends 'HTML::Lint::Pluggable::WhiteList';  # Dynamic Plugin
+    requires 'HTTP::Request::Common';
+    requires 'JSON::Validator';
     recommends 'Linux::Inotify2';
     requires 'Module::CPANfile'; # for 01.2-deps.t
     requires 'Perl::Critic';
@@ -117,18 +123,22 @@ on 'develop' => sub {
     requires 'Selenium::Remote::Driver';
     requires 'Selenium::Remote::WDKeys';
     requires 'TAP::Parser::SourceHandler::pgTAP';
-    #requires 'Test::BDD::Cucumber', '>= 0.52';
+    requires 'Template', '2.14';
+    requires 'Test::BDD::Cucumber', '>= 0.52';
+    requires 'Test::BDD::Cucumber::Extension';
+    requires 'Test::BDD::Cucumber::StepFile';
     requires 'Test::Class::Moose';
-    #requires 'Test::Class::Moose::Role';
+    requires 'Test::Class::Moose::Load';
     requires 'Test::Class::Moose::Role::ParameterizedInstances';
-    requires 'Test::Exception';
+    requires 'Test::Class::Moose::Runner';
     requires 'Test::Dependencies', '0.20';
     requires 'Test::Exception';
     requires 'Test::Harness', '3.36';
     requires 'Test::More';  # We should pick More or Most, why 2?
+    requires 'Try::Tiny';
     requires 'Test::Trap';
-    requires 'Weasel', '0.11';
-    requires 'Weasel::Driver::Selenium2', '0.05';
+    requires 'Weasel', '>= 0.11';
+    requires 'Weasel::Driver::Selenium2', '>= 0.05';
     requires 'Weasel::Widgets::Dojo';
 };
 
@@ -150,6 +160,16 @@ on 'test' => sub {
     requires 'Log::Log4perl';
     requires 'MIME::Base64';
     requires 'Test::Exception';
-    requires 'Test::More';
+    requires 'Test::Most';
     requires 'Test::Trap';
+    requires 'Plack::Middleware::Pod';
+    requires 'Selenium::Remote::WDKeys';
+    requires 'Weasel::Element';
+    requires 'Weasel::Element::Document';
+    requires 'Weasel::FindExpanders';
+    requires 'Weasel::FindExpanders::Dojo';
+    requires 'Weasel::FindExpanders::HTML';
+    requires 'Weasel::WidgetHandlers';
+    requires 'Weasel::Widgets::HTML';
+    requires 'YAML::Syck';
 };

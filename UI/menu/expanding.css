@@ -18,6 +18,10 @@
     width: 0
 }
 
+.claro .dijitTreeRowSelected {
+    color: red
+}
+
 #version_info {
     text-align: center;
 }

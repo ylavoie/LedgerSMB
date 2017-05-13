@@ -57,3 +57,4 @@
 1.6/fix-entity-primary-key.sql
 1.6/add-eca-business-foreign-key.sql
 1.6/menu_item.sql
+1.6/menu_item_preferred.sql

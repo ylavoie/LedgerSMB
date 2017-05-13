@@ -32,6 +32,9 @@ use Plack::App::File;
 use Plack::Middleware::ConditionalGET;
 use Plack::Builder::Conditionals;
 
+# REST
+use LedgerSMB::REST::MenuREST;
+
 local $@ = undef; # localizes just for initial load.
 eval { require LedgerSMB::Template::LaTeX; };
 
@@ -50,7 +53,7 @@ sub old_app {
         sub {
             my $uri = $ENV{REQUEST_URI};
             $uri =~ s/\?.*//;
-            local $ENV{SCRIPT_NAME} = $uri;
+            $ENV{SCRIPT_NAME} = $uri;
 
             _run_old();
         });
@@ -118,16 +121,15 @@ sub psgi_app {
             $module->can('clear_session_actions');
 
         if ($clear_session_actions
-            && ( !none{ $_ eq $request->{action} }
-                    $clear_session_actions->() )
-        ) {
+            && grep { $_ eq $request->{action} }
+                    $clear_session_actions->() ) {
             $request->clear_session;
         }
         if (! $module->can('no_db')) {
             my $no_db = $module->can('no_db_actions');
 
             if (!$no_db
-                || ( $no_db && none { $_ eq $request->{action} } $no_db->())) {
+                || ( $no_db && ! grep { $_ eq $request->{action} } $no_db->())) {
                 if (! $request->_db_init()) {
                     ($status, $headers, $body) =
                         ( HTTP_UNAUTHORIZED,
@@ -188,15 +190,7 @@ sub _run_old {
     if (my $cpid = fork()){
        wait;
     } else {
-        local ($!, $@) = (undef, undef);
-        my $do_ = 'old/bin/old-handler.pl';
-        unless ( do $do_ ) {
-            if ($! or $@) {
-                print "Status: 500 Internal server error (PSGI.pm)\n\n";
-                warn "Failed to execute $do_ ($!): $@\n";
-            }
-        }
-
+       do 'old/bin/old-handler.pl';
        exit;
     }
     return;
@@ -217,6 +211,10 @@ sub setup_url_space {
     my $psgi_app = \&psgi_app;
 
     return builder {
+        mount "/api" => builder {
+            mount "/menus" => LedgerSMB::REST::MenuREST->new()->to_app;
+        };
+
         enable match_if path(qr!.+\.(css|js|png|ico|jp(e)?g|gif)$!),
             'ConditionalGET';
 
@@ -255,8 +253,6 @@ sub setup_url_space {
     };
 
 }
-
-
 
 
 =back

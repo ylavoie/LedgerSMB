@@ -146,11 +146,20 @@ sub menuitems_json {
     my $method = $request->{_auth}->{env}->{REQUEST_METHOD};
     my $menu = LedgerSMB::DBObject::Menu->new({base => $request});
 
-    $menu->generate;
-    $_->{label} = $locale->maketext($_->{label})
-        for (@{$menu->{menu_items}});
+    if ( $method eq 'GET' ) {
+        $menu->generate;
+        $_->{label} = $locale->maketext($_->{label})
+            for (@{$menu->{menu_items}});
 
-    return $request->to_json( $menu->{menu_items} );
+        return $request->to_json( $menu->{menu_items} );
+    } elsif ( $method eq 'PUT' ) {
+        if ( defined($request->{id}) && $request->{id} ne ""
+          && defined($request->{preferred}) && $request->{preferred} =~ /[01]/ ) {
+            my $status = $menu->menu_preferred($request->{id},$request->{preferred});
+            return [200, [], []] if $status;
+        }
+    }
+    return [400, [], []];
 }
 
 =pod
@@ -167,16 +176,6 @@ files.
 
 =cut
 
-{
-    local ($!, $@) = ( undef, undef);
-    my $do_ = 'scripts/custom/menu.pl';
-    if ( -e $do_ ) {
-        unless ( do $do_ ) {
-            if ($! or $@) {
-                warn "\nFailed to execute $do_ ($!): $@\n";
-                die (  "Status: 500 Internal server error (menu.pm)\n\n" );
-            }
-        }
-    }
-};
+###TODO-LOCALIZE-DOLLAR-AT
+eval { do "scripts/custom/menu.pl"};
 1;
