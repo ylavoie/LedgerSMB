@@ -4,19 +4,114 @@ define(["dojo/_base/declare",
     "dijit/Tree", "dijit/tree/ObjectStoreModel",
     "dijit/Menu", "dijit/MenuSeparator",
     "dijit/MenuItem", "dijit/PopupMenuItem", "dijit/CheckedMenuItem",
-    "dojo/when", "dojo/dom", "dojo/ready"
+    "dojo/when", "dojo/dom", "dijit/registry",
+    "dijit/tree/dndSource", "dojo/Deferred",
+    "dojo/ready"
 ], function(declare, JsonRest, Observable,
     Memory, Cache,
     Tree, ObjectStoreModel,
     Menu, MenuSeparator,
     MenuItem, PopupMenuItem, CheckedMenuItem,
-    when, dom, ready
+    when, dom, registry,
+    dndSource, Deferred,
 ){
   return declare(
     "lsmb/menus/MenuRestStore", [Menu], {
+    parentTree: null,
+    prefModel: null,
     postCreate: function() {
         // set up the store to get the tree data, plus define the method
         // to query the children of a node
+        // give Observable interface so Tree can track updates
+        var observableStore = new Observable(new Memory({idProperty: "id"}));
+
+        // create model to interface Tree to store
+        prefModel = new ObjectStoreModel({
+            store: observableStore,
+            mayHaveChildren: function(object){
+                // if true, we might be missing the data, false and nothing should be done
+                return object["menu"] && ("children" in object) && object["children"] ;
+            },
+            getChildren: function(object, onComplete, onError){
+                // Supply a getChildren() method to store for the data model where
+                // children objects point to their parent (aka relational model)
+                when(this.store.get(object.children)).then(onComplete, onError);
+//                return this.store.query({parent: this.getIdentity(object)});
+             },
+            getRoot: function(onItem, onError){
+                // get the root object, we will do a get() and callback the result
+                when(this.store.get('0')).then(onItem, onError);
+            },
+            getLabel: function(object){
+                // just get the name (note some models makes use of 'labelAttr' as opposed to simply returning the key 'name')
+                return object.label;
+            },
+            pasteItem: function(/*Item*/ childItem, /*Item*/ oldParentItem, /*Item*/ newParentItem,
+                        /*Boolean*/ bCopy, /*int?*/ insertIndex, /*Item*/ before){
+                // summary:
+                //      Copy an item from one tree to another.
+                //      Used in drag & drop.
+
+                parentTree.model.store.put({id: childItem.id, preferred: 1});
+                var parent = parentTree.model.store.get(childItem.parent);
+                var item = Object.assign({
+                    parent: 0,
+                    path: "0," + childItem.id,
+                    position: this.store.data.length,
+                    label: parent.label + " - " + childItem.label
+                }, childItem);
+                this.store.put(item, {
+                    overwrite: false,
+                    parent: 0,
+                });
+            },
+            /*
+            put: function(object, options){
+                // fire the onChildrenChange event
+                this.onChildrenChange(object, object.children);
+                // fire the onChange event
+                this.onChange(object);
+                // execute the default action
+                return dojo.store.Memory.prototype.put.apply(this, arguments);
+            },
+            */
+            // we can also put event stubs so these methods can be
+            // called before the listeners are applied
+            onChildrenChange: function(parent, children){
+                // fired when the set of children for an object change
+            },
+            onChange: function(object){
+                // fired when the properties of an object change
+            },
+        });
+        prefModel.store.add({
+            "id" : "0",
+            "level" : "0",
+            "position" : "0",
+            "label" : "Preferred menus",
+            "children" : [],
+            "childs" : "0",
+            "path" : "0",
+            "parent" : null,
+            "menu" : "1"
+        });
+
+        var preftree = new Tree({
+            model: prefModel,
+            dndController: dndSource,
+            checkAcceptance: this.treeCheckAcceptance,
+            checkItemAcceptance: this.treeCheckItemAcceptance,
+            showRoot: true,
+            openOnClick: true,
+            getIconClass: function(/*dojo.data.Item*/ item, /*Boolean*/ opened){
+                return (!item || item.menu || item.name == 'getRoot') ? (opened ? "dijitFolderOpened" : "dijitFolderClosed") : "dijitLeaf"
+            },
+            checkItemAcceptance: function(target, source, position){
+                return source.anchor.item.menu != 1;    // Refuse menus
+            },
+        }, 'prefTree'); // make sure you have a target HTML element with this id
+        preftree.startup();
+
         var restStore = new JsonRest({
             target:      "/menus",
             idProperty: "id",
@@ -25,7 +120,8 @@ define(["dojo/_base/declare",
             },
         });
         var cacheStore = new Memory({idProperty: "id"});
-        restStore = new lsmbStoreCache(restStore, cacheStore);
+        restStore = new Cache(restStore, cacheStore);
+        restStore.query();
 
         // create model to interface Tree to store
         var restModel = new ObjectStoreModel({
@@ -38,7 +134,7 @@ define(["dojo/_base/declare",
             getChildren: function(object, onComplete, onError){
                 // Supply a getChildren() method to store for the data model where
                 // children objects point to their parent (aka relational model)
-                // return this.query({parent: object.id});
+                // return this.query({parent: this.getIdentity(object)});
                 // That is the standard way but querying the cache will query JSON
                 // If Cache were to be fixed, then we could simplify the
                 // code below, rely on above mechanism and remove Perl & SQL routines
@@ -57,6 +153,18 @@ define(["dojo/_base/declare",
                                                                 : "";
                             item.url = url;
                             kids.push(item);
+                            if ( item.preferred > 0 ) {
+                                var prefItem = Object.assign({
+                                    parent: 0,
+                                    path: "0," + item.id,
+                                    position: prefModel.store.data.length,
+                                    label: object.label + " - " + item.label
+                                }, item);
+                                prefModel.store.put(prefItem, {
+                                    overwrite: false,
+                                    parent: 0,
+                                });
+                            }
                         });
                     }
                 }
@@ -69,118 +177,79 @@ define(["dojo/_base/declare",
             getLabel: function(object){
                 // just get the name (note some models makes use of 'labelAttr' as opposed to simply returning the key 'name')
                 return object.label;
-            }
+            },
         });
 
-        // Custom TreeNode class (based on dijit.TreeNode) that allows rich text labels
-        var MyTreeNode = declare(Tree._TreeNode, {
-            _setLabelAttr: {node: "labelNode", type: "innerHTML"}
-        });
-        var tree = new Tree({
+        var parentTree = new Tree({
             model: restModel,
-//            autoExpand: false,
+            dndController: dndSource,
             showRoot: false,
             openOnClick: true,
+            copyOnly: true,
+            getTooltip: function(item) {
+                return "Prefered menu";
+            },
             _createTreeNode: function(args){
-                return new MyTreeNode(args);
-            },            //TODO: Alter CSS to make it not-displayble
+                var tnode = new dijit._TreeNode(args);
+                tnode.labelNode.innerHTML = args.label;
+
+                if (!tnode.item.menu) {
+//                  restStore.put(item);
+                }
+                return tnode;
+            },
+            checkAcceptance: function(/*===== source, nodes =====*/){
+                return false;
+            },
             getIconClass: function(/*dojo.data.Item*/ item, /*Boolean*/ opened){
                 return (!item || item.menu) ? (opened ? "dijitFolderOpened" : "dijitFolderClosed") : "dijitLeaf"
             },
-            onClick: function(item){
-                location.hash = item.url;
-            }
         }, 'menuTree'); // make sure you have a target HTML element with this id
-//        tree.startup();
+        parentTree.startup();
+        var root = observableStore.get('0');
+        root.preferred = 0;
+        observableStore.put(root);
 
-        // give prefStore Observable interface so Tree can track updates
-        var prefStore = new Memory({idProperty: "id"});
-        prefStore = new Observable(prefStore);
-        prefStore.add(restModel.getRoot, {id: '0'});
-        prefStore.query();
-
-        // create model to interface Tree to store
-        var prefModel = new ObjectStoreModel({
-            store: prefStore,
-            // Utility routines
-            mayHaveChildren: function(object){
-                // if true, we might be missing the data, false and nothing should be done
-                return object["menu"] && ("children" in object) && object["children"] ;
-            },
-            getChildren: function(object, onComplete, onError){
-                // Supply a getChildren() method to store for the data model where
-                // children objects point to their parent (aka relational model)
-                return object.children;
-             },
-            getRoot: function(onItem, onError){
-                // get the root object, we will do a get() and callback the result
-                when(this.store.get('0')).then(onItem, onError);
-            },
-            getLabel: function(object){
-                // just get the name (note some models makes use of 'labelAttr' as opposed to simply returning the key 'name')
-                return object.label;
+        // Create context menu for trees
+        var contextMenu = new Menu({
+            targetNodeIds: [preftree.id],
+            selector: ".dijitTreeNode"
+        });
+        contextMenu.addChild(new MenuItem({
+            label: "Remove preference",
+            onClick: function(evt){
+                var node = this.getParent().currentTarget;
+                console.log("menu clicked for node ", node);
             }
+        }));
+
+        //TODO: Restore loading icon...
+        var menuTree = new Menu({
+            targetNodeIds: ['menuTree']
+        });
+        var prefMenu = new Menu({
+            targetNodeIds: ['prefTree']
         });
 
-        var preftree = new Tree({
-            model: prefModel,
-//            autoExpand: false,
-            showRoot: false,
-            openOnClick: true,
-            _createTreeNode: function(args){
-                return new MyTreeNode(args);
-            },
-            onClick: function(item){
+        var menu = new Menu();
+        menu.addchild(prefTree);
+        menu.addChild(new MenuSeparator);
+        menu.addchild(menuTree);
+
+        dojo.connect(prefTree, "onClick", prefTree, function(item,nodeWidget,e){
+            if( nodeWidget.isExpandable ) {
+                this._onExpandoClick({node:nodeWidget});
+            } else {
                 location.hash = item.url;
             }
-        }, 'prefTree'); // make sure you have a target HTML element with this id
-//        prefTree.startup();
-
-        var menu = new Menu({
-            targetNodeIds: ['prefTree','menuTree']
         });
-        prefMenu = new Menu();
-/*
-        menu.addChild(new dijit.MenuItem({
-            label: "Simple menu item"
-        }));
-        menu.addChild(new MenuItem({
-            label: "Menu Item With an icon",
-            iconClass: "dijitEditorIcon dijitEditorIconCut",
-            onClick: function(){alert('i was clicked')}
-        }));
-*/
-        menu.addChild(new CheckedMenuItem({
-            label: "Prefered Menu",
-            onChange: function(evt) {
-                console.dir(evt);
-            }
-        }));
-/*
-        menu.addChild(new MenuSeparator());
-
-        var pSubMenu = new Menu();
-        pSubMenu.addChild(new MenuItem({
-            label: "Submenu item"
-        }));
-        pSubMenu.addChild(new MenuItem({
-            label: "Submenu item"
-        }));
-        menu.addChild(new PopupMenuItem({
-            label: "Submenu",
-            popup: pSubMenu
-        }));
-*/
-        dojo.connect(tree, "onClick", tree, function(item,nodeWidget,e){
-            console.log("is expandable?: ", nodeWidget.isExpandable, e.target);
-
+        dojo.connect(parentTree, "onClick", parentTree, function(item,nodeWidget,e){
             if( nodeWidget.isExpandable ) {
-                    this._onExpandoClick({node:nodeWidget});
+                this._onExpandoClick({node:nodeWidget});
+            } else {
+                location.hash = item.url;
             }
-            console.log("item : ", item);
-
         });
-        menu.startup();
         return menu;
     }
  });

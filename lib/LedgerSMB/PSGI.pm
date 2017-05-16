@@ -208,7 +208,7 @@ sub setup_url_space {
     my $psgi_app = \&psgi_app;
 
     return builder {
-        mount "/menus" => LedgerSMB::MenuREST->new();
+        mount "/menus" => LedgerSMB::MenuREST->new()->to_app;
 
         enable match_if path(qr!.+\.(css|js|png|ico|jp(e)?g|gif)$!),
             'ConditionalGET';
@@ -250,8 +250,6 @@ sub setup_url_space {
 }
 
 
-
-
 =back
 
 =cut
@@ -269,7 +267,22 @@ sub GET {
         $env->{QUERY_STRING} .= "&id=$param"
             if $param && $param =~ /^[0-9]+$/;
     }
-    return LedgerSMB::PSGI::psgi_app($env);
+    my @res = @{LedgerSMB::PSGI::psgi_app($env)};
+    return ($res[2], $res[1]);
+}
+
+sub PUT {
+    my ($self, $env, $data) = @_;
+
+    $env->{SCRIPT_NAME} = "/menu.pl";
+    $env->{QUERY_STRING} = "action=menuitems_json";
+
+    foreach my $param ( @{$env->{'rest.ids'}} ) {
+        $env->{QUERY_STRING} .= "&id=$param"
+            if $param && $param =~ /^[0-9]+$/;
+    }
+    my @res = @{LedgerSMB::PSGI::psgi_app($env)};
+    return ($res[2], $res[1]);
 }
 
 1;
