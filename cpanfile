@@ -98,34 +98,60 @@ feature 'debug', "Debug pane" =>
 };
 
 # Even with cpanm --notest, 'test' target of --installdeps
-# will be included, so put our testing requirements in develop...
+# will be included, but not tested
 on 'develop' => sub {
-    requires 'App::Prove', '3.36';
+    #requires 'COATest';
+    requires 'DBI';
     requires 'File::Util';
-    requires 'HTML::Lint';
-    requires 'HTML::Lint::Parser', '2.26';
+    recommends 'HTML::Lint';    # Provided by HTML::Lint::Pluggable
+    #requires 'HTML::Lint::Parser', '>= 2.26';
     requires 'HTML::Lint::Pluggable';
-    requires 'HTML::Lint::Pluggable::HTML5';
-    requires 'HTML::Lint::Pluggable::WhiteList';
+    recommends 'HTML::Lint::Pluggable::HTML5';      # Dynamic Plugin
+    recommends 'HTML::Lint::Pluggable::WhiteList';  # Dynamic Plugin
     recommends 'Linux::Inotify2';
-    requires 'Module::CPANfile'; # for 01.2-deps.t
+    requires 'Log::Log4perl';
+    requires 'MIME::Base64';
+    requires 'Module::CPANfile';
+    requires 'Module::Runtime';
+    requires 'Moose';
     requires 'Perl::Critic';
     requires 'Pherkin::Extension::Weasel', '0.02';
-    requires 'Test::BDD::Cucumber', '0.52';
-    requires 'Test::Class::Moose';
-    requires 'Test::Class::Moose::Role';
-    requires 'Test::Class::Moose::Role::ParameterizedInstances';
-    requires 'Test::Exception';
-    requires 'Test::Trap';
-    requires 'Test::Dependencies', '0.20';
-    requires 'Test::Exception';
-    requires 'Test::Harness', '3.36';
-    requires 'Perl::Critic';
-    requires 'Perl::Critic::Moose';
-    requires 'Plack::Middleware::Pod'; # YLA - Generate browseable documentation
+    recommends 'Plack::Middleware::Pod';
     requires 'Selenium::Remote::Driver';
+    requires 'Selenium::Remote::WDKeys';
     requires 'TAP::Parser::SourceHandler::pgTAP';
-    requires 'Weasel', '0.11';
-    requires 'Weasel::Driver::Selenium2', '0.05';
+    requires 'Template', '2.14';
+    #requires 'Test::BDD::Cucumber', '>= 0.52';
+    requires 'Test::Class::Moose';
+    #requires 'Test::Class::Moose::Role';
+    requires 'Test::Class::Moose::Role::ParameterizedInstances';
+    requires 'Test::More';  # We should pick More or Most, why 2?
+    requires 'Test::Dependencies', '>= 0.20';
+    #requires 'Test::Harness', '>= 3.36';
+    requires 'Try::Tiny';
+    requires 'Weasel', '>= 0.11';
+    requires 'Weasel::Driver::Selenium2', '>= 0.05';
     requires 'Weasel::Widgets::Dojo';
+};
+
+# No build related dependencies
+on 'build' => sub {
+};
+
+# No configure related dependencies
+on 'configure' => sub {
+};
+
+# Required only by our tests
+# We need https://github.com/miyagawa/cpanminus/issues/502 to be fixed
+# for this to work.
+on 'test' => sub {
+    requires 'DBI';
+    requires 'Digest::SHA';
+    requires 'FindBin';
+    requires 'Log::Log4perl';
+    requires 'MIME::Base64';
+    requires 'Test::Exception';
+    requires 'Test::More';
+    requires 'Test::Trap';
 };
