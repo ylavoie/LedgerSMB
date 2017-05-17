@@ -5,8 +5,7 @@ use warnings;
 
 use File::Find;
 use Test::More;
-eval "use  HTML::Lint::Pluggable";
-plan skip_all => "HTML::Lint::Pluggable not available" if $@;
+use HTML::Lint::Pluggable;
 
 my @on_disk = ();
 

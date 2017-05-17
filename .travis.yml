@@ -29,6 +29,8 @@ matrix:
             - nginx postgresql-9.6-pgtap
       env:
         - POD_TESTING=1
+        # Use heavy style for dependencies
+        - TDSTYLE=1
     - perl: '5.24'
       addons:
         postgresql: '9.5'
@@ -120,7 +122,11 @@ before_install:
   - npm install uglify-js@">=2.0 <3.0"
 
 install:
-  - cpanm --quiet --notest --with-develop --with-feature=edi --with-feature=xls --installdeps .
+  # We need https://github.com/miyagawa/cpanminus/issues/502 to be fixed
+  # for --with-test to work.
+  # Meanwhile, we patch cpanm
+  - cp utils/test/cpanm `which cpanm`
+  - cpanm --quiet --notest --with-develop --with-test --with-feature=edi --with-feature=xls --installdeps .
   - cpan-install --coverage
   - if [ "${POD_TESTING}" != "" ]; then
        cpanm --quiet --notest Test::Pod ;
@@ -152,10 +158,13 @@ script:
      LSMB_TEST_DB=1 LSMB_NEW_DB=lsmbinstalltest
      LSMB_BASE_URL="http://127.0.0.1:5000"
      HARNESS_RULESFILE="t/testrules.yml"
-    prove -j9 -r
-          --pgtap-option dbname=lsmbinstalltest
-          --pgtap-option username=postgres
-          --feature-option tags=~@wip
+    prove -j9 -r --source Perl
+          --ext=.t --ext=.pg --ext=.feature
+          --source pgTAP   --pgtap-option dbname=lsmbinstalltest
+                           --pgtap-option username=postgres
+                           --pgtap-option suffix=.pg
+          --source Feature --feature-option extensions=.feature
+                           --feature-option tags=~@wip
           t/ xt/
 
 after_success:

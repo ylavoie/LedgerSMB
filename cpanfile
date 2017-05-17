@@ -103,29 +103,53 @@ feature 'debug', "Debug pane" =>
 on 'develop' => sub {
     requires 'App::Prove', '3.36';
     requires 'File::Util';
-    requires 'HTML::Lint';
-    requires 'HTML::Lint::Parser', '2.26';
+    recommends 'HTML::Lint';    # Provided by HTML::Lint::Pluggable
+    #requires 'HTML::Lint::Parser', '>= 2.26';
     requires 'HTML::Lint::Pluggable';
-    requires 'HTML::Lint::Pluggable::HTML5';
-    requires 'HTML::Lint::Pluggable::WhiteList';
+    recommends 'HTML::Lint::Pluggable::HTML5';      # Dynamic Plugin
+    recommends 'HTML::Lint::Pluggable::WhiteList';  # Dynamic Plugin
     recommends 'Linux::Inotify2';
     requires 'Module::CPANfile'; # for 01.2-deps.t
     requires 'Perl::Critic';
     requires 'Perl::Critic::Moose';
     requires 'Pherkin::Extension::Weasel', '0.02';
-    requires 'Plack::Middleware::Pod'; # YLA - Generate browseable documentation
+    recommends 'Plack::Middleware::Pod';
     requires 'Selenium::Remote::Driver';
+    requires 'Selenium::Remote::WDKeys';
     requires 'TAP::Parser::SourceHandler::pgTAP';
-    requires 'Test::BDD::Cucumber', '0.52';
+    #requires 'Test::BDD::Cucumber', '>= 0.52';
     requires 'Test::Class::Moose';
-    requires 'Test::Class::Moose::Role';
+    #requires 'Test::Class::Moose::Role';
     requires 'Test::Class::Moose::Role::ParameterizedInstances';
     requires 'Test::Exception';
     requires 'Test::Dependencies', '0.20';
     requires 'Test::Exception';
     requires 'Test::Harness', '3.36';
+    requires 'Test::More';  # We should pick More or Most, why 2?
     requires 'Test::Trap';
     requires 'Weasel', '0.11';
     requires 'Weasel::Driver::Selenium2', '0.05';
     requires 'Weasel::Widgets::Dojo';
+};
+
+# No build related dependencies
+on 'build' => sub {
+};
+
+# No configure related dependencies
+on 'configure' => sub {
+};
+
+# Required only by our tests
+# We need https://github.com/miyagawa/cpanminus/issues/502 to be fixed
+# for this to work.
+on 'test' => sub {
+    requires 'DBI';
+    requires 'Digest::SHA';
+    requires 'FindBin';
+    requires 'Log::Log4perl';
+    requires 'MIME::Base64';
+    requires 'Test::Exception';
+    requires 'Test::More';
+    requires 'Test::Trap';
 };
