@@ -15,7 +15,8 @@ requires 'DateTime::Format::Strptime';
 requires 'File::MimeInfo';
 requires 'HTML::Entities';
 requires 'HTML::Escape';
-requires 'JSON::XS';
+requires 'JSON';
+recommends 'JSON::XS';
 requires 'List::MoreUtils';
 requires 'Locale::Maketext::Lexicon', '0.62';
 requires 'Log::Log4perl';
@@ -101,6 +102,9 @@ feature 'debug', "Debug pane" =>
 # will be included, so put our testing requirements in develop...
 on 'develop' => sub {
     requires 'App::Prove', '3.36';
+    requires 'COATest';
+    requires 'File::Find::Rule';
+    requires 'File::Find::Rule::Perl';
     requires 'File::Util';
     requires 'HTML::Lint';
     requires 'HTML::Lint::Parser', '2.26';
@@ -110,22 +114,39 @@ on 'develop' => sub {
     recommends 'Linux::Inotify2';
     requires 'Module::CPANfile'; # for 01.2-deps.t
     requires 'Perl::Critic';
+    requires 'Perl::Critic::Moose';
     requires 'Pherkin::Extension::Weasel', '0.02';
+    requires 'Plack::Middleware::Pod';
     requires 'Test::BDD::Cucumber', '0.52';
+    requires 'Test::BDD::Cucumber::Extension';
+    requires 'Test::BDD::Cucumber::StepFile';
     requires 'Test::Class::Moose';
+    requires 'Test::Class::Moose::Load';
+    requires 'Test::Class::Moose::Runner';
     requires 'Test::Class::Moose::Role';
     requires 'Test::Class::Moose::Role::ParameterizedInstances';
     requires 'Test::Exception';
+    requires 'Test::Most';
     requires 'Test::Trap';
     requires 'Test::Dependencies', '0.20';
     requires 'Test::Exception';
     requires 'Test::Harness', '3.36';
     requires 'Perl::Critic';
     requires 'Perl::Critic::Moose';
-    requires 'Plack::Middleware::Pod'; # YLA - Generate browseable documentation
+    requires 'Plack::Middleware::Pod';
     requires 'Selenium::Remote::Driver';
+    requires 'Selenium::Remote::WDKeys';
     requires 'TAP::Parser::SourceHandler::pgTAP';
     requires 'Weasel', '0.11';
     requires 'Weasel::Driver::Selenium2', '0.05';
+    requires 'Weasel::Element';
+    requires 'Weasel::Element::Document';
+    requires 'Weasel::FindExpanders';
+    requires 'Weasel::FindExpanders::Dojo';
+    requires 'Weasel::FindExpanders::HTML';
+    requires 'Weasel::WidgetHandlers';
     requires 'Weasel::Widgets::Dojo';
+    requires 'Weasel::Widgets::HTML';
+    requires 'YAML::Syck';
 };
+
