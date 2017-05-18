@@ -100,14 +100,13 @@ define(["dojo/_base/declare",
             model: prefModel,
             dndController: dndSource,
             checkAcceptance: this.treeCheckAcceptance,
-            checkItemAcceptance: this.treeCheckItemAcceptance,
             showRoot: true,
             openOnClick: true,
             getIconClass: function(/*dojo.data.Item*/ item, /*Boolean*/ opened){
-                return (!item || item.menu || item.name == 'getRoot') ? (opened ? "dijitFolderOpened" : "dijitFolderClosed") : "dijitLeaf"
+                return (!item || item.menu) ? (opened ? "dijitFolderOpened" : "dijitFolderClosed") : "dijitLeaf"
             },
             checkItemAcceptance: function(target, source, position){
-                return source.anchor.item.menu != 1;    // Refuse menus
+                return typeof source.anchor.item.menu === 'undefined';    // Refuse menus
             },
         }, 'prefTree'); // make sure you have a target HTML element with this id
         preftree.startup();
@@ -206,9 +205,6 @@ define(["dojo/_base/declare",
             },
         }, 'menuTree'); // make sure you have a target HTML element with this id
         parentTree.startup();
-        var root = observableStore.get('0');
-        root.preferred = 0;
-        observableStore.put(root);
 
         // Create context menu for trees
         var contextMenu = new Menu({
@@ -224,17 +220,17 @@ define(["dojo/_base/declare",
         }));
 
         //TODO: Restore loading icon...
-        var menuTree = new Menu({
-            targetNodeIds: ['menuTree']
-        });
         var prefMenu = new Menu({
             targetNodeIds: ['prefTree']
         });
+        var menuTree = new Menu({
+            targetNodeIds: ['menuTree']
+        });
 
         var menu = new Menu();
-        menu.addchild(prefTree);
+        menu.addChild(prefTree);
         menu.addChild(new MenuSeparator);
-        menu.addchild(menuTree);
+        menu.addChild(menuTree);
 
         dojo.connect(prefTree, "onClick", prefTree, function(item,nodeWidget,e){
             if( nodeWidget.isExpandable ) {
@@ -250,6 +246,7 @@ define(["dojo/_base/declare",
                 location.hash = item.url;
             }
         });
+
         return menu;
     }
  });
