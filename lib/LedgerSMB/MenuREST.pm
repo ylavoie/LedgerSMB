@@ -41,6 +41,8 @@ sub PUT {
     foreach my $param ( @{$env->{'rest.ids'}} ) {
         $env->{QUERY_STRING} .= "&id=$param"
             if $param && $param =~ /^[0-9]+$/;
+        $env->{QUERY_STRING} .= "$param"
+            if $param && $param =~ /^preferred=[01]$/;
     }
     my @res = @{LedgerSMB::PSGI::psgi_app($env)};
     return ($res[2], $res[1]);
