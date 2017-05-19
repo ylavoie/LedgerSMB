@@ -19,24 +19,34 @@ define(["dojo/_base/declare",
     "lsmb/menus/MenuRestStore", [Menu], {
     parentTree: null,
     prefModel: null,
-    _dojo_connect: function (tree) {
-        dojo.connect(tree, "onClick", tree, function(item,nodeWidget,e){
-            if( nodeWidget.isExpandable ) {
-                this._onExpandoClick({node:nodeWidget});
-            } else {
-                var url = "";
-                if ( item.module ) {
-                    url += item.module + "?login=" + dom.byId("login").textContent + "&";
-                    url += item.args.join("&");
-                }
-                url += ('New Window' == item.label) ? "&target='new'"
-                     : ('login.pl' == item.module)  ? "&target='_top'"
-                                                    : "";
-                location.hash = url;
+    _get_url: function (item) {
+        var url = "";
+        if ( item.module ) {
+            url += item.module + "?login=" + dom.byId("login").textContent + "&";
+            url += item.args.join("&");
+        }
+        url += ('New Window' == item.label) ? "&target='new'"
+             : ('login.pl' == item.module)  ? "&target='_top'"
+                                            : "";
+        return url;
+    },
+    _onClick: function(item,nodeWidget,e){
+        if( nodeWidget.isExpandable ) {
+            this._onExpandoClick({node:nodeWidget});
+        } else {
+            var url = "";
+            if ( item.module ) {
+                url += item.module + "?login=" + dom.byId("login").textContent + "&";
+                url += item.args.join("&");
             }
-        });
+            url += ('New Window' == item.label) ? "&target='new'"
+                 : ('login.pl' == item.module)  ? "&target='_top'"
+                                                : "";
+            location.hash = url;
+        }
     },
     postCreate: function() {
+        var self = this;
         // set up the store to get the tree data, plus define the method
         // to query the children of a node
         // give Observable interface so Tree can track updates
@@ -71,6 +81,7 @@ define(["dojo/_base/declare",
                 this.store.add({
                     id: childItem.id,
                     parent: 0,
+                    args: childItem.args,
                     path: "0," + childItem.id,
                     position: this.store.data.length,
                     name: oldParentItem.label + " - " + childItem.label,
@@ -92,6 +103,10 @@ define(["dojo/_base/declare",
             checkItemAcceptance: function(target, source, position){
                 return typeof source.anchor.item.menu === 'undefined';    // Refuse menus
             },
+            onClick: function (item) {
+                // Get the URL from the item, and navigate to it
+                location.hash = self._get_url(item);
+            }
         }, 'prefTree'); // make sure you have a target HTML element with this id
 
         var restStore = new JsonRest({
@@ -146,6 +161,7 @@ define(["dojo/_base/declare",
                 when(restModel.store.get(item.parent), function(object) {
                     prefModel.store.add({
                         parent: 0,
+                        args: item.args,
                         position: prefModel.store.data.length,
                         name: object.label + " - " + item.label,
                         module: item.module
@@ -180,6 +196,10 @@ define(["dojo/_base/declare",
             onLoadDeferred: function(){
                 console.debug("tree onLoad here!");
                 // do work here
+            },
+            onClick: function (item) {
+                // Get the URL from the item, and navigate to it
+                location.hash = self._get_url(item);
             }
         }, 'menuTree'); // make sure you have a target HTML element with this id
 /*
@@ -197,8 +217,6 @@ define(["dojo/_base/declare",
         }));
 */
         //TODO: Restore loading icon...
-        this._dojo_connect(prefTree);
-        this._dojo_connect(parentTree);
     }
  });
 });
