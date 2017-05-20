@@ -57,6 +57,14 @@ define(["dojo/_base/declare",
                 // if true, we might be missing the data, false and nothing should be done
                 return object["menu"] && ("children" in object) && object["children"] ;
             },
+            onChildrenChange: function (parentItem, newChildrenList) {
+                console.log("onChildrenChange");
+                console.dir(parentItem);
+                console.dir(newChildrenList);
+                newChildrenList.sort(function(a, b) {
+                    return a.name > b.name;
+                });
+            },
             pasteItem: function(/*Item*/ childItem, /*Item*/ oldParentItem, /*Item*/ newParentItem,
                         /*Boolean*/ bCopy, /*int?*/ insertIndex, /*Item*/ before){
                 // summary:
@@ -201,10 +209,6 @@ define(["dojo/_base/declare",
             },
             getIconClass: function(/*dojo.data.Item*/ item, /*Boolean*/ opened){
                 return (!item || item.menu) ? (opened ? "dijitFolderOpened" : "dijitFolderClosed") : "dijitLeaf"
-            },
-            onLoadDeferred: function(){
-                console.debug("tree onLoad here!");
-                // do work here
             },
             onClick: function (item) {
                 // Get the URL from the item, and navigate to it
