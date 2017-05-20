@@ -30,21 +30,6 @@ define(["dojo/_base/declare",
                                             : "";
         return url;
     },
-    _onClick: function(item,nodeWidget,e){
-        if( nodeWidget.isExpandable ) {
-            this._onExpandoClick({node:nodeWidget});
-        } else {
-            var url = "";
-            if ( item.module ) {
-                url += item.module + "?login=" + dom.byId("login").textContent + "&";
-                url += item.args.join("&");
-            }
-            url += ('New Window' == item.label) ? "&target='new'"
-                 : ('login.pl' == item.module)  ? "&target='_top'"
-                                                : "";
-            location.hash = url;
-        }
-    },
     postCreate: function() {
         var self = this;
         // set up the store to get the tree data, plus define the method
@@ -87,7 +72,7 @@ define(["dojo/_base/declare",
                     name: oldParentItem.label + " - " + childItem.label,
                     module: childItem.module
                 });
-                parentTree.model.store.put({id: childItem.id, preferred: 1});
+                parentTree.model.store.put(childItem.id, {preferred: 1});
             }
         });
         var preftree = new Tree({
@@ -116,7 +101,37 @@ define(["dojo/_base/declare",
                 return this.target;
             },
         });
-        var cacheStore = new Memory({idProperty: "id"});
+        var cacheStore = new Memory({
+            idProperty: "id",
+            put: function(object, options){
+                // fire the onChildrenChange event
+                this.onChildrenChange(object, object.children);
+                // fire the onChange event
+                this.onChange(object);
+                // execute the default action
+                return Memory.prototype.put.apply(this, arguments);
+            },
+            // we can also put event stubs so these methods can be
+            // called before the listeners are applied
+            onChildrenChange: function(item, children){
+                // fired when the set of children for an object change
+                //console.log(item);
+                if ( item.preferred > 0 && item.parent) {
+                    when(this.get(item.parent), function(object) {
+                        prefModel.store.add({
+                            parent: 0,
+                            args: item.args,
+                            position: prefModel.store.data.length,
+                            name: object.label + " - " + item.label,
+                            module: item.module
+                        });
+                    });
+                }
+            },
+            onChange: function(object){
+                // fired when the properties of an object change
+            },
+        });
         restStore = new Cache(restStore, cacheStore);
 
         // create model to interface Tree to store
@@ -153,23 +168,17 @@ define(["dojo/_base/declare",
                 // just get the name (note some models makes use of 'labelAttr' as opposed to simply returning the key 'name')
                 return object.label;
             },
+            onChildrenChange: function(/*===== parent, newChildrenList =====*/){
+                // summary:
+                //		Callback to do notifications about new, updated, or deleted items.
+                // parent: dojo/data/Item
+                // newChildrenList: Object[]
+                //		Items from the store
+                // tags:
+                //		callback
+                console.log("ObjectStoreModel onChildrenChange");
+            },
         });
-        restModel.store.query({}).then(function(items){
-            items.forEach(function(item) {
-            //console.log(item);
-            if ( item.preferred > 0 ) {
-                when(restModel.store.get(item.parent), function(object) {
-                    prefModel.store.add({
-                        parent: 0,
-                        args: item.args,
-                        position: prefModel.store.data.length,
-                        name: object.label + " - " + item.label,
-                        module: item.module
-                    });
-                });
-            }});
-        });
-
         var parentTree = new Tree({
             model: restModel,
             dndController: dndSource,
