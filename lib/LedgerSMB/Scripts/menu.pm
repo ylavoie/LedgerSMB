@@ -139,14 +139,13 @@ Returns the menu items in JSON format
 
 =cut
 
-#use Data::Printer max_depth => 4;
 sub menuitems_json {
     my ($request) = @_;
     # There must be a better way
     my $method = $request->{_auth}->{env}->{REQUEST_METHOD};
+    my $menu = LedgerSMB::DBObject::Menu->new({base => $request});
 
     if ( $method eq 'GET' ) {
-        my $menu = LedgerSMB::DBObject::Menu->new({base => $request});
 
         #TODO: Localize Menus here before sending to client
         if ( defined($request->{id}) && $request->{id} ne "" ) {
@@ -161,12 +160,11 @@ sub menuitems_json {
     } elsif ( $method eq 'PUT' ) {
         if ( defined($request->{id}) && $request->{id} ne ""
           && defined($request->{preferred}) && $request->{preferred} =~ /[01]/ ) {
-            my $status = menu_preferred($request->{id},$request->{preferred});
-            return [200, '', ''] if $status;
+            my $status = $menu->menu_preferred($request->{id},$request->{preferred});
+            return [200, [], []] if $status;
         }
-        return [400, '', ''];
     }
-    return [400, '', ''];
+    return [400, [], []];
 }
 
 =pod
