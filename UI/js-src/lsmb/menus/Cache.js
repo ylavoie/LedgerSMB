@@ -3,6 +3,9 @@ function(lang, when /*=====, declare, Store =====*/){
 
 // module:
 //        lsmb/menus/Cache
+// This is to query the masterstore and rely on it for get.
+// This should be refactored to use the standard cache and only have
+// a specialized getter
 
 var Cache = function(masterStore, cachingStore, options){
     options = options || {};
