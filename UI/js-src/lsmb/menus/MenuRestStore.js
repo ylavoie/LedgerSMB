@@ -58,9 +58,6 @@ define(["dojo/_base/declare",
                 return object["menu"] && ("children" in object) && object["children"] ;
             },
             onChildrenChange: function (parentItem, newChildrenList) {
-                console.log("onChildrenChange");
-                console.dir(parentItem);
-                console.dir(newChildrenList);
                 newChildrenList.sort(function(a, b) {
                     return a.name > b.name;
                 });
@@ -71,28 +68,30 @@ define(["dojo/_base/declare",
                 //      Copy an item from one tree to another.
                 //      Used in drag & drop.
 
-                this.store.add({
-                    id: childItem.id,
-                    parent: 0,
-                    args: childItem.args,
-                    path: "0," + childItem.id,
-                    position: this.store.data.length,
-                    name: oldParentItem.label + " - " + childItem.label,
-                    module: childItem.module
-                });
-                parentTree.model.store.put(childItem.id, {preferred: 1});
+                parentTree.model.store.put({preferred: 1},{id:childItem.id})
+                    .then(function(){
+                        this.store.add({
+                            id: childItem.id,
+                            parent: 0,
+                            args: childItem.args,
+                            path: "0," + childItem.id,
+                            position: this.store.data.length,
+                            name: oldParentItem.label + " - " + childItem.label,
+                            module: childItem.module
+                        }, {id: childItem.id});
+                    });
             }
         });
         var preftree = new Tree({
             model: prefModel,
             dndController: dndSource,
-            checkAcceptance: this.treeCheckAcceptance,
             showRoot: true,
             openOnClick: true,
             copyOnly: true,
             getIconClass: function(/*dojo.data.Item*/ item, /*Boolean*/ opened){
                 return (!item || item.menu) ? (opened ? "dijitFolderOpened" : "dijitFolderClosed") : "dijitLeaf"
             },
+//            checkAcceptance: this.treeCheckAcceptance,
             checkItemAcceptance: function(target, source, position){
                 return typeof source.anchor.item.menu === 'undefined';    // Refuse menus
             },
@@ -102,20 +101,32 @@ define(["dojo/_base/declare",
             }
         }, 'prefTree'); // make sure you have a target HTML element with this id
 
+        // Create context menu for tree
+        var contextMenu = new Menu({
+            targetNodeIds: [preftree.id],
+            selector: ".dijitTreeNode"
+        });
+        // Drag away or delete would be fine too
+        contextMenu.addChild(new MenuItem({
+            label: "Remove preference",
+            onClick: function(evt){
+                var node = dijit.byNode(this.getParent().currentTarget);
+                parentTree.model.store.put({preferred: 0},{id: node.item.id})
+                    .then(function (){
+                        node.tree.model.store.remove(node.item.id);
+                    });
+            }
+        }));
+
         var restStore = new JsonRest({
             target:      "/menus",
             idProperty: "id",
-            _getTarget: function(id){
-                return this.target;
-            },
         });
         var cacheStore = new Memory({
             idProperty: "id",
             put: function(object, options){
                 // fire the onChildrenChange event
                 this.onChildrenChange(object, object.children);
-                // fire the onChange event
-                this.onChange(object);
                 // execute the default action
                 return Memory.prototype.put.apply(this, arguments);
             },
@@ -132,12 +143,9 @@ define(["dojo/_base/declare",
                             position: prefModel.store.data.length,
                             name: object.label + " - " + item.label,
                             module: item.module
-                        });
+                        }, {id: item.id});
                     });
                 }
-            },
-            onChange: function(object){
-                // fired when the properties of an object change
             },
         });
         restStore = new Cache(restStore, cacheStore);
@@ -176,16 +184,6 @@ define(["dojo/_base/declare",
                 // just get the name (note some models makes use of 'labelAttr' as opposed to simply returning the key 'name')
                 return object.label;
             },
-            onChildrenChange: function(/*===== parent, newChildrenList =====*/){
-                // summary:
-                //		Callback to do notifications about new, updated, or deleted items.
-                // parent: dojo/data/Item
-                // newChildrenList: Object[]
-                //		Items from the store
-                // tags:
-                //		callback
-                console.log("ObjectStoreModel onChildrenChange");
-            },
         });
         var parentTree = new Tree({
             model: restModel,
@@ -215,20 +213,6 @@ define(["dojo/_base/declare",
                 location.hash = self._get_url(item);
             }
         }, 'menuTree'); // make sure you have a target HTML element with this id
-/*
-        // Create context menu for trees
-        var contextMenu = new Menu({
-            targetNodeIds: [preftree.id],
-            selector: ".dijitTreeNode"
-        });
-        contextMenu.addChild(new MenuItem({
-            label: "Remove preference",
-            onClick: function(evt){
-                var node = this.getParent().currentTarget;
-                console.log("menu clicked for node ", node);
-            }
-        }));
-*/
         //TODO: Restore loading icon...
     }
  });
