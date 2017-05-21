@@ -97,7 +97,18 @@ define(["dojo/_base/declare",
             onClick: function (item) {
                 // Get the URL from the item, and navigate to it
                 location.hash = self._get_url(item);
-            }
+            },
+            onKeyUp: function(evt){
+                if ( evt.code == "Delete" || evt.Code == 'KeyX' && evt.ctrlKey) {
+                    var node = this.selectedNode;
+                    if ( !node.item.menu ) {
+                        when(parentTree.model.store.put({preferred: 0},{id: node.item.id}))
+                            .then(function (result){
+                                node.tree.model.store.remove(node.item.id);
+                            });
+                    }
+                }
+            },
         }, 'prefTree'); // make sure you have a target HTML element with this id
 
         // Create context menu for tree
@@ -105,15 +116,17 @@ define(["dojo/_base/declare",
             targetNodeIds: [preftree.id],
             selector: ".dijitTreeNode"
         });
-        // Drag away or delete would be fine too
+        // Drag away would be fine too
         contextMenu.addChild(new MenuItem({
             label: "Remove preference",
             onClick: function(evt){
                 var node = dijit.byNode(this.getParent().currentTarget);
-                when(parentTree.model.store.put({preferred: 0},{id: node.item.id}))
-                    .then(function (result){
-                        node.tree.model.store.remove(node.item.id);
-                    });
+                if ( !node.item.menu ) {
+                    when(parentTree.model.store.put({preferred: 0},{id: node.item.id}))
+                        .then(function (result){
+                            node.tree.model.store.remove(node.item.id);
+                        });
+                }
             }
         }));
 
