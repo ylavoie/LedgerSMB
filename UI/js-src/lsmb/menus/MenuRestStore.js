@@ -131,7 +131,7 @@ define(["dojo/_base/declare",
         }));
 
         var restStore = new JsonRest({
-            target:      "/menus",
+            target:      "/api/menus",
             idProperty: "id",
         });
         var cacheStore = new Memory({

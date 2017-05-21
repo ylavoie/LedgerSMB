@@ -208,7 +208,9 @@ sub setup_url_space {
     my $psgi_app = \&psgi_app;
 
     return builder {
-        mount "/menus" => LedgerSMB::REST::MenuREST->new()->to_app;
+        mount "/api" => builder {
+            mount "/menus" => LedgerSMB::REST::MenuREST->new()->to_app;
+        };
 
         enable match_if path(qr!.+\.(css|js|png|ico|jp(e)?g|gif)$!),
             'ConditionalGET';
