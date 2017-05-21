@@ -19,12 +19,22 @@ REST routines will be transparently become available with Plack::App::REST,
 as long as their names match the REST commands
 
 Allowed syntax:
-    GET /menus                  Returns the whole menu tree
-    GET /menus/n                Returns item id n
-    PUT /menus/n/preferred=[01] Puts menu n in user preferences
+    GET /api/menus                  Returns the whole menu tree
+    GET /api/menus/n                Returns item id n
+    PUT /api/menus/n/preferred=[01] Puts menu n in user preferences
 
 =cut
 
+
+=head1 FUNCTIONS
+
+=over
+
+=item GET
+
+Implement GET function for menus
+
+=cut
 
 sub GET {
     my ($self, $env, $data) = @_;
@@ -45,6 +55,12 @@ sub GET {
     my @res = @{LedgerSMB::PSGI::psgi_app($env)};
     return ($res[2], $res[1]);
 }
+
+=item PUT
+
+Implement GET function for menus
+
+=cut
 
 sub _request_content {
     return unless defined $_[0]->{CONTENT_LENGTH};
@@ -81,5 +97,9 @@ sub PUT {
     my @res = @{LedgerSMB::PSGI::psgi_app($env)};
     return ($res[2], $res[1]);
 }
+
+=back
+
+=cut
 
 1;
