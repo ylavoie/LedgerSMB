@@ -66,16 +66,16 @@ define(["dojo/_base/declare",
                         /*Boolean*/ bCopy, /*int?*/ insertIndex, /*Item*/ before){
                 // summary:
                 //      Copy an item from one tree to another.
-                //      Used in drag & drop.
-
-                parentTree.model.store.put({preferred: 1},{id:childItem.id})
-                    .then(function(){
-                        this.store.add({
+                //      Used in drag & drop. Icon should reflect this
+                var store = this.store;
+                when(parentTree.model.store.put({preferred: 1},{id:childItem.id}))
+                    .then(function(result){
+                        store.add({
                             id: childItem.id,
                             parent: 0,
                             args: childItem.args,
                             path: "0," + childItem.id,
-                            position: this.store.data.length,
+                            position: store.data.length,
                             name: oldParentItem.label + " - " + childItem.label,
                             module: childItem.module
                         }, {id: childItem.id});
@@ -111,8 +111,8 @@ define(["dojo/_base/declare",
             label: "Remove preference",
             onClick: function(evt){
                 var node = dijit.byNode(this.getParent().currentTarget);
-                parentTree.model.store.put({preferred: 0},{id: node.item.id})
-                    .then(function (){
+                when(parentTree.model.store.put({preferred: 0},{id: node.item.id}))
+                    .then(function (result){
                         node.tree.model.store.remove(node.item.id);
                     });
             }
