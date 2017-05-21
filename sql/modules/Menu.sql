@@ -22,9 +22,9 @@ RETURNS BOOLEAN AS
 $$
     WITH u AS (
         UPDATE user_preference up
-           SET menus = (CASE WHEN in_preferred AND NOT (ARRAY[in_id] && menus)
-                                  THEN ARRAY_APPEND(menus,in_id)
-                             WHEN NOT in_preferred AND (ARRAY[in_id] && menus)
+           SET menus = (CASE WHEN in_preferred
+                                  THEN ARRAY(SELECT DISTINCT UNNEST(ARRAY_APPEND(menus,in_id)) ORDER BY 1)
+                             WHEN NOT in_preferred
                                   THEN ARRAY_REMOVE(menus,in_id)
                         END)
          WHERE up.id = (
