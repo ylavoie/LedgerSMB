@@ -14,8 +14,14 @@ LedgerSMB::REST::MenuREST - REST Server for LedgerSMB Menus
 =head1 SYNOPSIS
 
 use LedgerSMB::REST::MenuREST;
+
 REST routines will be transparently become available with Plack::App::REST,
 as long as their names match the REST commands
+
+Allowed syntax:
+    GET /menus                  Returns the whole menu tree
+    GET /menus/n                Returns item id n
+    PUT /menus/n/preferred=[01] Puts menu n in user preferences
 
 =cut
 
