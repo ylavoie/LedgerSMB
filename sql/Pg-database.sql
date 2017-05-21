@@ -2316,8 +2316,7 @@ CREATE TABLE user_preference (
     stylesheet text default 'ledgersmb.css' not null,
     printer text,
     dateformat text default 'yyyy-mm-dd' not null,
-    numberformat text default '1000.00' not null,
-    menus int[]
+    numberformat text default '1000.00' not null
 );
 
 -- user_preference is here due to a dependency on language.code
