@@ -91,7 +91,6 @@ define(["dojo/_base/declare",
             getIconClass: function(/*dojo.data.Item*/ item, /*Boolean*/ opened){
                 return (!item || item.menu) ? (opened ? "dijitFolderOpened" : "dijitFolderClosed") : "dijitLeaf"
             },
-//            checkAcceptance: this.treeCheckAcceptance,
             checkItemAcceptance: function(target, source, position){
                 return typeof source.anchor.item.menu === 'undefined';    // Refuse menus
             },
