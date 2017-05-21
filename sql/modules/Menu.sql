@@ -17,14 +17,14 @@ CREATE TYPE menu_item AS (
    children int[]
 );
 
-CREATE OR REPLACE FUNCTION menu_preferred(in_id int, in_value boolean)
+CREATE OR REPLACE FUNCTION menu_preferred(in_id int, in_preferred boolean)
 RETURNS BOOLEAN AS
 $$
     WITH u AS (
         UPDATE user_preference up
-           SET menus = (CASE WHEN in_value AND NOT (ARRAY[in_id] && menus)
+           SET menus = (CASE WHEN in_preferred AND NOT (ARRAY[in_id] && menus)
                                   THEN ARRAY_APPEND(menus,in_id)
-                             WHEN NOT in_value AND (ARRAY[in_id] && menus)
+                             WHEN NOT in_preferred AND (ARRAY[in_id] && menus)
                                   THEN ARRAY_REMOVE(menus,in_id)
                         END)
          WHERE up.id = (
