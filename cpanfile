@@ -111,6 +111,8 @@ on 'develop' => sub {
     requires 'HTML::Lint::Pluggable';
     recommends 'HTML::Lint::Pluggable::HTML5';      # Dynamic Plugin
     recommends 'HTML::Lint::Pluggable::WhiteList';  # Dynamic Plugin
+    requires 'HTTP::Request::Common';
+    requires 'JSON::Validator';
     recommends 'Linux::Inotify2';
     requires 'Log::Log4perl';
     requires 'MIME::Base64';
@@ -119,7 +121,9 @@ on 'develop' => sub {
     requires 'Moose';
     requires 'Perl::Critic';
     requires 'Pherkin::Extension::Weasel', '0.02';
+    requires 'Plack::Builder';
     recommends 'Plack::Middleware::Pod';
+    requires 'Plack::Test';
     requires 'Selenium::Remote::Driver';
     requires 'Selenium::Remote::WDKeys';
     requires 'TAP::Parser::SourceHandler::pgTAP';
@@ -165,10 +169,8 @@ on 'test' => sub {
     requires 'DBI';
     requires 'Digest::SHA';
     requires 'FindBin';
-    requires 'JSON::Validator';
     requires 'Log::Log4perl';
     requires 'MIME::Base64';
-    requires 'REST::Client';
     requires 'Test::Exception';
     requires 'Test::More';
     requires 'Test::Trap';
