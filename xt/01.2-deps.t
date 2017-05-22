@@ -22,8 +22,10 @@ my @ignores = qw(App::LedgerSMB::Admin App::Prove Image::Size
                LaTeX::Driver PGObject::Util::DBAdmin
                Starman TeX::Encode::charmap
                Data::Dumper Data::Printer
+               Plack::App::REST
                lib warnings); # Why those 2 suddenly
 # Data::Dumper & Data::Printer are tracked by PerlCritic. Let's not report twice
+# use parent qw(Plack::App::REST) fails
 
 my $phases = 'runtime';
 
