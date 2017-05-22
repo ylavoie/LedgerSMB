@@ -92,7 +92,7 @@ sub PUT {
     if ($content && $content->{preferred} =~ /([01])/) {
         $env->{QUERY_STRING} .= "&preferred=$1";
     } else {
-            HTTP::Exception->throw(400);
+            HTTP::Exception->throw(404);
     };
     my @res = @{LedgerSMB::PSGI::psgi_app($env)};
     return ($res[2], $res[1]);

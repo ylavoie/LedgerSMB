@@ -165,8 +165,10 @@ on 'test' => sub {
     requires 'DBI';
     requires 'Digest::SHA';
     requires 'FindBin';
+    requires 'JSON::Validator';
     requires 'Log::Log4perl';
     requires 'MIME::Base64';
+    requires 'REST::Client';
     requires 'Test::Exception';
     requires 'Test::More';
     requires 'Test::Trap';
