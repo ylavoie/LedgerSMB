@@ -102,6 +102,7 @@ feature 'debug', "Debug pane" =>
 # will be included, so put our testing requirements in develop...
 on 'develop' => sub {
     requires 'App::Prove', '3.36';
+    requires 'Data::Printer'; ## no critic
     requires 'File::Util';
     requires 'HTML::Lint';
     requires 'HTML::Lint::Parser', '2.26';

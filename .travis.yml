@@ -150,8 +150,8 @@ script:
      LSMB_BASE_URL="http://127.0.0.1:5000"
      HARNESS_RULESFILE="t/testrules.yml"
     prove -j9 -r
-          --pgtap-option dbname=lsmbinstalltest
-          --pgtap-option username=postgres
+          --pgtap-option dbname=$LSMB_NEW_DB
+          --pgtap-option username=$PGUSER
           --feature-option tags=~@wip
           t/ xt/
 

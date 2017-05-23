@@ -8,7 +8,10 @@ use PageObject;
 use MIME::Base64;
 use Test::More;
 
+use Try::Tiny;
+
 use Module::Runtime qw(use_module);
+use Time::HiRes qw(time);
 
 use Moose;
 extends 'PageObject';
@@ -86,31 +89,56 @@ sub _verify {
               && scalar(@logged_in_login) > 0);
 };
 
+sub wait_till_loaded {
+    my ($self, $item, $delay) = @_;
+
+    while ( !$item->is_displayed ) {
+        Time::HiRes::sleep($delay); # Wait until displayed
+    }
+}
 
 sub click_menu {
-    my ($self, $path) = @_;
-    my $root = $self->find("//*[\@id='top_menu']");
+    my ($self, $paths) = @_;
 
-    my $item = $root;
-    my $ul = '';
+    subtest "Menu '" . join(' > ', @$paths) . "' useable" => sub {
 
-    my $tgt_class = $menu_path_pageobject_map{join(' > ', @$path)};
-    if (!defined $tgt_class || $tgt_class eq '') {
-        die join(' > ', @$path) . ' not implemented';
-        return undef;
-    }
-    # make sure the widget is registered before resolving the Weasel widget
-    ok(use_module($tgt_class),
-       "$tgt_class can be 'use'-d dynamically");
+        my $tgt_class = $menu_path_pageobject_map{join(' > ', @$paths)};
+        if (!defined $tgt_class || $tgt_class eq '') {
+            die join(' > ', @$paths) . ' not implemented';
+            return undef;
+        }
+        # make sure the widget is registered before resolving the Weasel widget
+        ok(use_module($tgt_class),
+           "$tgt_class can be 'use'-d dynamically");
 
-    do {
-        $item = $item->find(".$ul/li[./a[text()='$_']]");
-        my $link = $item->find("./a");
-        $link->click
-            unless ($item->get_attribute('class') =~ /\bmenu_open\b/);
+        my $root = $self->find("//*[\@id='top_menu']");
+        ok($root, "Menu tree loaded");
 
-        $ul = '/ul';
-    } for @$path;
+        my $item = $root;
+
+        do {
+            my $path = $_;
+            my $xpath = ".//div[contains(\@class, 'dijitTreeNodeContainer')]" .
+                        "//div[contains(\@class, 'dijitTreeNode')" .
+                          " and .//span[\@role='treeitem'" .
+                                      " and text()='$path']]";
+            $item = $item->find($xpath);
+
+            my $text = '--undef--';
+            try {
+                $text = $item->get_text if $item;
+            };
+            ok($text eq $path,"Found exact menu '$path': '" . $text . "'");
+
+            # PhantomJS requires clicking the label,
+            # Firefox & Chrome are ok with the TreeNode
+            my $label = $item->get_attribute('id') . '_label';
+            $item->find("//*[\@id='$label']")->click;
+
+            $self->wait_till_loaded($item, 0.1);
+
+        } for @$paths;
+    };
 
     return $self->session->page->body->maindiv->wait_for_content;
 }
