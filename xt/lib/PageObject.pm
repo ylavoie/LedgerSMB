@@ -45,29 +45,27 @@ sub field_types { return {}; }
 sub url { croak "Abstract method 'PageObject::url' called"; }
 
 
+use Data::Printer;
 sub wait_for_page {
     my ($self, $ref) = @_;
+    my $old_id = $ref->_id
+        if $ref;
+    warn p $old_id
+        if $ref;
 
     $self->session->wait_for(
         sub {
 
-            my $pwd = $self->session->alert_is_present;
-            $self->session->accept_alert
-                if $pwd && $pwd =~ "Warning:  Your password will expire in";
-
             if ($ref) {
                 local $@;
 
-                # if there's a reference element,
-                # wait for it to go stale (raise an exception)
-                eval {
-                    $ref->tag_name;
-                    1;
-                };
-                $ref = undef if !defined $@;
-                return 0;
+                my $new_id = $self->session->find_element_by_id($old_id->id);
+                warn p $new_id;
+                return $new_id eq "0"
+                    || defined($old_id) && $new_id->id ne $old_id->id;
             }
             else {
+                warn "Find " . p $ref;
                 $self->session->page
                     ->find('body.done-parsing', scheme => 'css');
             }

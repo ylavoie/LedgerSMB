@@ -129,5 +129,6 @@ on 'develop' => sub {
 #    requires 'Weasel::Driver::Selenium2', '0.06';
     requires 'Weasel', '0.11';
     requires 'Weasel::Driver::Selenium2', '0.05';
+    requires 'Data::Printer'; ##  no critic
     requires 'Weasel::Widgets::Dojo';
 };

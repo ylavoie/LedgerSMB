@@ -22,21 +22,28 @@ sub _build_body {
     return $self->find('body.done-parsing', scheme => 'css');
 }
 
+#use Data::Printer;
+#use DateTime;
 sub wait_for_body {
     my ($self) = @_;
-    my $old_id;
-    $old_id = $self->body->_id->id if $self->has_body;
+    my $old_id = $self->session->find_element_by_tag_name("body")
+        if $self->has_body;
+#    my $dt = DateTime->now;
+#    warn $dt->ymd . ' ' . $dt->hms . '.' . $dt->millisecond . ' ' . p $old_id;
     $self->clear_body;
 
     $self->session->wait_for(
         sub {
             if (defined $old_id) {
-                my $tag = "body";
-                my $current_id = $self->session->find_element_by_tag_name($tag);
-                return $current_id == 0
-                    || defined($current_id->id) && $current_id->id != $old_id;
+                my $new_id = $self->session->find_element_by_tag_name("body");
+#                my $dt = DateTime->now;
+#                warn $dt->ymd . ' ' . $dt->hms . '.' . $dt->millisecond . ' ' . p $new_id;
+                return $new_id eq "0"
+                    || defined($new_id->id) && $new_id->id ne $old_id->id;
             }
             else {
+#                my $dt = DateTime->now;
+#                warn $dt->ymd . ' ' . $dt->hms . '.' . $dt->millisecond . ' ' . "Find";
                 return $self->find('body.done-parsing', scheme => 'css') ? 1 : 0;
             }
         });
