@@ -51,8 +51,13 @@ sub wait_for_page {
     $self->session->wait_for(
         sub {
 
+            my $pwd = $self->session->alert_is_present;
+            $self->session->accept_alert
+                if $pwd && $pwd =~ "Warning:  Your password will expire in";
+
             if ($ref) {
                 local $@;
+
                 # if there's a reference element,
                 # wait for it to go stale (raise an exception)
                 eval {
