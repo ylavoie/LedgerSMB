@@ -19,27 +19,19 @@ has body => (is => 'rw',
 sub _build_body {
     my ($self) = @_;
 
-    return $self->find('body.done-parsing', scheme => 'css');
+    return $self->find_element_by_css('body.done-parsing');
 }
 
 sub wait_for_body {
     my ($self) = @_;
-    my $old_body;
-    $old_body = $self->body if $self->has_body;
+    my $old_body = $self->body if $self->has_body;
     $self->clear_body;
 
     $self->session->wait_for(
         sub {
-            if ($old_body) {
-                my $gone = 1;
-                try {
-                    $old_body->tag_name;
-                    # When successfully accessing the tag
-                    #  it's not out of scope yet...
-                    $gone = 0;
-                };
-                $old_body = undef if $gone;
-                return 0; # Not done yet
+            if ($self->has_body) {
+                return $self->_id
+                    && $old_body->_id ? $self->_id->id ne $old_body->_id->id : 0;
             }
             else {
                 return $self->find('body.done-parsing', scheme => 'css') ? 1 : 0;
