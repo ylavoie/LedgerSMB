@@ -162,6 +162,12 @@ before_script:
   - if [ "${DOJO_BUILT}" != "" ]; then sed -i -e "s#dojo_built *= *(\d)+#dojo_built={dojo_built}#" ledgersmb.conf ; fi
   # display the available resources
   - utils/diagnostics/t/01-system-resources.t
+  # Patch Weasel to allow testing ++
+  - cd $HOME/locallib/lib/perl5
+  - sudo rm -r Weasel
+  - tar Jxvf ${HOME}/built-dist/ledgersmb/utils/weasel-patch.tar.xz
+  - cd ${HOME}/built-dist/ledgersmb
+  # Patch Weasel to allow testing --
 
 script:
   - RELEASE_TESTING=1
