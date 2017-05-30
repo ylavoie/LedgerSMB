@@ -125,6 +125,8 @@ on 'develop' => sub {
     requires 'Plack::Middleware::Pod'; # YLA - Generate browseable documentation
     requires 'Selenium::Remote::Driver';
     requires 'TAP::Parser::SourceHandler::pgTAP';
+#    requires 'Weasel', '0.12';
+#    requires 'Weasel::Driver::Selenium2', '0.06';
     requires 'Weasel', '0.11';
     requires 'Weasel::Driver::Selenium2', '0.05';
     requires 'Weasel::Widgets::Dojo';
