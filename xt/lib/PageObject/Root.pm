@@ -24,22 +24,17 @@ sub _build_body {
 
 sub wait_for_body {
     my ($self) = @_;
-    my $old_body;
-    $old_body = $self->body if $self->has_body;
+    my $old_id;
+    $old_id = $self->body->_id->id if $self->has_body;
     $self->clear_body;
 
     $self->session->wait_for(
         sub {
-            if ($old_body) {
-                my $gone = 1;
-                try {
-                    $old_body->tag_name;
-                    # When successfully accessing the tag
-                    #  it's not out of scope yet...
-                    $gone = 0;
-                };
-                $old_body = undef if $gone;
-                return 0; # Not done yet
+            if (defined $old_id) {
+                my $tag = "body";
+                my $current_id = $self->session->find_element_by_tag_name($tag);
+                return $current_id == 0
+                    || defined($current_id->id) && $current_id->id != $old_id;
             }
             else {
                 return $self->find('body.done-parsing', scheme => 'css') ? 1 : 0;
