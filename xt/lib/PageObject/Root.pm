@@ -19,31 +19,21 @@ has body => (is => 'rw',
 sub _build_body {
     my ($self) = @_;
 
-    return $self->find('body.done-parsing', scheme => 'css');
+    return $self->find_element_by_css('body.done-parsing');
 }
 
-#use Data::Printer;
-#use DateTime;
 sub wait_for_body {
     my ($self) = @_;
-    my $old_id = $self->session->find_element_by_tag_name("body")
-        if $self->has_body;
-#    my $dt = DateTime->now;
-#    warn $dt->ymd . ' ' . $dt->hms . '.' . $dt->millisecond . ' ' . p $old_id;
+    my $old_body = $self->body if $self->has_body;
     $self->clear_body;
 
     $self->session->wait_for(
         sub {
-            if (defined $old_id) {
-                my $new_id = $self->session->find_element_by_tag_name("body");
-#                my $dt = DateTime->now;
-#                warn $dt->ymd . ' ' . $dt->hms . '.' . $dt->millisecond . ' ' . p $new_id;
-                return $new_id eq "0"
-                    || defined($new_id->id) && $new_id->id ne $old_id->id;
+            if ($self->has_body) {
+                return $self->_id
+                    && $old_body->_id ? $self->_id->id ne $old_body->_id->id : 0;
             }
             else {
-#                my $dt = DateTime->now;
-#                warn $dt->ymd . ' ' . $dt->hms . '.' . $dt->millisecond . ' ' . "Find";
                 return $self->find('body.done-parsing', scheme => 'css') ? 1 : 0;
             }
         });

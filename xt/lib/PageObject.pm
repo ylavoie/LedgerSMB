@@ -48,7 +48,7 @@ sub url { croak "Abstract method 'PageObject::url' called"; }
 use Data::Printer;
 sub wait_for_page {
     my ($self, $ref) = @_;
-    my $old_id = $ref->_id
+    my $old_id = $ref->id
         if $ref;
     warn p $old_id
         if $ref;
@@ -59,13 +59,12 @@ sub wait_for_page {
             if ($ref) {
                 local $@;
 
-                my $new_id = $self->session->find_element_by_id($old_id->id);
+                my $new_id = $self->find_element_by_id($old_id->id);
                 warn p $new_id;
-                return $new_id eq "0"
-                    || defined($old_id) && $new_id->id ne $old_id->id;
+                return $new_id
+                    || $old_id ? $new_id->id ne $old_id->id : 0;
             }
             else {
-                warn "Find " . p $ref;
                 $self->session->page
                     ->find('body.done-parsing', scheme => 'css');
             }

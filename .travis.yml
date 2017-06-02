@@ -106,6 +106,7 @@ before_install:
   # Hub
   - docker pull selenium/hub
   # Headless browser
+  - docker pull n3llyb0y/wait
   - docker pull selenium/node-${BROWSER}
   #
   - IP=$(ifconfig | grep -A 1 'eth0' | tail -1 | cut -d ':' -f 2 | cut -d ' ' -f 1)
