@@ -14,16 +14,31 @@ env:
     # ehuelsmann user uses Erik Huelsmann's keys
     - secure: q9IckmvMBEEQ6EeM4U8K4y96Lx6tEaxs/A5GYUJxNJVhUkx3YqJKeERArZc4fpoV3CtUCFPDs/tktiFJn1LDeh3s9vJitUAGMU2AQxiUNARXK4EkEdPhvbX+CtusIIKDXYwEqXLiymv6mmpcc9/19CvHUzr9CiKZbb/LpS8lWqc=
     - secure: cZKPTfU0h4rH2IIRr1Ds1XRPDrloe/K+menYm+VK54hE4MM2zTtNDmWn0fyPdeHeJDRrTF0pyobje8RG9E2Ld5YPHXve1/lVkieoPeqzm9V8hlvZlkgTQJiMAvKzjhSlUJx8AKPjX+jQZfhgAS1hnuWwOIB1cAA7fMpPJ7rPVWo=
+    - DISPLAY=:99.0
 
 notifications:
   webhooks: https://ledgersmb.org/webhook/travis_ci_notifications
 
+
+# POD_TESTING=1 can be set as an environment variable to enable pod tests,
+# but these only work with perl versions >= 5.20. Earlier versions of perl
+# handle constants in a way which causes Test::Pod::Coverage to consider
+# them as naked subroutines.
+
+# Test on PhantomJS, Chrome and Firefox
+# TODO: Higher than Selenium 3.6 requires W3C protocol and a newer Perl Selenium driver
+# after Perl::Selenium is upgraded, remove xvfb and use headless on Chrome and Firefox.
+# For now, those are working:
+# google-chrome: 64.0, chromedriver: 2.32, selenium:3.6
+# firefox:55, geckodriver: 0.18.0, selenium:3.4
+# firefox:47, geckodriver: 0.15.0, selenium:3.3.1
 
 matrix:
   include:
     - perl: '5.26'
       addons:
         postgresql: '9.6'
+        chrome: "62.0"
         sauce_connect: true
         apt:
           packages:
@@ -31,9 +46,14 @@ matrix:
             - texlive-latex-recommended
             - texlive-xetex
       env:
+        - POD_TESTING=1
+        - BROWSER=chrome
+        - CHROMEDRIVER=2.32
+        - SELENIUM=3.6.0
     - perl: '5.24'
       addons:
         postgresql: '9.5'
+        firefox: "55.0"
         sauce_connect: true
         apt:
           packages:
@@ -43,17 +63,10 @@ matrix:
       env:
         # - TEST_SAUCE=1
         - DOJO_BUILT=0
+        - BROWSER=firefox
+        - GECKODRIVER=0.18.0
+        - SELENIUM=3.4.0
     - perl: '5.22'
-      addons:
-        postgresql: "9.4"
-        apt:
-          packages:
-             - nginx postgresql-9.4-pgtap
-             - texlive-latex-recommended
-             - texlive-xetex
-      env:
-        - COVERAGE=1
-    - perl: '5.20'
       addons:
         postgresql: "9.4"
         apt:
@@ -62,10 +75,26 @@ matrix:
             - texlive-latex-recommended
             - texlive-xetex
       env:
+        - COVERAGE=1
+        - BROWSER=phantomjs
+    - perl: '5.20'
+      addons:
+        postgresql: "9.4"
+        firefox: "53.0"
+        apt:
+          packages:
+            - nginx postgresql-9.4-pgtap
+            - texlive-latex-recommended
+            - texlive-xetex
+      env:
         - COA_TESTING=1
+        - BROWSER=firefox
+        - GECKODRIVER=0.16.1
+        - SELENIUM=3.4.0
     - perl: '5.18'
       addons:
         postgresql: "9.3"
+        chrome: "58.0"
         apt:
           packages:
             - nginx postgresql-9.3-pgtap
@@ -73,9 +102,13 @@ matrix:
             - texlive-xetex
       env:
         - DB_TESTING=1
+        - BROWSER=chrome
+        - CHROMEDRIVER=2.29
+        - SELENIUM=3.4.0
     - perl: '5.16'
       addons:
         postgresql: "9.2"
+        firefox: "52.0"
         apt:
           packages:
             - nginx postgresql-9.2-pgtap
@@ -83,6 +116,9 @@ matrix:
             - texlive-xetex
       env:
         - DB_TESTING=1
+        - BROWSER=firefox
+        - GECKODRIVER=0.15.0
+        - SELENIUM=3.3.1
     - perl: '5.14'
       addons:
         postgresql: "9.2"
@@ -93,6 +129,7 @@ matrix:
             - texlive-xetex
       env:
         - DB_TESTING=1
+        - BROWSER=phantomjs
 
 before_cache:
   - mkdir -p $HOME/dojo_archive
@@ -110,18 +147,6 @@ before_install:
   - utils/diagnostics/t/01-system-resources.t
   - source /opt/jdk_switcher/jdk_switcher.sh
   - jdk_switcher use oraclejdk8
-  - phantomjs --version
-  - export PATH=$HOME/travis_phantomjs/phantomjs-2.1.1-linux-x86_64/bin:$PATH
-  - phantomjs --version
-  - if [ $(phantomjs --version) != '2.1.1' ];
-    then
-      rm -rf $HOME/travis_phantomjs ;
-      mkdir -p $HOME/travis_phantomjs ;
-      wget https://efficito.com/phantomjs/phantomjs-2.1.1-linux-x86_64.tar.bz2 -O $HOME/travis_phantomjs/phantomjs-2.1.1-linux-x86_64.tar.bz2 ;
-      tar -xvf $HOME/travis_phantomjs/phantomjs-2.1.1-linux-x86_64.tar.bz2 -C $HOME/travis_phantomjs ;
-      hash -r ;
-      phantomjs --version ;
-    fi
   - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
   - source ~/travis-perl-helpers/init
   - build-perl 2>/dev/null
@@ -131,11 +156,35 @@ before_install:
   - export PATH="$HOME/locallib/bin:$PATH"
   - export PERL_MM_OPT="INSTALL_BASE=$HOME/locallib"
   - export PERL_MB_OPT="--install_base=$HOME/locallib"
-  - npm install uglify-js@">=2.0 <3.0"
+  # Browser specifics
+  # TODO: Get the systemwide Selenium WebDriver out of the way to use those below
+  - |
+    case "${BROWSER}" in
+      'chrome')
+          wget -q https://chromedriver.storage.googleapis.com/${CHROMEDRIVER}/chromedriver_linux64.zip ;
+          unzip chromedriver_linux64.zip ;
+          sudo chmod +x chromedriver ;
+          sudo mv chromedriver /usr/bin/ ;
+          rm chromedriver_linux64.zip ;
+          a=( ${SELENIUM//./ } );
+          SELENIUM_DIR="${a[0]}.${a[1]}"
+          wget -q http://selenium-release.storage.googleapis.com/${SELENIUM_DIR}/selenium-server-standalone-${SELENIUM}.jar ;
+        ;;
+      'firefox')
+          wget -q https://github.com/mozilla/geckodriver/releases/download/v${GECKODRIVER}/geckodriver-v${GECKODRIVER}-linux64.tar.gz ;
+          sudo sh -c 'tar -x geckodriver -zf geckodriver-v${GECKODRIVER}-linux64.tar.gz -O > /usr/bin/geckodriver' ;
+          sudo chmod +x /usr/bin/geckodriver ;
+          rm geckodriver-v${GECKODRIVER}-linux64.tar.gz ;
+          a=( ${SELENIUM//./ } );
+          SELENIUM_DIR="${a[0]}.${a[1]}"
+          wget -q http://selenium-release.storage.googleapis.com/${SELENIUM_DIR}/selenium-server-standalone-${SELENIUM}.jar ;
+        ;;
+    esac
 
 install:
   - cpanm --quiet --notest --installdeps --with-develop --with-feature=edi --with-feature=latex-pdf-images --with-feature=latex-pdf-ps --with-feature=openoffice  --with-feature=starman --with-feature=xls .
   - cpan-install --coverage
+  - npm install uglify-js@">=2.0 <3.0"
 
 before_script:
   - make dist DIST_VER=travis DIST_DIR=${HOME}/built-dist/tar-output
@@ -147,10 +196,20 @@ before_script:
   - coverage-setup 2>/dev/null
   - export DEVEL_COVER_OPTIONS=+ignore,"\.lttc\$"
   - sed -e "s#{ROOT}#$PWD#" conf/nginx-travis.conf >/tmp/nginx.conf
-  - ((phantomjs --webdriver=4422 2>/dev/null >/dev/null &) && echo "PhantomJS started succesfully") || (echo "Failed to start PhantomJS!" ; exit 1)
-  - #PERL5OPT="$PERL5OPT $HARNESS_PERL_SWITCHES" plackup -Ilib --port 5001 --server HTTP::Server::PSGI tools/starman.psgi >/dev/null 2>/dev/null &
+
+  - |
+    case "${BROWSER}" in
+      'phantomjs')
+         phantomjs --version ;
+         ((phantomjs --webdriver=4422 2>/dev/null >/dev/null &) && echo "PhantomJS started succesfully") || (echo "Failed to start PhantomJS!" ; exit 1)
+      ;;
+      'chrome' | 'firefox')
+        sh -e /etc/init.d/xvfb start ;
+        java -jar selenium-server-standalone-${SELENIUM}.jar 2>/tmp/selenium.log >/dev/null -port 4422 &
+      ;;
+    esac
+
   - PERL5OPT="$PERL5OPT $HARNESS_PERL_SWITCHES" plackup -Ilib --port 5001 --server HTTP::Server::PSGI tools/starman.psgi --access_log /tmp/plackup-access.log 2> /tmp/plackup-error.log &
-  - #sleep 5  # give starman a chance to start # we now have better handling for this in Is_LSMB_running.sh
   - utils/test/Is_LSMB_running.sh --early # fail early if starman is not running (can be skipped based on reponame or owner by setting an array in the script)
   - nginx -c /tmp/nginx.conf
   - if [ "${DOJO_BUILT}" != "" ]; then sed -i -e "s#dojo_built *= *(\d)+#dojo_built={dojo_built}#" ledgersmb.conf ; fi
@@ -159,6 +218,7 @@ before_script:
 
 script:
   - RELEASE_TESTING=1
+     BROWSER=${BROWSER}
      PGUSER=postgres PGPASSWORD=test
      LSMB_TEST_DB=1 LSMB_NEW_DB=lsmbinstalltest
      LSMB_BASE_URL="http://127.0.0.1:5000"
