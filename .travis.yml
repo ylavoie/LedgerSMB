@@ -19,6 +19,7 @@ matrix:
   include:
     - perl: '5.26'
       addons:
+        chrome: stable
         postgresql: '9.6'
         sauce_connect: true
         apt:
@@ -26,8 +27,10 @@ matrix:
             - nginx postgresql-9.6-pgtap
       env:
         - POD_TESTING=1
+        - BROWSER=chrome
     - perl: '5.24'
       addons:
+        firefox: latest
         postgresql: '9.5'
         sauce_connect: true
         apt:
@@ -36,6 +39,7 @@ matrix:
       env:
         # - TEST_SAUCE=1
         - DOJO_BUILT=0
+        - BROWSER=firefox
     - perl: '5.22'
       addons:
         postgresql: "9.4"
@@ -44,30 +48,37 @@ matrix:
             - nginx postgresql-9.4-pgtap
       env:
         - COVERAGE=1
+        - BROWSER=phantomjs
     - perl: '5.20'
       addons:
+        firefox: latest
         postgresql: "9.4"
         apt:
           packages:
             - nginx postgresql-9.4-pgtap
       env:
         - COA_TESTING=1
+        - BROWSER=firefox
     - perl: '5.18'
       addons:
+        chrome: stable
         postgresql: "9.3"
         apt:
           packages:
             - nginx postgresql-9.3-pgtap
       env:
         - DB_TESTING=1
+        - BROWSER=chrome
     - perl: '5.16'
       addons:
+        firefox: latest
         postgresql: "9.2"
         apt:
           packages:
             - nginx postgresql-9.2-pgtap
       env:
         - DB_TESTING=1
+        - BROWSER=firefox
     - perl: '5.14'
       addons:
         postgresql: "9.2"
@@ -76,6 +87,7 @@ matrix:
             - nginx postgresql-9.2-pgtap
       env:
         - DB_TESTING=1
+        - BROWSER=phantomjs
 
 before_cache:
   - mkdir -p $HOME/dojo_archive
@@ -95,15 +107,20 @@ before_install:
   - jdk_switcher use oraclejdk8
   - phantomjs --version
   - export PATH=$HOME/travis_phantomjs/phantomjs-2.1.1-linux-x86_64/bin:$PATH
-  - phantomjs --version
-  - if [ $(phantomjs --version) != '2.1.1' ];
-    then
+  - if [ ${BROWSER} == "phantomjs" && $(phantomjs --version) != '2.1.1' ] ; then
+      phantomjs --version ;
       rm -rf $HOME/travis_phantomjs ;
       mkdir -p $HOME/travis_phantomjs ;
       wget https://efficito.com/phantomjs/phantomjs-2.1.1-linux-x86_64.tar.bz2 -O $HOME/travis_phantomjs/phantomjs-2.1.1-linux-x86_64.tar.bz2 ;
       tar -xvf $HOME/travis_phantomjs/phantomjs-2.1.1-linux-x86_64.tar.bz2 -C $HOME/travis_phantomjs ;
       hash -r ;
       phantomjs --version ;
+    fi
+  - if [ ${BROWSER} == "firefox"] ; then
+      firefox --version ;
+    fi
+  - if [ ${BROWSER} == "chrome"] ; then
+      chrome --version ;
     fi
   - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
   - source ~/travis-perl-helpers/init
@@ -119,7 +136,7 @@ before_install:
 install:
   - cpanm --quiet --notest --with-develop --with-feature=edi --with-feature=xls --installdeps .
   - cpan-install --coverage
-  - if [ "${POD_TESTING}" != "" ]; then
+  - if [ "${POD_TESTING}" != "" ] ; then
        cpanm --quiet --notest Test::Pod ;
        cpanm --quiet --notest Test::Pod::Coverage ;
     fi
@@ -133,10 +150,18 @@ before_script:
   - coverage-setup 2>/dev/null
   - export DEVEL_COVER_OPTIONS=+ignore,"\.lttc\$"
   - sed -e "s#{ROOT}#$PWD#" conf/nginx-travis.conf >/tmp/nginx.conf
-  - ((phantomjs --webdriver=4422 2>/dev/null >/dev/null &) && echo "PhantomJS started succesfully") || (echo "Failed to start PhantomJS!" ; exit 1)
-  - #PERL5OPT="$PERL5OPT $HARNESS_PERL_SWITCHES" plackup -Ilib --port 5001 --server HTTP::Server::PSGI tools/starman.psgi >/dev/null 2>/dev/null &
+  - if [ ${BROWSER} == "phantomjs"] ; then
+      ((phantomjs --webdriver=4422 2>/dev/null >/dev/null &) && echo "PhantomJS started succesfully") || (echo "Failed to start PhantomJS!" ; exit 1)
+    fi
+  - if [ ${BROWSER} == "firefox"] ; then
+      "export DISPLAY=:99.0" ;
+      "sh -e /etc/init.d/xvfb start" ;
+      sleep 3;
+    fi
+  - if [ ${BROWSER} == "chrome"] ; then
+      "google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &";
+    fi
   - PERL5OPT="$PERL5OPT $HARNESS_PERL_SWITCHES" plackup -Ilib --port 5001 --server HTTP::Server::PSGI tools/starman.psgi --access_log /tmp/plackup-access.log 2> /tmp/plackup-error.log &
-  - #sleep 5  # give starman a chance to start # we now have better handling for this in Is_LSMB_running.sh
   - utils/test/Is_LSMB_running.sh --early # fail early if starman is not running (can be skipped based on reponame or owner by setting an array in the script)
   - nginx -c /tmp/nginx.conf
   - if [ "${DOJO_BUILT}" != "" ]; then sed -i -e "s#dojo_built *= *(\d)+#dojo_built={dojo_built}#" ledgersmb.conf ; fi
@@ -145,6 +170,7 @@ before_script:
 
 script:
   - RELEASE_TESTING=1
+     BROWSER=${BROWSER}
      PGUSER=postgres PGPASSWORD=test
      LSMB_TEST_DB=1 LSMB_NEW_DB=lsmbinstalltest
      LSMB_BASE_URL="http://127.0.0.1:5000"
@@ -180,13 +206,3 @@ after_failure:
   - echo === dmesg                   ===
   - echo ===============================
   - sudo dmesg
-  - echo ===============================
-  - echo === /tmp/plackup-access.log ===
-  - echo ===============================
-  - cat /tmp/plackup-access.log
-  - echo
-  - echo ===============================
-  - echo === /tmp/plackup-error.log ===
-  - echo ===============================
-  - cat /tmp/plackup-error.log
-  - echo
