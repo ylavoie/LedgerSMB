@@ -16,10 +16,20 @@ has body => (is => 'rw',
              builder => '_build_body',
              lazy => 1);
 
+use Time::HiRes qw(time);
+use POSIX qw(strftime);
+
+sub _get_time {
+    my $t = time;
+    my $date = strftime "%Y%m%d %H:%M:%S", localtime $t;
+    $date .= sprintf ".%03d", ($t-int($t))*1000; # without rounding
+    return $date;
+}
+
 sub _build_body {
     my ($self) = @_;
 
-    return $self->find_element_by_css('body.done-parsing');
+    return $self->find('body.done-parsing', scheme => 'css');
 }
 
 sub wait_for_body {
@@ -29,14 +39,11 @@ sub wait_for_body {
 
     $self->session->wait_for(
         sub {
-            if ($self->has_body) {
-                return $self->_id
-                    && $old_body->_id ? $self->_id->id ne $old_body->_id->id : 0;
-            }
-            else {
-                return $self->find('body.done-parsing', scheme => 'css') ? 1 : 0;
-            }
+            my $body = $self->find_element_by_css('body.done-parsing');
+            $old_body = undef if not $body->_id;
+            return !$old_body && $body->_id;
         });
+
     return $self->body;
 }
 

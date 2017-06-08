@@ -36,6 +36,7 @@ When qr/I navigate to the (.*) page/, sub {
     S->{page} = $pages{$page}->open(S->{ext_wsl})->verify;
 };
 
+use Data::Printer; ## no critic
 Then qr/I should see the (.*) page/, sub {
     my $page_name = $1;
     die "Unknown page '$page_name'"
@@ -44,6 +45,11 @@ Then qr/I should see the (.*) page/, sub {
     my $page = S->{ext_wsl}->page->body->verify;
     ok($page, "the browser page is the page named '$page_name'");
     ok($pages{$page_name}, "the named page maps to a class name");
+    if ( !$page->isa($pages{$page_name})) {
+        warn p $page;
+        warn p $page_name;
+        warn p $pages{$page_name};
+    }
     ok($page->isa($pages{$page_name}),
        "the page is of expected class: " . ref $page);
 };

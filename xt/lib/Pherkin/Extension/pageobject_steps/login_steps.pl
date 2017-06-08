@@ -16,6 +16,7 @@ Given qr/a logged in admin/, sub {
     S->{ext_wsl}->page->session->driver->user_error_handler(
         sub { return sub() {
             my ($self,$error) = @_;
+            warn "UEH0 " . p $error;
             if ( $error && $error =~ /A modal dialog was open/ ) {
                 my $pwd = $self->get_alert_text();
                 if ( $pwd && $pwd =~ "Warning:  Your password will expire in" ) {
@@ -23,7 +24,7 @@ Given qr/a logged in admin/, sub {
                     return undef;
                 }
             } else {
-                croak $error;
+                croak "UEH1 " . $error;
             }
             return $error;
         }}
