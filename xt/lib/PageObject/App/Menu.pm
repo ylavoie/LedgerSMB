@@ -202,7 +202,7 @@ sub _verify {
               && scalar(@logged_in_login) > 0);
 };
 
-
+use Data::Printer; ## no critic
 sub click_menu {
     my ($self, $path) = @_;
     my $root = $self->find("//*[\@id='top_menu']");
@@ -223,7 +223,7 @@ sub click_menu {
         warn $_;
         $item = $item->find(".$ul/li[./a[text()='$_']]");
         my $link = $item->find("./a");
-        warn $item if !defined($link);
+        warn p $item if !defined($link);
         $link->click
             unless ($item->get_attribute('class') =~ /\bmenu_open\b/);
 
