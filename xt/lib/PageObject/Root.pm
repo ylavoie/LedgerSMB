@@ -19,6 +19,9 @@ has body => (is => 'rw',
 sub _build_body {
     my ($self) = @_;
 
+    my $e = $self->find('body.done-parsing', scheme => 'css');
+    warn "_build_body: " . ref $e;
+    return $e;
     return $self->find('body.done-parsing', scheme => 'css');
 }
 
