@@ -41,7 +41,7 @@ th result set, This function does not return an entry for the top-level menu.
 
 sub generate {
     my ($self) = shift @_;
-    my $root = $_;
+    my $root = shift @_;
 
     @{$self->{menu_items}} = $self->call_dbmethod(funcname => 'menu_generate');
     $self->__generate($root);
@@ -101,8 +101,8 @@ sub will_expire_soon {
 # Private method which contains logic common to the full menu and section logic
 
 sub __generate {
-    my ($self) = @_;
-    my $root = $_;
+    my ($self) = shift @_;
+    my $root = shift @_;
 
     shift @{$self->{menu_items}} if !defined $root;;
 

@@ -28,6 +28,7 @@ __PACKAGE__->self_register(
 my %menu_path_pageobject_map = (
     "Contacts > Add Contact" => '',
     "Contacts > Search" => 'PageObject::App::Search::Contact',
+
     "AR > Add Transaction" => 'PageObject::App::AR::Transaction',
     "AR > Import Batch" => 'PageObject::App::BatchImport',
     "AR > Sales Invoice" => 'PageObject::App::AR::Invoice',
@@ -48,9 +49,11 @@ my %menu_path_pageobject_map = (
     "AP > Reports > Outstanding" => '',
     "AP > Reports > AP Aging" => '',
     "AP > Reports > Customer History" => '',
+
     "Transaction Approval > Inventory" => 'PageObject::App::Parts::AdjustSearchUnapproved',
     "Budgets > Search" => 'PageObject::App::Search::Budget',
     "HR > Employees > Search" => 'PageObject::App::Search::Contact',
+
     "Order Entry > Sales Order" => "PageObject::App::Orders::Sales",
     "Order Entry > Purchase Order" => "PageObject::App::Orders::Purchase",
     "Order Entry > Reports > Sales Orders" => 'PageObject::App::Search::Order',
@@ -59,18 +62,22 @@ my %menu_path_pageobject_map = (
     "Order Entry > Generate > Purchase Orders" => 'PageObject::App::Search::Order',
     "Order Entry > Combine > Sales Orders" => 'PageObject::App::Search::Order',
     "Order Entry > Combine > Purchase Orders" => 'PageObject::App::Search::Order',
+
     "Quotations > Reports > Quotations" => 'PageObject::App::Search::Order',
     "Quotations > Reports > RFQs" => 'PageObject::App::Search::Order',
+
     "General Journal > Search and GL" => 'PageObject::App::Search::GL',
     "General Journal > Year End" => 'PageObject::App::Closing',
     # Time cards
     "Reports > Balance Sheet" => 'PageObject::App::Report::Filters::BalanceSheet',
+
     "Goods and Services > Search" => 'PageObject::App::Search::GoodsServices',
     "Goods and Services > Add Part" => 'PageObject::App::Parts::Part',
     "Goods and Services > Add Service" => 'PageObject::App::Parts::Service',
     "Goods and Services > Add Assembly" => 'PageObject::App::Parts::Assembly',
     "Goods and Services > Add Overhead" => 'PageObject::App::Parts::Overhead',
     "Goods and Services > Enter Inventory" => 'PageObject::App::Parts::AdjustSetup',
+
     "System > Defaults" => 'PageObject::App::System::Defaults',
     "System > Taxes" => 'PageObject::App::System::Taxes',
     );
@@ -92,9 +99,13 @@ sub _verify {
 sub wait_till_loaded {
     my ($self, $item, $delay) = @_;
 
-    while ( !$item->is_displayed ) {
-        Time::HiRes::sleep($delay); # Wait until displayed
-    }
+    my $selected;
+    do {
+        $selected = $item->find(".//div[contains(\@class, 'dijitTreeContentExpanded')" .
+                                   " or contains(\@class, 'dijitTreeRowSelected')]");
+        Time::HiRes::sleep($delay) # Wait until displayed
+            if !$selected;
+    } until $item->is_displayed && $selected;
 }
 
 sub click_menu {
@@ -122,6 +133,7 @@ sub click_menu {
                         "//div[contains(\@class, 'dijitTreeNode')" .
                           " and .//span[\@role='treeitem'" .
                                       " and text()='$path']]";
+            my $item0 = $item;
             $item = $item->find($xpath);
 
             my $text = '--undef--';
@@ -134,7 +146,6 @@ sub click_menu {
             # Firefox & Chrome are ok with the TreeNode
             my $label = $item->get_attribute('id') . '_label';
             $item->find("//*[\@id='$label']")->click;
-
             $self->wait_till_loaded($item, 0.1);
 
         } for @$paths;
