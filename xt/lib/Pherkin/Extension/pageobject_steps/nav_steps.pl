@@ -90,6 +90,11 @@ my %screens = (
     'overhead entry' => 'PageObject::App::Parts::Overhead',
     'system defaults' => 'PageObject::App::System::Defaults',
     'system taxes' => 'PageObject::App::System::Taxes',
+    'year-end' => ' PageObject::App::Closing',
+    'Enter Inventory' => ' PageObject::App::Parts::AdjustSetup',
+    'GS Search' => ' PageObject::App::Search::GoodsServices',
+    'RPT Balance Sheet' => ' PageObject::App::Report::Filters::BalanceSheet',
+    'TA Inventory' => ' PageObject::App::Parts::AdjustSearchUnapproved',
     );
 
 Then qr/I should see the (.*) screen/, sub {

@@ -53,7 +53,7 @@ sub _build_content {
         unless scalar(@found) == 1;
 
     my $found = shift @found;
-    die "the immediate child node of #maindiv isn't recognised as a PageObject"
+    die "the immediate child node of #maindiv isn't recognised as a PageObject but as a " . ref $found
         unless $found->isa("PageObject");
 
     return $found;
@@ -71,7 +71,8 @@ sub wait_for_content {
             if ($old_content) {
                 my $gone = 1;
                 try {
-                    $old_content->tag_name;
+                    my $tag = $old_content->tag_name;
+                    warn $tag;
                     # When successfully accessing the tag
                     #  it's not out of scope yet...
                     $gone = 0;
@@ -86,15 +87,13 @@ sub wait_for_content {
     return $self->content;
 }
 
-
+# When is this called?
 sub _verify {
     my ($self) = @_;
 
     $self->content->verify;
     return $self;
 };
-
-
 
 __PACKAGE__->meta->make_immutable;
 

@@ -9,7 +9,6 @@ use PageObject;
 use Moose;
 extends 'PageObject';
 
-
 sub _search_btn_title {
     return 'Search';
 }
