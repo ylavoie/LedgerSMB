@@ -16,7 +16,11 @@
         accounts.unshift({});
 ?>
 <body class="lsmb <?lsmb dojo_theme ?>">
+<<<<<<< HEAD
 <form data-dojo-type="lsmb/Form" action="invoice.pl" method="GET">
+=======
+<form data-dojo-type="lsmb/Form" action="invoice.pl" method="GET" id="<?lsmb FORM_ID ?>">
+>>>>>>> b845183ce... Implement @one-db logic to use the same test database throughout a scenario
 <?lsmb PROCESS input element_data = {
      name = 'entity_class'
     value = entity_class
