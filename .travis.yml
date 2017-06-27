@@ -147,14 +147,13 @@ script:
   - RELEASE_TESTING=1
      PGUSER=postgres PGPASSWORD=test
      LSMB_TEST_DB=1 LSMB_NEW_DB=lsmbinstalltest
-     PGDATABASE=$LSMB_NEW_DB
      LSMB_BASE_URL="http://127.0.0.1:5000"
      HARNESS_RULESFILE="t/testrules.yml"
-    prove -j9 -r -v
-          --pgtap-option dbname=lsmbinstalltest
-          --pgtap-option username=postgres
+    prove -j9 -r
+          --pgtap-option dbname=$LSMB_NEW_DB
+          --pgtap-option username=$PGUSER
           --feature-option tags=~@wip
-          xt/66-cucumber/01-basic/*.feature
+          t/ xt/
 
 after_success:
   - >
