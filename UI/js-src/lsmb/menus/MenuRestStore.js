@@ -61,6 +61,12 @@ define(["dojo/_base/declare",
                             kids.push(item);
                         });
                     }
+<<<<<<< HEAD
+=======
+                    kids.sort(function(a,b){
+                        return Number(a.position) - Number(b.position)
+                    });
+>>>>>>> 1b6edcbf1... Sort menus
                 }
                 onComplete(kids);
              },
