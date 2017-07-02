@@ -61,7 +61,7 @@ define(["dojo/_base/declare",
                             kids.push(item);
                         });
                     }
-                    kids.sort(function(a,b){ 
+                    kids.sort(function(a,b){
                         return Number(a.position) - Number(b.position)
                     });
                 }
