@@ -145,7 +145,7 @@ before_script:
 
 script:
   - RELEASE_TESTING=1
-     PGUSER=postgres PGPASSWORD=test
+     PGUSER=postgres PGPASSWORD=test PGHOST=localhost
      LSMB_TEST_DB=1 LSMB_NEW_DB=lsmbinstalltest
      LSMB_BASE_URL="http://127.0.0.1:5000"
      HARNESS_RULESFILE="t/testrules.yml"
