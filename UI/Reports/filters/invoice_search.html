@@ -1,6 +1,6 @@
-<?lsmb INCLUDE 'ui-header.html' ?>
-<?lsmb PROCESS elements.html;
-       PROCESS report_base.html;
+<?lsmb INCLUDE "ui-header.html" ;
+       PROCESS "report_base.html";
+       PROCESS "elements.html";
        IF entity_class == 1;
            TITLE = text('Search AP Invoices'); #'
            NAME = text('Vendor');
@@ -18,10 +18,7 @@
         accounts.unshift({});
 ?>
 <body class="lsmb <?lsmb dojo_theme ?>">
-<form data-dojo-type="lsmb/Form"
-      method="get"
-      action="invoice.pl"
-      id="<?lsmb FORM_ID ?>">
+<form data-dojo-type="lsmb/Form" action="invoice.pl" method="GET" id="<?lsmb FORM_ID ?>">
 <?lsmb PROCESS input element_data = {
      name = 'entity_class'
     value = entity_class

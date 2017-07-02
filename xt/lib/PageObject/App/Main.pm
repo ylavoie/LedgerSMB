@@ -71,8 +71,7 @@ sub wait_for_content {
             if ($old_content) {
                 my $gone = 1;
                 try {
-                    my $tag = $old_content->tag_name;
-                    warn $tag;
+                    $old_content->tag_name;
                     # When successfully accessing the tag
                     #  it's not out of scope yet...
                     $gone = 0;
@@ -87,13 +86,15 @@ sub wait_for_content {
     return $self->content;
 }
 
-# When is this called?
+
 sub _verify {
     my ($self) = @_;
 
     $self->content->verify;
     return $self;
 };
+
+
 
 __PACKAGE__->meta->make_immutable;
 
