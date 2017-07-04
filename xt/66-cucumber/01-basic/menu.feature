@@ -42,7 +42,7 @@ Scenario Outline: Navigate to menu and open screen
 #   | AP > Vouchers > AP Voucher                 |                          |
 #   | AP > Vouchers > Import AP Batch            |                          |
 #   | AP > Vouchers > Invoice Vouchers           |                          |
-#    | AR > Add Return                            | AR returns               |
+#   | AR > Add Return                            | AR returns               |
     | AR > Add Transaction                       | AR transaction entry     |
     | AR > Credit Invoice                        | AR credit invoice entry  |
     | AR > Credit Note                           | AR note entry            |
@@ -100,11 +100,11 @@ Scenario Outline: Navigate to menu and open screen
     | Goods and Services > Add Part              | part entry               |
 #   | Goods and Services > Add Pricegroup        |                          |
     | Goods and Services > Add Service           | service entry            |
-    | Goods and Services > Enter Inventory       | Enter Inventory          |
+#   | Goods and Services > Enter Inventory       | Enter Inventory          |
 #   | Goods and Services > Import Inventory      |                          |
 #   | Goods and Services > Reports               |                          |
 #   | Goods and Services > Reports > Inventory Activity |                   |
-    | Goods and Services > Search                | GS Search                |
+#   | Goods and Services > Search                | GS Search                |
 #   | Goods and Services > Search Groups         |                          |
 #   | Goods and Services > Search Pricegroups    |                          |
 #   | Goods and Services > Stock Assembly        |                          |
