@@ -45,7 +45,7 @@ Then qr/I should see the (.*) page/, sub {
     ok($page, "the browser page is the page named '$page_name'");
     ok($pages{$page_name}, "the named page maps to a class name");
     ok($page->isa($pages{$page_name}),
-       "the page is of expected class: " . ref $page);
+       "the page is of expected class $pages{$page_name}: " . ref $page);
 };
 
 

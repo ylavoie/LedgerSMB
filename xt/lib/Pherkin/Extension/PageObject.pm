@@ -57,10 +57,39 @@ sub pre_scenario {
 =cut
 
 sub post_scenario {
-    my ($self, $scenario, $feature_stash, $stash) = @_;
+    my ($self, $scenario, $feature_stash, $stash, $failed) = @_;
+
+    $self->_save_screenshot($stash->{ext_wsl},"scenario", "post_scenario")
+        if $failed;
 
     # break the ref-counting cycle
     $self->last_stash(undef);
+}
+
+=item post_step {
+
+=cut
+
+sub post_step {
+    my ($self, $step, $step_context, $failed) = @_;
+
+    $self->_save_screenshot($self->last_stash->{ext_wsl},"scenario", "post_step")
+        if $failed;
+}
+
+=item _save_screenshot {
+
+=cut
+
+my $img_num = 0;
+
+sub _save_screenshot {
+    my ($self, $wsl, $event, $phase) = @_;
+
+    my $img_name = "$event-$phase-" . ($img_num++) . '.png';
+    open my $fh, ">", 'screens/' . $img_name;
+    $wsl->driver->screenshot($fh);
+    close $fh;
 }
 
 =back
