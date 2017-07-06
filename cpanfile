@@ -30,7 +30,7 @@ requires 'MooseX::NonMoose';
 requires 'Number::Format';
 requires 'PGObject', '>=1.403002, < 2';
 # PGObject::Simple 3.0.1 breaks our file uploads
-requires 'PGObject::Simple', '>=3.0.2';
+requires 'PGObject::Simple', '>=2.0.0, !=3.0.0, !=3.0.1';
 requires 'PGObject::Simple::Role', '1.13.2';
 requires 'PGObject::Type::BigFloat', '1.0.0';
 requires 'PGObject::Type::DateTime', '1.0.4';
@@ -113,7 +113,7 @@ on 'develop' => sub {
     requires 'Perl::Critic';
     requires 'Perl::Critic::Moose';
     requires 'Pherkin::Extension::Weasel', '0.02';
-    requires 'Plack::Middleware::Pod'; # YLA - Generate browseable documentation
+    requires 'Plack::Middleware::Pod';
     requires 'Selenium::Remote::Driver';
     requires 'TAP::Parser::SourceHandler::pgTAP';
     requires 'Test::BDD::Cucumber', '0.52';
