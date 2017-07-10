@@ -129,7 +129,7 @@ Scenario Outline: Navigate to menu and open screen
     | Quotations > Reports > RFQs                | RFQ search               |
 #   | Quotations > RFQ                           |                          |
 #   | Recurring Transactions                     |                          |
-#   | Reports > Balance Sheet                    | RPT Balance Sheet        |
+    | Reports > Balance Sheet                    | generate balance sheet   |
 #   | Reports > Income Statement                 |                          |
 #   | Reports > Inventory and COGS               |                          |
 #   | Reports > Trial Balance                    |                          |
