@@ -96,17 +96,6 @@ sub _verify {
               && scalar(@logged_in_login) > 0);
 };
 
-sub wait_till_loaded {
-    my ($self, $item, $delay) = @_;
-
-    my $selected;
-    do {
-        $selected = $item->find(".//div[contains(\@class, 'dijitTreeContentExpanded')" .
-                                   " or contains(\@class, 'dijitTreeRowSelected')]");
-        Time::HiRes::sleep($delay) # Wait until displayed
-            if !$selected;
-    } until $item->is_displayed && $selected;
-}
 
 sub click_menu {
     my ($self, $paths) = @_;
@@ -146,7 +135,6 @@ sub click_menu {
             # Firefox & Chrome are ok with the TreeNode
             my $label = $item->get_attribute('id') . '_label';
             $item->find("//*[\@id='$label']")->click;
-            $self->wait_till_loaded($item, 0.1);
 
         } for @$paths;
     };
