@@ -159,7 +159,7 @@ before_script:
       sleep 3;
     fi
   - if [ ${BROWSER} == "chrome"] ; then
-      "google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &";
+      "google-chrome-stable --headless --disable-gpu --remote-debugging-port=4422 http://localhost &";
     fi
   - PERL5OPT="$PERL5OPT $HARNESS_PERL_SWITCHES" plackup -Ilib --port 5001 --server HTTP::Server::PSGI tools/starman.psgi --access_log /tmp/plackup-access.log 2> /tmp/plackup-error.log &
   - utils/test/Is_LSMB_running.sh --early # fail early if starman is not running (can be skipped based on reponame or owner by setting an array in the script)
@@ -169,8 +169,8 @@ before_script:
   - utils/diagnostics/t/01-system-resources.t
 
 script:
+  #   BROWSER=${BROWSER}
   - RELEASE_TESTING=1
-     BROWSER=${BROWSER}
      PGUSER=postgres PGPASSWORD=test
      LSMB_TEST_DB=1 LSMB_NEW_DB=lsmbinstalltest
      LSMB_BASE_URL="http://127.0.0.1:5000"
