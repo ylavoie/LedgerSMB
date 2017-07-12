@@ -11,7 +11,6 @@ use Test::More;
 use Try::Tiny;
 
 use Module::Runtime qw(use_module);
-use Time::HiRes qw(time);
 
 use Moose;
 extends 'PageObject';
@@ -96,7 +95,6 @@ sub _verify {
               && scalar(@logged_in_login) > 0);
 };
 
-
 sub click_menu {
     my ($self, $paths) = @_;
 
@@ -122,19 +120,14 @@ sub click_menu {
                         "//div[contains(\@class, 'dijitTreeNode')" .
                           " and .//span[\@role='treeitem'" .
                                       " and text()='$path']]";
-            my $item0 = $item;
             $item = $item->find($xpath);
+            ok($item,"Valid xpath");
 
-            my $text = '--undef--';
-            try {
-                $text = $item->get_text if $item;
-            };
-            ok($text eq $path,"Found exact menu '$path': '" . $text . "'");
-
-            # PhantomJS requires clicking the label,
-            # Firefox & Chrome are ok with the TreeNode
             my $label = $item->get_attribute('id') . '_label';
-            $item->find("//*[\@id='$label']")->click;
+            ok($label,"Found label $label");
+            my $submenu = $item->find("//*[\@id='$label']");
+            ok($submenu,"Submenu found " . $submenu->get_text);
+            $submenu->click;
 
         } for @$paths;
     };
