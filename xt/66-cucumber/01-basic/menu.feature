@@ -5,6 +5,13 @@ Feature: correct operation of the menu and immediate linked pages
   don't allow a specific screen, I expect the links not to be in
   the menu.
 
+Before sub {
+    PageObject::App::Login->open(S->{ext_wsl});
+    S->{ext_wsl}->page->body->login(
+        user => S->{"the admin"},
+        password => S->{"the admin password"},
+        company => S->{"the company"});
+}
 
 
 Background:
@@ -12,7 +19,7 @@ Background:
 
 
 Scenario Outline: Navigate to menu and open screen
-  Given a logged in admin
+  #Given a logged in admin
    When I navigate the menu and select the item at "<path>"
    Then I should see the <screen> screen
   Examples:
