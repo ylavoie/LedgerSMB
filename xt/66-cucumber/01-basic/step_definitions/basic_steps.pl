@@ -10,10 +10,10 @@ use Test::BDD::Cucumber::StepFile;
 
 use Selenium::Remote::Driver;
 
-Given qr/a user named "(.*)" with a password "(.*)"/, sub {
+Given qr/a user named (['"])(.*)\1 with a password (['"])(.*)\3/, sub {
     # note: the LedgerSMB extension has a *very* similar pattern!
-    C->stash->{feature}->{user} = $1;
-    C->stash->{feature}->{passwd} = $2;
+    C->stash->{feature}->{user} = $2;
+    C->stash->{feature}->{passwd} = $4;
 };
 
 Given qr/a database super-user/, sub {

@@ -66,14 +66,14 @@ Then qr/I should see the table of available users:/, sub {
     is_deeply($users, \@data, "Users on page correspond with expectation");
 };
 
-When qr/I copy the company to "(.*)"/, sub {
-    my $target = $1;
+When qr/I copy the company to (['"])(.*)\1/, sub {
+    my $target = $2;
 
     S->{ext_wsl}->page->body->copy_company($target);
 };
 
-When qr/I request the user overview for "(.*)"/, sub {
-    my $user = $1;
+When qr/I request the user overview for (['"])(.*)\1/, sub {
+    my $user = $2;
 
     S->{ext_wsl}->page->body->edit_user($user);
 };

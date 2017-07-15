@@ -9,8 +9,8 @@ use Test::BDD::Cucumber::StepFile;
 
 
 
-When qr/I search for part '(.*)'/, sub {
-    my $partnumber = $1;
+When qr/I search for part ['"](.*)\1/, sub {
+    my $partnumber = $2;
     S->{ext_wsl}->page->body->menu->click_menu(['Goods and Services', 'Search']);
     S->{ext_wsl}->page->body->maindiv->content->search(
         'Part Number' => $partnumber

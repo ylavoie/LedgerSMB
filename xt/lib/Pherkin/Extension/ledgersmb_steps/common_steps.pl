@@ -28,8 +28,8 @@ Given qr/a (fresh )?standard test company/, sub {
     }
 };
 
-Given qr/(a nonexistent|an existing) company named "(.*)"/, sub {
-    my $company = $2;
+Given qr/(a nonexistent|an existing) company named (['"])(.*)\2/, sub {
+    my $company = $3;
     S->{"the company"} = $company;
     S->{"nonexistent company"} = ($1 eq 'a nonexistent');
 
@@ -37,8 +37,8 @@ Given qr/(a nonexistent|an existing) company named "(.*)"/, sub {
         if S->{'nonexistent company'};
 };
 
-Given qr/(a nonexistent|an existing) user named "(.*)"/, sub {
-    my $role = $2;
+Given qr/(a nonexistent|an existing) user named (['"])(.*)\2/, sub {
+    my $role = $3;
     S->{"the user"} = $role;
     S->{'nonexistent user'} = ($1 eq 'a nonexistent');
 
@@ -70,8 +70,8 @@ When qr/I post the following GL transaction on (.{10})/, sub {
     S->{ext_lsmb}->post_transaction($1, C->data);
 };
 
-Given qr/a logged in user with '(.*)' rights/, sub {
-    my $role = $1;
+Given qr/a logged in user with (['"])(.*)\1 rights/, sub {
+    my $role = $2;
 
     my $emp = S->{ext_lsmb}->create_employee;
     my $user = S->{ext_lsmb}->create_user(
@@ -126,8 +126,8 @@ my $entity_counter = 0;
 my $vendor_counter = 0;
 my $customer_counter = 0;
 
-Given qr/a vendor '(.*)'$/, sub {
-    my $vendor_name = $1;
+Given qr/a vendor (['"])(.*)\1$/, sub {
+    my $vendor_name = $2;
     my $control_code = 'V-' . ($vendor_counter++);
     my $admin_dbh = S->{ext_lsmb}->admin_dbh;
     my $company = LedgerSMB::Entity::Company->new(
@@ -196,8 +196,8 @@ Given qr/a part with these properties:$/, sub {
 
 my $invnumber = 0;
 
-Given qr/inventory has been built up for '(.*)' from these transactions:$/, sub {
-    my $part = $1;
+Given qr/inventory has been built up for (['"])(.*)\1 from these transactions:$/, sub {
+    my $part = $2;
 
     local $LedgerSMB::App_State::DBH = S->{ext_lsmb}->admin_dbh;
     local $LedgerSMB::App_State::User = {

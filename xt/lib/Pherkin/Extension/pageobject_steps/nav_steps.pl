@@ -50,13 +50,14 @@ Then qr/I should see the (.*) page/, sub {
 
 
 
-When qr/I navigate the menu and select the item at "(.*)"/, sub {
-    my @path = split /[\n\s\t]*>[\n\s\t]*/, $1;
+When qr/I navigate the menu and select the item at (['"])(.*)\1/, sub {
+    my @path = split /[\n\s\t]*>[\n\s\t]*/, $2;
 
     S->{ext_wsl}->page->body->menu->click_menu(\@path);
 };
 
 my %screens = (
+    'Add Contact' => 'PageObject::App::Contacts',
     'Contact search' => 'PageObject::App::Search::Contact',
     'AR transaction entry' => 'PageObject::App::AR::Transaction',
     'AR invoice entry' => 'PageObject::App::AR::Invoice',
@@ -115,12 +116,12 @@ Then qr/I should see the (.*) screen/, sub {
        "the screen is of expected class: " . ref $page);
 };
 
-When qr/I select the "(.*)" tab/, sub {
-    S->{ext_wsl}->page->find(".//*[\@role='tab' and text()='$1']")->click;
+When qr/I select the (['"])(.*)\1 tab/, sub {
+    S->{ext_wsl}->page->find(".//*[\@role='tab' and text()='$2']")->click;
 };
 
-When qr/I open the parts screen for '(.*)'/, sub {
-    my $partnumber = $1;
+When qr/I open the parts screen for (['"])(.*)\1/, sub {
+    my $partnumber = $2;
 
     S->{ext_wsl}->page->body->menu->click_menu(
         ['Goods and Services', 'Search']
@@ -136,9 +137,16 @@ When qr/I open the parts screen for '(.*)'/, sub {
     S->{ext_wsl}->page->body->maindiv->wait_for_content;
 };
 
-Then qr/I expect to see the '(.*)' value of '(.*)'/, sub {
-    my $id = $1;
-    my $value = $2;
+Then qr/I see the (["'])(.+)\1 tab/, sub {
+  my $tab = $2;
+  ok(S->{ext_wsl}->page->find(".//*[\@role='tab' and text()='$tab']"),
+    "the page has a tab named " . $tab)
+};
+
+
+Then qr/I expect to see the (['"])(.*)\1 value of (['"])(.*)\3/, sub {
+    my $id = $2;
+    my $value = $4;
 
     my $elm = S->{ext_wsl}->page->body->maindiv
         ->content->find(qq|.//*[\@id="$id" or \@title="$id"

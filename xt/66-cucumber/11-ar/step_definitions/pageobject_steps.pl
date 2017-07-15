@@ -33,8 +33,8 @@ When qr/I open the AR transaction entry screen/, sub {
     S->{ext_wsl}->page->body->verify;
 };
 
-When qr/I select customer "(.*)"/, sub {
-    my $customer = $1;
+When qr/I select customer ['"](.*)\1/, sub {
+    my $customer = $2;
 
     my $page = S->{ext_wsl}->page->body->maindiv->content;
     $page->select_customer($customer);

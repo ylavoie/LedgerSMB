@@ -11,8 +11,8 @@ use Test::More;
 use Test::BDD::Cucumber::StepFile;
 
 
-Given qr/a customer named "(.*)"/, sub {
-    my $customer = $1;
+Given qr/a customer named ['"](.*)\1/, sub {
+    my $customer = $2;
 
     # The TODO below is a consequence of being unable to connect to
     # our database with different credentials in a single process:
@@ -65,7 +65,7 @@ Given qr/a customer named "(.*)"/, sub {
 };
 
 
-Given qr/a service "(.*)"/, sub {
+Given qr/a service ['"](.*)\1/, sub {
     
     
 };
