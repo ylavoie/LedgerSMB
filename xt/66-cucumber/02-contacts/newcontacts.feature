@@ -15,7 +15,7 @@ Scenario: Create a New Company as Vendor
       And one tab called "Company"
      When I select the "Person" tab
      Then I see the "Person" tab
-      And I should see a drop down "class" with these items:
+      And I should see a drop down "Class" with these items:
         |     class      | value |
         | Vendor         |    1  |
         | Customer       |    2  |
@@ -37,7 +37,7 @@ Scenario: Create a New Company as Vendor
       And one tab called "Person"
       And one tab called "Company"
      When I select the "Person" tab
-      And select a class of "Vendor"
+      And I select "Vendor" from the drop down "Class"
       And click Generate Control Code
      Then error message should be thrown
 
@@ -48,7 +48,7 @@ Scenario: Create a New Company as Customer
       And one tab called "Person"
       And one tab called "Company"
      When I select the "Person" tab
-      And select a class of "Customer"
+      And I select "Customer" from the drop down "Class"
       And click Generate Control Code
      Then error message should be thrown
 
@@ -59,7 +59,7 @@ Scenario: Create a New Company as Employee
       And one tab called "Person"
       And one tab called "Company"
      When I select the "Person" tab
-      And select a class of "Employee"
+      And I select "Employee" from the drop down "Class"
       And click Generate Control Code
      Then error message should be thrown
 
@@ -70,7 +70,7 @@ Scenario: Create a New Company as Contact
       And one tab called "Person"
       And one tab called "Company"
      When I select the "Person" tab
-      And select a class of "Contact"
+      And I select "Contact" from the drop down "Class"
       And click Generate Control Code
      Then error message should be thrown
 
@@ -81,7 +81,7 @@ Scenario: Create a New Company as Lead
       And one tab called "Person"
       And one tab called "Company"
      When I select the "Person" tab
-      And select a class of "Lead"
+      And I select "Lead" from the drop down "Class"
       And click Generate Control Code
      Then error message should be thrown
 
@@ -92,7 +92,7 @@ Scenario: Create a New Company as Referral
       And one tab called "Person"
       And one tab called "Company"
      When I select the "Person" tab
-      And select a class of "Referral"
+      And I select "Referral" from the drop down "Class"
       And click Generate Control Code
      Then error message should be thrown
 
@@ -103,7 +103,7 @@ Scenario: Create a New Company as Hot Lead
       And one tab called "Person"
       And one tab called "Company"
      When I select the "Person" tab
-      And select a class of "Cold Lead"
+      And I select "Cold Lead" from the drop down "Class"
       And click Generate Control Code
      Then error message should be thrown
 
@@ -114,7 +114,7 @@ Scenario: Create a New Company as Cold Lead
       And one tab called "Person"
       And one tab called "Company"
      When I select the "Person" tab
-      And select a class of "Sub-contractor"
+      And I select "Sub-contractor" from the drop down "Class"
       And click Generate Control Code
      Then error message should be thrown
 
@@ -125,7 +125,7 @@ Scenario: Create a New Company as Sub-contractor
       And one tab called "Person"
       And one tab called "Company"
      When I select the "Person" tab
-      And select a class of "Sub-contractor"
+      And I select "Sub-contractor" from the drop down "Class"
       And click Generate Control Code
      Then error message should be thrown
 
@@ -136,7 +136,7 @@ Scenario: Create a New Company as Robot
       And one tab called "Person"
       And one tab called "Company"
      When I select the "Person" tab
-      And select a class of "Robot"
+      And I select "Robot" from the drop down "Class"
       And click Generate Control Code
      Then error message should be thrown
 
