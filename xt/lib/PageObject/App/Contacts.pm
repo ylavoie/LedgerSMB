@@ -25,19 +25,6 @@ sub _verify {
     return $self;
 };
 
-sub select_class {
-    my ($self, $class) = @_;
-
-    $self->verify;
-    my $elem = $self->find(".//*[\@id='person-entity-class']");
-
-    $elem->clear;
-    $elem->send_keys($class);
-
-    $self->find("*button", text => "Generate Control Code")->click;
-}
-
-
 __PACKAGE__->meta->make_immutable;
 
 1;
