@@ -46,24 +46,6 @@ Then qr/one tab called (['"])(Person|Company)\1/, sub {
     "the page has a tab named " . $tab)
 };
 
-Then qr/I should see a drop down (class) with these items/, sub {
-  warn p @_;
-#  my ($self, %args) = @_;
-#  my $user = $args{user};
-#  my $password = $args{password};
-#  my $company = $args{company};
-#  my $next_page = $args{next_page} // '*setup-admin';
-#
-#  my $element =
-#      $self->find('*labeled', text => $_->{label});
-#  $element->send_keys($_->{value});
-};
-
-When qr/I select a class of (['"])(.+)\1/, sub {
-  my $class = $2;
-  S->{page}->select_class($class);
-};
-
 #When qr/I click on the Bank Accounts/, sub {
 #  my $tab = $1;
 #};
