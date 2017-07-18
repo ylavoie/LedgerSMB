@@ -5,9 +5,9 @@ including new customers, vendors, leads and so forth.
 Background:
    Given a standard test company
      And a US/General Chart of Accounts
- # should have been : And a logged in accounting user
+# should have been : And a logged in accounting user
 
-Scenario: Create a New Company as Vendor
+Scenario: Validate the classes in the Person tab
     Given a logged in admin
      When I navigate the menu and select the item at "Contacts > Add Contact"
      Then I should see the Add Contact screen
@@ -27,118 +27,98 @@ Scenario: Create a New Company as Vendor
         | Cold Lead      |    8  |
         | Sub-contractor |    9  |
         | Robot          |   10  |
-      And click Generate Control Code
-     Then error message should be thrown
+     When I press "Generate Control Code"
+     Then an error message should be thrown
 
-Scenario: Create a New Company as Vendor
+Scenario: Create a New Person as Vendor
     Given a logged in admin
      When I navigate the menu and select the item at "Contacts > Add Contact"
      Then I should see the Add Contact screen
-      And one tab called "Person"
-      And one tab called "Company"
      When I select the "Person" tab
       And I select "Vendor" from the drop down "Class"
-      And click Generate Control Code
-     Then error message should be thrown
+     When I press "Generate Control Code"
+     Then an error message should be thrown
 
-Scenario: Create a New Company as Customer
+Scenario: Create a New Person as Customer
     Given a logged in admin
      When I navigate the menu and select the item at "Contacts > Add Contact"
      Then I should see the Add Contact screen
-      And one tab called "Person"
-      And one tab called "Company"
      When I select the "Person" tab
       And I select "Customer" from the drop down "Class"
-      And click Generate Control Code
-     Then error message should be thrown
+     When I press "Generate Control Code"
+     Then an error message should be thrown
 
-Scenario: Create a New Company as Employee
+Scenario: Create a New Person as Employee
     Given a logged in admin
      When I navigate the menu and select the item at "Contacts > Add Contact"
      Then I should see the Add Contact screen
-      And one tab called "Person"
-      And one tab called "Company"
      When I select the "Person" tab
       And I select "Employee" from the drop down "Class"
-      And click Generate Control Code
-     Then error message should be thrown
+     When I press "Generate Control Code"
+     Then an error message should be thrown
 
-Scenario: Create a New Company as Contact
+Scenario: Create a New Person as Contact
     Given a logged in admin
      When I navigate the menu and select the item at "Contacts > Add Contact"
      Then I should see the Add Contact screen
-      And one tab called "Person"
-      And one tab called "Company"
      When I select the "Person" tab
       And I select "Contact" from the drop down "Class"
-      And click Generate Control Code
-     Then error message should be thrown
+     When I press "Generate Control Code"
+     Then an error message should be thrown
 
-Scenario: Create a New Company as Lead
+Scenario: Create a New Person as Lead
     Given a logged in admin
      When I navigate the menu and select the item at "Contacts > Add Contact"
      Then I should see the Add Contact screen
-      And one tab called "Person"
-      And one tab called "Company"
      When I select the "Person" tab
       And I select "Lead" from the drop down "Class"
-      And click Generate Control Code
-     Then error message should be thrown
+     When I press "Generate Control Code"
+     Then an error message should be thrown
 
-Scenario: Create a New Company as Referral
+Scenario: Create a New Person as Referral
     Given a logged in admin
      When I navigate the menu and select the item at "Contacts > Add Contact"
      Then I should see the Add Contact screen
-      And one tab called "Person"
-      And one tab called "Company"
      When I select the "Person" tab
       And I select "Referral" from the drop down "Class"
-      And click Generate Control Code
-     Then error message should be thrown
+     When I press "Generate Control Code"
+     Then an error message should be thrown
 
-Scenario: Create a New Company as Hot Lead
+Scenario: Create a New Person as Hot Lead
     Given a logged in admin
      When I navigate the menu and select the item at "Contacts > Add Contact"
      Then I should see the Add Contact screen
-      And one tab called "Person"
-      And one tab called "Company"
      When I select the "Person" tab
       And I select "Cold Lead" from the drop down "Class"
-      And click Generate Control Code
-     Then error message should be thrown
+     When I press "Generate Control Code"
+     Then an error message should be thrown
 
-Scenario: Create a New Company as Cold Lead
+Scenario: Create a New Person as Cold Lead
     Given a logged in admin
      When I navigate the menu and select the item at "Contacts > Add Contact"
      Then I should see the Add Contact screen
-      And one tab called "Person"
-      And one tab called "Company"
      When I select the "Person" tab
       And I select "Sub-contractor" from the drop down "Class"
-      And click Generate Control Code
-     Then error message should be thrown
+     When I press "Generate Control Code"
+     Then an error message should be thrown
 
-Scenario: Create a New Company as Sub-contractor
+Scenario: Create a New Person as Sub-contractor
     Given a logged in admin
      When I navigate the menu and select the item at "Contacts > Add Contact"
      Then I should see the Add Contact screen
-      And one tab called "Person"
-      And one tab called "Company"
      When I select the "Person" tab
       And I select "Sub-contractor" from the drop down "Class"
-      And click Generate Control Code
-     Then error message should be thrown
+     When I press "Generate Control Code"
+     Then an error message should be thrown
 
-Scenario: Create a New Company as Robot
+Scenario: Create a New Person as Robot
     Given a logged in admin
      When I navigate the menu and select the item at "Contacts > Add Contact"
      Then I should see the Add Contact screen
-      And one tab called "Person"
-      And one tab called "Company"
      When I select the "Person" tab
       And I select "Robot" from the drop down "Class"
-      And click Generate Control Code
-     Then error message should be thrown
+     When I press "Generate Control Code"
+     Then an error message should be thrown
 
 # TODO
 # Scenario: Look up person customer with all info filled out
