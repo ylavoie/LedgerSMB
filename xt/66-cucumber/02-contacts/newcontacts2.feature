@@ -26,6 +26,14 @@ Scenario: Create a New Company as Vendor
      Then I see a new line in the listing
       And the Customer Number field is now filled in.
 
+Scenario: Add new note to company
+   Given a company with a vendor ECA
+    When I click on the notes tab
+     And enter a new note
+     And select credit account
+     And click Save
+    Then I see the new note in the note list
+
 Scenario: Look Up Existing Company as Vendor
      When I click on the Contacts/Search menu
      Then I see the search filter screen.
