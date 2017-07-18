@@ -18,9 +18,19 @@ Scenario: Create a New Company as Vendor
         | Name           | Another test  |
         | Country        | United States |
       And I press "Generate Control Code"
+     Then I should get a valid Control Code
       And I press "Save"
      Then I see the "Credit Account" Tab
       And no credit accounts in the listing
      When I click "Save" on the Credit Account tab
      Then I see a new line in the listing
       And the Customer Number field is now filled in.
+
+Scenario: Look Up Existing Company as Vendor
+     When I click on the Contacts/Search menu
+     Then I see the search filter screen.
+     When I select custommer as the entity class
+      And click continue
+     Then I see a listing with a customer with a name of "Testing, Inc"
+     When I click the "Testing, Inc"
+     Then I see the vendor ECA record

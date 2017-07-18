@@ -53,10 +53,14 @@ Then qr/an error message should be thrown/, sub {
   }
 };
 
+use Data::Printer;
 Then qr/I should get a valid Control Code/, sub {
+  warn 'I should get a valid Control Code++';
   my $input = _page_find_displayed(S, '*labeled', text => 'Control Code');
+  warn p $input;
   ok($input->get_attribute('value') =~ /[A-Z]-[0-9]+/,
-    "the control code is valid")
+    "the control code is valid");
+  warn 'I should get a valid Control Code--';
 };
 
 Then qr/no credit accounts in the listing/, sub {
