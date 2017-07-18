@@ -17,19 +17,18 @@ use Test::BDD::Cucumber::StepFile;
 #
 ###############
 
-use Data::Printer;
 #Before Scenario, thus same as Background. Useless
 #Before sub {
 #  warn p @_;
 #};
 
-# Used?
-#When qr/I click on the Add Contact menu entry/, sub {
-#  my @path = split /[\n\s\t]*>[\n\s\t]*/, 'Contacts > Add Contact';
-#
-#  S->{ext_wsl}->page->body->menu->click_menu(\@path);
-#  S->{ext_wsl}->page->body->verify;
-#};
+sub _page_find_displayed {
+    my $self = shift @_;
+
+    my @finds = S->{ext_wsl}->page->find_all(@_);
+    @finds = grep { $_->is_displayed } @finds;
+    return (shift @finds);
+}
 
 # Then qr/I see the new customer screen/, sub {
 #   my $page = S->{ext_wsl}->page->body;
@@ -44,6 +43,32 @@ Then qr/one tab called (['"])(Person|Company)\1/, sub {
   my $tab = $2;
   ok(S->{ext_wsl}->page->find(".//*[\@role='tab' and text()='$tab']"),
     "the page has a tab named " . $tab)
+};
+
+# Dojo doesn't throw an exception but marks required fields as undone
+Then qr/an error message should be thrown/, sub {
+  TODO: {
+    local $TODO = "Not implemented yet";
+    todo_skip "Invalid Control code", 1;
+  }
+};
+
+Then qr/I should get a valid Control Code/, sub {
+  my $input = _page_find_displayed(S, '*labeled', text => 'Control Code');
+  ok($input->get_attribute('value') =~ /[A-Z]-[0-9]+/,
+    "the control code is valid")
+};
+
+Then qr/no credit accounts in the listing/, sub {
+  my $input = _page_find_displayed(S, '*labeled', text => 'Number');
+  ok($input->get_attribute('value') eq '',
+    "the entity number is empty")
+};
+
+Then qr/I see a new line in the listing/, sub {
+  my $input = _page_find_displayed(S, '*labeled', text => 'Number');
+  ok($input->get_attribute('value') =~ /[0-9]+/,
+    "the entity number is valid")
 };
 
 #When qr/I click on the Bank Accounts/, sub {
@@ -74,8 +99,6 @@ Then qr/one tab called (['"])(Person|Company)\1/, sub {
 #};
 #And qr/one tab called ['"]Company\1/, sub {
 #};
-#And qr/select ['"]United States\1 as the country/, sub {
-#};
 #And qr/select credit account/, sub {
 #};
 #And qr/select entity/, sub {
@@ -87,8 +110,6 @@ Then qr/one tab called (['"])(Person|Company)\1/, sub {
 #Then qr/I see a listing with a customer with a name like ['"]Test\1/, sub {
 #};
 #Then qr/I see a listing with a customer with a name of ['"]Testing, Inc\1/, sub {
-#};
-#Then qr/I see a new line in the listing/, sub {
 #};
 #Then qr/I see the /, sub {
 #};
@@ -111,19 +132,12 @@ Then qr/one tab called (['"])(Person|Company)\1/, sub {
 #When qr/I click on the Addresses tab/, sub {
 #  my $tab = $1;
 #};
-#When qr/I click on the Contacts\/Search menu/, sub {
-#  my $tab = $1;
-#};
 #When qr/I click on the notes tab/, sub {
 #  my $tab = $1;
 #};
 #When qr/I click the ['"]Test\1/, sub {
 #};
 #When qr/I click the ['"]Testing, Inc\1/, sub {
-#};
-#When qr/I select custommer as the entity class/, sub {
-#};
-#With qr/no credit accounts in the listing/, sub {
 #};
 
 
