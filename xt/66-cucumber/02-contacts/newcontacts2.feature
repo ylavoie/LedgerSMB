@@ -12,10 +12,13 @@ Scenario: Create a New Company as Vendor
      When I navigate the menu and select the item at "Contacts > Add Contact"
      Then I should see the Add Contact screen
      When I select the "Company" tab
-      And enter a name of of "Testing, Inc"
-      And select "United States" as the country
-      And click Generate Control Code
-      And click Save
+      And I select "Vendor" from the drop down "Class"
+      And I enter these values:
+        |     label      | value         |
+        | Name           | Another test  |
+        | Country        | United States |
+      And I press "Generate Control Code"
+      And I press "Save"
      Then I see the "Credit Account" Tab
       And no credit accounts in the listing
      When I click "Save" on the Credit Account tab
