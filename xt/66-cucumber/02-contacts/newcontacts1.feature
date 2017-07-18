@@ -52,3 +52,28 @@ Scenario: Create a New Person as Vendor
      When I press "Save New" on the Credit Account tab
      Then I see a new line in the listing
       And the Vendor Number field is now filled in.
+
+Scenario: Add Address to Customer ECA
+   Given a person with a customer ECA
+    When I click on the Addresses tab
+     And enter a new address
+     And select credit account
+     And click Save
+    Then I see the new address in the table list
+
+Scenario: Add Address to Customer Entity
+   Given a person with a customer ECA
+    When I click on the Addresses tab
+     And enter a new address
+     And select entity
+     And click Save
+    Then I see the new address in the table list
+
+Scenario: Look Up Existing Person as Customer
+     When I navigate the menu and select the item at "Contacts > Search"
+     Then I see the Contact search screen.
+      And I select "Vendor" from the drop down "Entity Class"
+      And I press "Search"
+     Then I see a listing with a customer with a name like "Test"
+     When I press the "Test"
+     Then I see the customer ECA record
