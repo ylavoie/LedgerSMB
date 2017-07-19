@@ -14,9 +14,9 @@ Scenario: Create a New Company as Vendor
      When I select the "Company" tab
       And I select "Vendor" from the drop down "Class"
       And I enter these values:
-        |     label      | value         |
-        | Name           | Another test  |
-        | Country        | United States |
+        | label   | value         |
+        | Name    | Another test  |
+        | Country | United States |
       And I press "Generate Control Code"
      Then I should get a valid Control Code
       And I press "Save"

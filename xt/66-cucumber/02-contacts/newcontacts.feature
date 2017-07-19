@@ -16,17 +16,17 @@ Scenario: Validate the classes in the Person tab
      When I select the "Person" tab
      Then I see the "Person" tab
       And I should see a drop down "Class" with these items:
-        |     class      | value |
-        | Vendor         |    1  |
-        | Customer       |    2  |
-        | Employee       |    3  |
-        | Contact        |    4  |
-        | Lead           |    5  |
-        | Referral       |    6  |
-        | Hot Lead       |    7  |
-        | Cold Lead      |    8  |
-        | Sub-contractor |    9  |
-        | Robot          |   10  |
+        | class          | value |
+        | Vendor         | 1     |
+        | Customer       | 2     |
+        | Employee       | 3     |
+        | Contact        | 4     |
+        | Lead           | 5     |
+        | Referral       | 6     |
+        | Hot Lead       | 7     |
+        | Cold Lead      | 8     |
+        | Sub-contractor | 9     |
+        | Robot          | 10    |
      When I press "Generate Control Code"
      Then an error message should be thrown
 

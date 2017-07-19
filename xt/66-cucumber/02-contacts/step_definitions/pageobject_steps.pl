@@ -22,13 +22,13 @@ use Test::BDD::Cucumber::StepFile;
 #  warn p @_;
 #};
 
-sub _page_find_displayed {
-    my $self = shift @_;
-
-    my @finds = S->{ext_wsl}->page->find_all(@_);
-    @finds = grep { $_->is_displayed } @finds;
-    return (shift @finds);
-}
+#sub _page_find_displayed {
+#    my $self = shift @_;
+#
+#    my @finds = S->{ext_wsl}->page->find_all(@_);
+#    @finds = grep { $_->is_displayed } @finds;
+#    return (shift @finds);
+#}
 
 # Then qr/I see the new customer screen/, sub {
 #   my $page = S->{ext_wsl}->page->body;
@@ -53,25 +53,21 @@ Then qr/an error message should be thrown/, sub {
   }
 };
 
-use Data::Printer;
 Then qr/I should get a valid Control Code/, sub {
-  warn 'I should get a valid Control Code++';
   my $input = _page_find_displayed(S, '*labeled', text => 'Control Code');
-  warn p $input;
-  ok($input->get_attribute('value') =~ /[A-Z]-[0-9]+/,
+  ok($input && $input->get_attribute('value') =~ /[A-Z]-[0-9]+/,
     "the control code is valid");
-  warn 'I should get a valid Control Code--';
 };
 
 Then qr/no credit accounts in the listing/, sub {
   my $input = _page_find_displayed(S, '*labeled', text => 'Number');
-  ok($input->get_attribute('value') eq '',
+  ok($input && $input->get_attribute('value') eq '',
     "the entity number is empty")
 };
 
 Then qr/I see a new line in the listing/, sub {
   my $input = _page_find_displayed(S, '*labeled', text => 'Number');
-  ok($input->get_attribute('value') =~ /[0-9]+/,
+  ok($input && $input->get_attribute('value') =~ /[0-9]+/,
     "the entity number is valid")
 };
 

@@ -14,13 +14,13 @@ Scenario: Create a New Person as Customer
      When I select the "Person" tab
       And I select "Customer" from the drop down "Class"
       And I enter these values:
-        |     label      | value         |
-        | Salutation     | Mr.           |
-        | Given Name     | Test          |
-        | Surname        | Another test  |
-        | Country        | United States |
-        | Personal ID    | 123456        |
-        | Birthdate      | 1963-01-02    |
+        | label       | value         |
+        | Salutation  | Mr.           |
+        | Given Name  | Test          |
+        | Surname     | Another test  |
+        | Country     | United States |
+        | Personal ID | 123456        |
+        | Birthdate   | 1963-01-02    |
       And I press "Generate Control Code"
      Then I should get a valid Control Code
      When I press "Save"
@@ -37,13 +37,13 @@ Scenario: Create a New Person as Vendor
      When I select the "Person" tab
       And I select "Vendor" from the drop down "Class"
       And I enter these values:
-        |     label      | value         |
-        | Salutation     | Mr.           |
-        | Given Name     | Test          |
-        | Surname        | Another test  |
-        | Country        | United States |
-        | Personal ID    | 123456        |
-        | Birthdate      | 1963-01-02    |
+        | label       | value         |
+        | Salutation  | Mr.           |
+        | Given Name  | Test          |
+        | Surname     | Another test  |
+        | Country     | United States |
+        | Personal ID | 123456        |
+        | Birthdate   | 1963-01-02    |
       And I press "Generate Control Code"
      Then I should get a valid Control Code
      When I press "Save"
@@ -56,17 +56,17 @@ Scenario: Create a New Person as Vendor
 Scenario: Add Address to Customer ECA
    Given a person with a customer ECA
     When I click on the Addresses tab
-     And enter a new address
-     And select credit account
-     And click Save
+     And I enter a new address
+     And I select credit account
+     And I press "Save"
     Then I see the new address in the table list
 
 Scenario: Add Address to Customer Entity
    Given a person with a customer ECA
     When I click on the Addresses tab
-     And enter a new address
-     And select entity
-     And click Save
+     And I enter a new address
+     And I select entity
+     And I press "Save"
     Then I see the new address in the table list
 
 Scenario: Look Up Existing Person as Customer
