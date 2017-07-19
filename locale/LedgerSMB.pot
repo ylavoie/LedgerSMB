@@ -9364,3 +9364,12 @@ msgstr ""
 #: lib/LedgerSMB/Scripts/payment.pm:1854 lib/LedgerSMB/Scripts/payment.pm:1871
 msgid "use of an overpayment"
 msgstr ""
+
+#: t/data/04-gettext.tex:8
+msgid "zh_CN"
+msgstr ""
+
+#: bin/io.pl:1813 lib/LedgerSMB/Scripts/setup.pm:137
+msgid "This will <b>remove</b> the business references in > tables"
+msgstr "Ceci <b>enlèvera</b> toutes les références invalides dans les tables <u>vendor</u> et <u>customer</u>"
+
