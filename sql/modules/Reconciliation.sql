@@ -244,36 +244,31 @@ CREATE OR REPLACE FUNCTION reconciliation__report_approve (in_report_id INT) ret
             RAISE EXCEPTION 'No report at %.', $1;
         END IF;
 
-        FOR current_row IN
-                SELECT compound_array(entries) AS entries FROM (
-                        select as_array(ac.entry_id) as entries
-                FROM acc_trans ac
-                JOIN transactions t on (ac.trans_id = t.id)
-                JOIN (select id, entity_credit_account::text as ref, 'ar' as table FROM ar
-                UNION select id, entity_credit_account::text,        'ap' as table FROM ap
-                UNION select id, reference, 'gl' as table FROM gl) gl
-                        ON (gl.table = t.table_name AND gl.id = t.id)
-                LEFT JOIN cr_report_line rl ON (rl.report_id = in_report_id
-                        AND ((rl.ledger_id = ac.entry_id
-                                AND ac.voucher_id IS NULL)
-                                OR (rl.voucher_id = ac.voucher_id)) and rl.cleared IS TRUE)
-                WHERE (ac.cleared IS FALSE OR ac.cleared_on IS NULL)
-                        AND ac.chart_id = (select chart_id from cr_report where id = in_report_id)
-                GROUP BY gl.ref, ac.source, ac.transdate,
-                        ac.memo, ac.voucher_id, gl.table, ac.entry_id
-                HAVING count(rl.report_id) > 0) a
-        LOOP
-                ac_entries := ac_entries || current_row.entries;
-        END LOOP;
-
-        FOREACH ac_entry IN ARRAY ac_entries LOOP
-            UPDATE acc_trans
-               SET cleared = TRUE, cleared_on = clear_time, reconciled_on = now()
-              FROM cr_report_line
-             WHERE ledger_id = ac_entry
-               AND entry_id = ac_entry
-               AND report_id = in_report_id;
-        END LOOP;
+        WITH current_rows AS (
+          SELECT compound_array(entries) AS entries FROM (
+                  select as_array(ac.entry_id) as entries
+          FROM acc_trans ac
+          JOIN transactions t on (ac.trans_id = t.id)
+          JOIN (select id, entity_credit_account::text as ref, 'ar' as table FROM ar
+          UNION select id, entity_credit_account::text,        'ap' as table FROM ap
+          UNION select id, reference, 'gl' as table FROM gl) gl
+                  ON (gl.table = t.table_name AND gl.id = t.id)
+          LEFT JOIN cr_report_line rl ON (rl.report_id = in_report_id
+                  AND ((rl.ledger_id = ac.entry_id
+                          AND ac.voucher_id IS NULL)
+                          OR (rl.voucher_id = ac.voucher_id)) and rl.cleared IS TRUE)
+          WHERE (ac.cleared IS FALSE OR ac.cleared_on IS NULL)
+                  AND ac.chart_id = (select chart_id from cr_report where id = in_report_id)
+          GROUP BY gl.ref, ac.source, ac.transdate,
+                  ac.memo, ac.voucher_id, gl.table, ac.entry_id
+          HAVING count(rl.report_id) > 0) a
+        )
+        UPDATE acc_trans
+           SET cleared = TRUE, cleared_on = clear_time, reconciled_on = now()
+          FROM cr_report_line
+         WHERE ledger_id = entry_id
+           AND report_id = in_report_id
+           AND entry_id IN (SELECT entries FROM current_rows);
 
         return 1;
     END;
