@@ -40,6 +40,10 @@ SELECT account__save(id, accno, description, category,
 
 delete from account_link where description = 'CT_tax';
 
+-- Business
+
+INSERT INTO business SELECT * FROM sl30.business;
+
 --Entity
 
 INSERT INTO entity (name, control_code, entity_class, country_id)
@@ -66,6 +70,7 @@ UPDATE sl30.customer SET entity_id = coalesce((SELECT min(id) FROM entity WHERE 
 
 --Entity Credit Account
 
+UPDATE sl30.vendor SET business_id = NULL WHERE business_id = 0;
 INSERT INTO entity_credit_account
 (entity_id, meta_number, business_id, creditlimit, ar_ap_account_id,
         cash_account_id, startdate, enddate, threshold, entity_class)
@@ -86,6 +91,7 @@ UPDATE sl30.vendor SET credit_id =
         WHERE e.meta_number = vendornumber and entity_class = 1
         and e.entity_id = vendor.entity_id);
 
+UPDATE sl30.customer SET business_id = NULL WHERE business_id = 0;
 INSERT INTO entity_credit_account
 (entity_id, meta_number, business_id, creditlimit, ar_ap_account_id,
         cash_account_id, startdate, enddate, threshold, entity_class)
@@ -105,68 +111,6 @@ UPDATE sl30.customer SET credit_id =
         (SELECT id FROM entity_credit_account e
         WHERE e.meta_number = customernumber and entity_class = 2
         and e.entity_id = customer.entity_id);
-
---Payments
-
-CREATE OR REPLACE FUNCTION payment_migrate
-(in_id                            int,      -- Payment id
- in_trans_id                      int,      -- Transaction id
- in_exchangerate                  numeric,  -- Exchange rate
- in_paymentmethod_id              int)      -- Payment method
-RETURNS INT AS $$
-    DECLARE var_payment_id int;
-    DECLARE var_employee int;
-    DECLARE default_currency char(3);
-    DECLARE current_exchangerate numeric;
-    DECLARE var_account_class int;
-    DECLARE var_datepaid date;
-    DECLARE var_curr char(3);
-    DECLARE var_notes text;
-    DECLARE var_source text[];
-    DECLARE var_memo text[];
-    DECLARE var_lsmb_entry_id int;
-    DECLARE var_entity_credit_account int;
-BEGIN
-    var_account_class = 1; -- AP
-
-    SELECT * INTO default_currency  FROM defaults_get_defaultcurrency();
-    SELECT * INTO current_exchangerate FROM currency_get_exchangerate(var_curr, var_datepaid, var_account_class);
-
-    SELECT INTO var_employee p.id
-    FROM users u
-    JOIN person p ON (u.entity_id=p.entity_id)
-    WHERE username = SESSION_USER LIMIT 1;
-
-    SELECT sl30_ac.transdate, sl30_ac.source, sl30_ac.lsmb_entry_id,
-           ap.entity_credit_account
-    INTO var_datepaid, var_notes, var_lsmb_entry_id,
-         var_entity_credit_account
-    FROM sl30.payment sl30_p
-    JOIN sl30.acc_trans sl30_ac ON (sl30_p.trans_id = sl30_ac.trans_id AND sl30_p.id=sl30_ac.id)
-    JOIN sl30.chart sl30_c on (sl30_c.id = sl30_ac.chart_id)
-    JOIN acc_trans ac ON ac.entry_id = sl30_ac.lsmb_entry_id
-    JOIN ap ON ap.id=ac.trans_id
-    WHERE sl30_c.link ~ 'AP' AND link ~ 'paid'
-    AND sl30_ac.trans_id=in_trans_id
-    AND sl30_ac.id=in_id;
-
-    -- Handle regular transaction
-    INSERT INTO payment (reference, payment_class, payment_date,
-                         employee_id, currency, notes, entity_credit_id)
-    VALUES (setting_increment('paynumber'),
-            var_account_class, var_datepaid, var_employee,
-            var_curr, var_notes, var_entity_credit_account);
-    SELECT currval('payment_id_seq') INTO var_payment_id; -- WE'LL NEED THIS VALUE TO USE payment_link table
-
-    INSERT INTO payment_links
-    VALUES (var_payment_id, var_lsmb_entry_id, 1);
-
-    RETURN var_payment_id;
-END;
-$$ LANGUAGE PLPGSQL;
-
-PERFORM payment_migrate(p.id, p.trans_id, cast(p.exchangerate as numeric), p.paymentmethod_id)
-FROM sl30.payment p;
 
 --Company
 
@@ -390,25 +334,14 @@ WHERE entity_class = 10 AND control_code = 'R-1';
 --     SELECT entity_id, login FROM sl30.employee em
 --      WHERE login IS NOT NULL;
 
--- No manager-managee information in SL30
---INSERT
---  INTO entity_employee(entity_id, startdate, enddate, role, ssn, sales,
---       employeenumber, dob, manager_id)
---SELECT entity_id, startdate, enddate, r.description, ssn, sales,
---       employeenumber, dob,
---       (select entity_id from sl30.employee where id = em.managerid)
---  FROM sl30.employee em
---LEFT JOIN sl30.acsrole r on em.acsrole_id = r.id;
-
 INSERT
   INTO entity_employee(entity_id, startdate, enddate, role, ssn, sales,
        employeenumber, dob, manager_id)
 SELECT entity_id, startdate, enddate, r.description, ssn, sales,
-       employeenumber, dob, 0
+       employeenumber, dob,
+       (select entity_id from sl30.employee where id = em.acsrole_id)
   FROM sl30.employee em
 LEFT JOIN sl30.acsrole r on em.acsrole_id = r.id;
-
-
 
 -- must rebuild this table due to changes since 1.2
 
@@ -471,14 +404,14 @@ END
 $$
   LANGUAGE 'plpgsql';
 
-SELECT * FROM pg_temp.f_insert_default('company_name','company');
-SELECT * FROM pg_temp.f_insert_default('company_address','address');
-SELECT * FROM pg_temp.f_insert_default('company_fax','fax');
-SELECT * FROM pg_temp.f_insert_default('company_phone','tel');
-SELECT * FROM pg_temp.f_insert_default('audittrail','audittrail');
-SELECT * FROM pg_temp.f_insert_default('businessnumber','businessnumber');
-SELECT * FROM pg_temp.f_insert_default('decimal_places','precision');
-SELECT * FROM pg_temp.f_insert_default('weightunit','weightunit');
+SELECT pg_temp.f_insert_default('company_name','company');
+SELECT pg_temp.f_insert_default('company_address','address');
+SELECT pg_temp.f_insert_default('company_fax','fax');
+SELECT pg_temp.f_insert_default('company_phone','tel');
+SELECT pg_temp.f_insert_default('audittrail','audittrail');
+SELECT pg_temp.f_insert_default('businessnumber','businessnumber');
+SELECT pg_temp.f_insert_default('decimal_places','precision');
+SELECT pg_temp.f_insert_default('weightunit','weightunit');
 -- Should we count the actual transferred entries instead?
 CREATE OR REPLACE FUNCTION pg_temp.f_insert_count(slname varchar(20)) RETURNS VOID AS
 $$
@@ -496,18 +429,18 @@ END
 $$
   LANGUAGE 'plpgsql';
 
-SELECT * FROM pg_temp.f_insert_count('customernumber');
-SELECT * FROM pg_temp.f_insert_count('employeenumber');
-SELECT * FROM pg_temp.f_insert_count('glnumber');
-SELECT * FROM pg_temp.f_insert_count('partnumber');
-SELECT * FROM pg_temp.f_insert_count('partnumber');
-SELECT * FROM pg_temp.f_insert_count('projectnumber');
-SELECT * FROM pg_temp.f_insert_count('rfqnumber');
-SELECT * FROM pg_temp.f_insert_count('sinumber');
-SELECT * FROM pg_temp.f_insert_count('sonumber');
-SELECT * FROM pg_temp.f_insert_count('sqnumber');
-SELECT * FROM pg_temp.f_insert_count('vendornumber');
-SELECT * FROM pg_temp.f_insert_count('vinumber');
+SELECT pg_temp.f_insert_count('customernumber');
+SELECT pg_temp.f_insert_count('employeenumber');
+SELECT pg_temp.f_insert_count('glnumber');
+SELECT pg_temp.f_insert_count('partnumber');
+SELECT pg_temp.f_insert_count('partnumber');
+SELECT pg_temp.f_insert_count('projectnumber');
+SELECT pg_temp.f_insert_count('rfqnumber');
+SELECT pg_temp.f_insert_count('sinumber');
+SELECT pg_temp.f_insert_count('sonumber');
+SELECT pg_temp.f_insert_count('sqnumber');
+SELECT pg_temp.f_insert_count('vendornumber');
+SELECT pg_temp.f_insert_count('vinumber');
 
 INSERT INTO defaults(setting_key,value) SELECT 'curr',curr FROM sl30.curr WHERE rn=1;
 
@@ -530,11 +463,12 @@ BEGIN
 END
 $$
   LANGUAGE 'plpgsql';
-SELECT * FROM pg_temp.f_insert_account('inventory_accno_id');
-SELECT * FROM pg_temp.f_insert_account('income_accno_id');
-SELECT * FROM pg_temp.f_insert_account('expense_accno_id');
-SELECT * FROM pg_temp.f_insert_account('fxgain_accno_id');
-SELECT * FROM pg_temp.f_insert_account('fxloss_accno_id');
+
+SELECT pg_temp.f_insert_account('inventory_accno_id');
+SELECT pg_temp.f_insert_account('income_accno_id');
+SELECT pg_temp.f_insert_account('expense_accno_id');
+SELECT pg_temp.f_insert_account('fxgain_accno_id');
+SELECT pg_temp.f_insert_account('fxloss_accno_id');
 -- = "sl30.cashovershort_accno_id" ?
 -- "earn_id" = ?
 
@@ -547,7 +481,7 @@ INSERT INTO business_unit (id, class_id, control_code, description)
 SELECT id, 1, id, description
   FROM sl30.department;
 UPDATE business_unit_class
-   SET active = t
+   SET active = true
  WHERE id = 1
    AND EXISTS (select 1 from sl30.department);
 
@@ -559,10 +493,9 @@ SELECT 1000+id, 2, projectnumber, description, startdate, enddate,
          where c.id = p.customer_id)
   FROM sl30.project p;
 UPDATE business_unit_class
-   SET active = t
+   SET active = true
  WHERE id = 2
    AND EXISTS (select 1 from sl30.project);
-
 
 INSERT INTO gl(id, reference, description, transdate, person_id, notes)
     SELECT gl.id, reference, description, transdate, p.id, gl.notes
@@ -644,9 +577,71 @@ INSERT INTO acc_trans (entry_id, trans_id, chart_id, amount, transdate,
         memo, approved, cleared, vr_id, invoice.id
    FROM sl30.acc_trans
 LEFT JOIN sl30.invoice ON acc_trans.id = invoice.id
-                          AND acc_trans.trans_id = invoice.trans_id
+                      AND acc_trans.trans_id = invoice.trans_id
   WHERE chart_id IS NOT NULL
     AND acc_trans.trans_id IN (SELECT id FROM transactions);
+
+--Payments
+
+CREATE OR REPLACE FUNCTION payment_migrate
+(in_id                            int,      -- Payment id
+ in_trans_id                      int,      -- Transaction id
+ in_exchangerate                  numeric,  -- Exchange rate
+ in_paymentmethod_id              int)      -- Payment method
+RETURNS INT AS $$
+    DECLARE var_payment_id int;
+    DECLARE var_employee int;
+    DECLARE default_currency char(3);
+    DECLARE current_exchangerate numeric;
+    DECLARE var_account_class int;
+    DECLARE var_datepaid date;
+    DECLARE var_curr char(3);
+    DECLARE var_notes text;
+    DECLARE var_source text[];
+    DECLARE var_memo text[];
+    DECLARE var_lsmb_entry_id int;
+    DECLARE var_entity_credit_account int;
+BEGIN
+    var_account_class = 1; -- AP
+
+    SELECT * INTO default_currency  FROM defaults_get_defaultcurrency();
+    SELECT * INTO current_exchangerate FROM currency_get_exchangerate(var_curr, var_datepaid, var_account_class);
+
+    SELECT INTO var_employee p.id
+    FROM users u
+    JOIN person p ON (u.entity_id=p.entity_id)
+    WHERE username = SESSION_USER LIMIT 1;
+
+    SELECT sl30_ac.transdate, sl30_ac.source, sl30_ac.lsmb_entry_id,
+           ap.entity_credit_account
+    INTO var_datepaid, var_notes, var_lsmb_entry_id,
+         var_entity_credit_account
+    FROM sl30.payment sl30_p
+    JOIN sl30.acc_trans sl30_ac ON (sl30_p.trans_id = sl30_ac.trans_id AND sl30_p.id=sl30_ac.id)
+    JOIN sl30.chart sl30_c on (sl30_c.id = sl30_ac.chart_id)
+    JOIN acc_trans ac ON ac.entry_id = sl30_ac.lsmb_entry_id
+    JOIN ap ON ap.id=ac.trans_id
+    WHERE sl30_c.link ~ 'AP' AND link ~ 'paid'
+    AND sl30_ac.trans_id=in_trans_id
+    AND sl30_ac.id=in_id;
+
+    -- Handle regular transaction
+    INSERT INTO payment (reference, payment_class, payment_date,
+                         employee_id, currency, notes, entity_credit_id)
+    VALUES (setting_increment('paynumber'),
+            var_account_class, var_datepaid, var_employee,
+            var_curr, var_notes, var_entity_credit_account);
+    SELECT currval('payment_id_seq') INTO var_payment_id; -- WE'LL NEED THIS VALUE TO USE payment_link table
+
+    INSERT INTO payment_links
+    VALUES (var_payment_id, var_lsmb_entry_id, 1);
+
+    RETURN var_payment_id;
+END;
+$$ LANGUAGE PLPGSQL;
+
+SELECT payment_migrate(p.id, p.trans_id, cast(p.exchangerate as numeric), p.paymentmethod_id)
+FROM sl30.payment p;
 
 -- Reconciliations
 -- Serially reuseable
@@ -671,15 +666,16 @@ $$
   SELECT (date_trunc('MONTH', $1) + INTERVAL '1 MONTH - 1 day')::DATE;
 $$ LANGUAGE 'sql' IMMUTABLE STRICT;
 
-CREATE OR REPLACE FUNCTION PG_TEMP.is_date(S DATE) RETURNS BOOLEAN LANGUAGE PLPGSQL IMMUTABLE AS $$
+CREATE OR REPLACE FUNCTION PG_TEMP.is_cleared(clear_time DATE,end_date DATE) RETURNS BOOLEAN LANGUAGE PLPGSQL IMMUTABLE AS $$
 BEGIN
-  RETURN CASE WHEN $1::DATE IS NULL THEN FALSE ELSE TRUE END;
+  RETURN CASE WHEN $1::DATE IS NOT NULL AND $1 <= $2 THEN TRUE ELSE FALSE END;
 EXCEPTION WHEN OTHERS THEN
   RETURN FALSE;
 END;$$;
 
-INSERT INTO cr_report(chart_id, their_total,  submitted, end_date, updated, entered_by, entered_username)
-  SELECT coa.id, SUM(SUM(-amount)) OVER (ORDER BY coa.id, a.end_date), TRUE,
+-- The computation of their_total is wrong at this time
+INSERT INTO cr_report(chart_id, their_total, submitted, end_date, updated, entered_by, entered_username)
+  SELECT coa.id, 0, TRUE,
             a.end_date,max(a.updated),
             (SELECT entity_id FROM robot WHERE last_name = 'Migrator'),
             'Migrator'
@@ -709,7 +705,7 @@ INSERT INTO cr_report(chart_id, their_total,  submitted, end_date, updated, ente
 -- The ID and matching post_date are entered in a temp table to pull the back into cr_report_line immediately after.
 -- Temp table will be dropped automatically at the end of the transaction.
 WITH cr_entry AS (
-SELECT cr.id::INT, a.source, n.type, a.cleared::TIMESTAMP, a.amount::NUMERIC, a.transdate AS post_date, a.lsmb_entry_id
+SELECT cr.id::INT, cr.end_date, a.source, n.type, a.cleared::TIMESTAMP, a.amount::NUMERIC, a.transdate AS post_date, a.lsmb_entry_id
     FROM sl30.acc_trans a
     JOIN sl30.chart s ON chart_id=s.id
     JOIN reconciliation__account_list() coa ON coa.accno=s.accno
@@ -729,27 +725,35 @@ SELECT cr.id::INT, a.source, n.type, a.cleared::TIMESTAMP, a.amount::NUMERIC, a.
     ) n ON n.trans_id = a.trans_id
     ORDER BY post_date,cr.id,n.type,a.source ASC NULLS LAST,a.amount
 )
-SELECT reconciliation__add_entry(id, source, type, cleared, amount) AS id, cr_entry.post_date, cr_entry.lsmb_entry_id
+SELECT reconciliation__add_entry(id, source, type, cleared, amount) AS id, cr_entry.end_date, cr_entry.post_date, cr_entry.lsmb_entry_id
 INTO TEMPORARY _cr_report_line
 FROM cr_entry;
 
 UPDATE cr_report_line cr SET post_date = cr1.post_date,
                              ledger_id = cr1.lsmb_entry_id,
-                             cleared = pg_temp.is_date(clear_time),
+                             cleared = pg_temp.is_cleared(clear_time,cr1.end_date),
                              insert_time = date_trunc('second',cr1.post_date),
                              our_balance = their_balance
 FROM (
-  SELECT id,post_date,lsmb_entry_id
+  SELECT id,post_date,end_date,lsmb_entry_id
   FROM _cr_report_line
 ) cr1
 WHERE cr.id = cr1.id;
+
+-- Patch their_total, now that we have all the data in cr_report_line
+UPDATE cr_report SET their_total=reconciliation__get_cleared_balance(cr.chart_id,cr.end_date)
+FROM (
+    SELECT id, chart_id, end_date
+    FROM cr_report
+) cr WHERE cr_report.id = cr.id;
+
 -- Patch for suspect clear dates
 -- The UI should reflect this
 -- Unsubmit the suspect report to allow easy edition
 UPDATE cr_report SET submitted = false
 WHERE id IN (
     SELECT DISTINCT report_id FROM cr_report_line
-    WHERE clear_time - post_date > 60
+    WHERE clear_time - post_date > 150
 );
 -- Approve valid reports.
 UPDATE cr_report SET approved = true
@@ -772,7 +776,6 @@ SELECT ac.entry_id, 2, slac.project_id+1000
   FROM acc_trans ac
   JOIN sl30.acc_trans slac ON slac.lsmb_entry_id = ac.entry_id
  WHERE project_id > 0;
-
 
 INSERT INTO business_unit_inv (entry_id, class_id, bu_id)
 SELECT inv.id, 1, gl.department_id
@@ -853,8 +856,6 @@ SELECT id, 2, project_id + 1000 FROM sl30.orderitems
 INSERT INTO exchangerate select * from sl30.exchangerate;
 
 INSERT INTO status SELECT * FROM sl30.status; -- may need to comment this one out sometimes
-
-INSERT INTO business SELECT * FROM sl30.business;
 
 INSERT INTO sic SELECT * FROM sl30.sic;
 
@@ -995,15 +996,15 @@ SELECT setval('cr_report_line_id_seq', max(id)) FROM cr_report_line;
 SELECT setval('business_unit_id_seq', max(id)) FROM business_unit;
 
 --UPDATE defaults SET value = (
---    SELECT MAX(CAST(???number AS NUMERIC))+1 FROM SL30.??? WHERE ???number ~ '^[0-9]+$'
+--    SELECT MAX(CAST(???number AS NUMERIC))+1 FROM sl30.??? WHERE ???number ~ '^[0-9]+$'
 --) WHERE setting_key = 'rcptnumber';
 
 --UPDATE defaults SET value = (
---    SELECT MAX(CAST(???number AS NUMERIC))+1 FROM SL30.??? WHERE ???number ~ '^[0-9]+$'
+--    SELECT MAX(CAST(???number AS NUMERIC))+1 FROM sl30.??? WHERE ???number ~ '^[0-9]+$'
 --) WHERE setting_key = 'rfqnumber';
 
 --UPDATE defaults SET value = (
---    SELECT MAX(CAST(???number AS NUMERIC))+1 FROM SL30.??? WHERE ???number ~ '^[0-9]+$'
+--    SELECT MAX(CAST(???number AS NUMERIC))+1 FROM sl30.??? WHERE ???number ~ '^[0-9]+$'
 --) WHERE setting_key = 'paynumber';
 
 UPDATE defaults SET value = 'yes' where setting_key = 'migration_ok';
