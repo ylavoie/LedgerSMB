@@ -559,7 +559,7 @@ push @tests,__PACKAGE__->new(
         display_cols => ['description', 'discount'],
      instructions => $locale->text(
                        'Contrary to SQL-Ledger, LedgerSMB requires businesses. Please make sure there is at least 1 business defined.'),
-        column => ['description', 'discount'],
+        columns => ['description', 'discount'],
         table => 'business',
         appname => 'sql-ledger',
         min_version => '2.7',
@@ -578,12 +578,12 @@ push @tests, __PACKAGE__->new(
     display_name => $locale->text('Vendor not in a business'),
     name => 'no_business_for_vendor',
     display_cols => ['id', 'name', 'business_id'],
-    column => ['business_id'],
+    columns => ['business_id'],
  instructions => $locale->text(
                    'Contrary to SQL-ledger, LedgerSMB vendors must be assigned to a business. Please select the proper business from the list'),
-selectable_values => ["SELECT concat(description,' -- ',discount) AS id, id as value
+selectable_values => { business_id => "SELECT concat(description,' -- ',discount) AS id, id as value
                                         FROM business
-                                        ORDER BY id"],
+                                        ORDER BY id"},
     table => 'vendor',
     appname => 'sql-ledger',
     min_version => '2.7',
@@ -600,12 +600,12 @@ selectable_values => ["SELECT concat(description,' -- ',discount) AS id, id as v
         display_name => $locale->text('Customer not in a business'),
         name => 'no_business_for_customer',
         display_cols => ['id', 'name', 'business_id'],
-        column => ['business_id'],
+        columns => ['business_id'],
      instructions => $locale->text(
                        'Contrary to SQL-ledger, LedgerSMB customers must be assigned to a business. Please select the proper business from the list'),
-    selectable_values => ["SELECT concat(description,' -- ',discount) AS id, id as value
+    selectable_values => { business_id => "SELECT concat(description,' -- ',discount) AS id, id as value
                                             FROM business
-                                            ORDER BY id"],
+                                            ORDER BY id"},
         table => 'customer',
         appname => 'sql-ledger',
         min_version => '2.7',
