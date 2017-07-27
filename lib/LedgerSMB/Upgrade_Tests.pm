@@ -216,7 +216,6 @@ Tooltip for each button
 has tooltips => (is => 'ro',
     isa => 'HashRef[Str]',
     default => sub {
-        my $locale = LedgerSMB::App_State::Locale;
         return {
             'Save and Retry' => marktext('Save the fixes provided and attempt to continue migration'),
             'Cancel' => marktext('Cancel the migration')
@@ -596,7 +595,6 @@ push @tests,__PACKAGE__->new(
     max_version => '3.0'
     );
 
-
     push @tests,__PACKAGE__->new(
         test_query => "select id, 'auto-business-' || id as description, 0 as discount from (
                           select distinct id from (
@@ -695,9 +693,10 @@ push @tests, __PACKAGE__->new(
     name => 'no_business_for_vendor',
     display_cols => ['id', 'name', 'business_id'],
     columns => ['business_id'],
- instructions => $locale->text(
-                   'Contrary to SQL-ledger, LedgerSMB vendors must be assigned to a business. Please select the proper business from the list'),
-selectable_values => { business_id => "SELECT concat(description,' -- ',discount) AS id, id as value
+ instructions => marktext(
+                   'LedgerSMB vendors must be assigned to a valid business. ' .
+                   'Please review the selection or select the proper business from the list'),
+selectable_values => { business_id => "SELECT concat(description,' -- ',discount) AS text, id as value
                                         FROM business
                                         ORDER BY id"},
     table => 'vendor',
@@ -706,27 +705,29 @@ selectable_values => { business_id => "SELECT concat(description,' -- ',discount
     max_version => '3.0'
     );
 
-    push @tests, __PACKAGE__->new(
-        test_query => "SELECT id, name, business_id
-                         FROM customer
-                        WHERE business_id is null
-                           OR business_id NOT IN (SELECT id
-                                                  FROM business)
-                     ORDER BY name",
-        display_name => $locale->text('Customer not in a business'),
-        name => 'no_business_for_customer',
-        display_cols => ['id', 'name', 'business_id'],
-        columns => ['business_id'],
-     instructions => $locale->text(
-                       'Contrary to SQL-ledger, LedgerSMB customers must be assigned to a business. Please select the proper business from the list'),
-    selectable_values => { business_id => "SELECT concat(description,' -- ',discount) AS id, id as value
-                                            FROM business
-                                            ORDER BY id" },
-        table => 'customer',
-        appname => 'sql-ledger',
-        min_version => '2.7',
-        max_version => '3.0'
-        );
+push @tests, __PACKAGE__->new(
+    test_query => "SELECT id, name, business_id
+                     FROM customer
+                    WHERE business_id is null
+                       OR business_id NOT IN (SELECT id
+                                              FROM business)
+                      AND business_id <> 0
+                 ORDER BY name",
+    display_name => marktext('Customer not in a business'),
+    name => 'no_business_for_customer',
+    display_cols => ['id', 'name', 'business_id'],
+    columns => ['business_id'],
+ instructions => marktext(
+                   'LedgerSMB customers must be assigned to a valid business. ' .
+                   'Please review the selection or select the proper business from the list'),
+selectable_values => { business_id => "SELECT concat(description,' -- ',discount) AS text, id as value
+                                        FROM business
+                                        ORDER BY id"},
+    table => 'customer',
+    appname => 'sql-ledger',
+    min_version => '2.7',
+    max_version => '3.0'
+    );
 
 push @tests,__PACKAGE__->new(
     test_query => "select *
