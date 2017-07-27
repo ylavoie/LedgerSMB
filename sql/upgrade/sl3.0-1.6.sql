@@ -70,6 +70,7 @@ UPDATE sl30.customer SET entity_id = coalesce((SELECT min(id) FROM entity WHERE 
 
 --Entity Credit Account
 
+UPDATE sl30.vendor SET business_id = NULL WHERE business_id = 0;
 INSERT INTO entity_credit_account
 (entity_id, meta_number, business_id, creditlimit, ar_ap_account_id,
         cash_account_id, startdate, enddate, threshold, entity_class)
@@ -90,6 +91,7 @@ UPDATE sl30.vendor SET credit_id =
         WHERE e.meta_number = vendornumber and entity_class = 1
         and e.entity_id = vendor.entity_id);
 
+UPDATE sl30.customer SET business_id = NULL WHERE business_id = 0;
 INSERT INTO entity_credit_account
 (entity_id, meta_number, business_id, creditlimit, ar_ap_account_id,
         cash_account_id, startdate, enddate, threshold, entity_class)
@@ -594,15 +596,16 @@ $$
   SELECT (date_trunc('MONTH', $1) + INTERVAL '1 MONTH - 1 day')::DATE;
 $$ LANGUAGE 'sql' IMMUTABLE STRICT;
 
-CREATE OR REPLACE FUNCTION PG_TEMP.is_date(S DATE) RETURNS BOOLEAN LANGUAGE PLPGSQL IMMUTABLE AS $$
+CREATE OR REPLACE FUNCTION PG_TEMP.is_cleared(clear_time DATE,end_date DATE) RETURNS BOOLEAN LANGUAGE PLPGSQL IMMUTABLE AS $$
 BEGIN
-  RETURN CASE WHEN $1::DATE IS NULL THEN FALSE ELSE TRUE END;
+  RETURN CASE WHEN $1::DATE IS NOT NULL AND $1 <= $2 THEN TRUE ELSE FALSE END;
 EXCEPTION WHEN OTHERS THEN
   RETURN FALSE;
 END;$$;
 
+-- The computation of their_total is wrong at this time
 INSERT INTO cr_report(chart_id, their_total,  submitted, end_date, updated, entered_by, entered_username)
-  SELECT coa.id, SUM(SUM(-amount)) OVER (ORDER BY coa.id, a.end_date), TRUE,
+  SELECT coa.id, 0, TRUE,
             a.end_date,max(a.updated),
             (SELECT entity_id FROM robot WHERE last_name = 'Migrator'),
             'Migrator'
@@ -632,7 +635,7 @@ INSERT INTO cr_report(chart_id, their_total,  submitted, end_date, updated, ente
 -- The ID and matching post_date are entered in a temp table to pull the back into cr_report_line immediately after.
 -- Temp table will be dropped automatically at the end of the transaction.
 WITH cr_entry AS (
-SELECT cr.id::INT, a.source, n.type, a.cleared::TIMESTAMP, a.amount::NUMERIC, a.transdate AS post_date, a.lsmb_entry_id
+SELECT cr.id::INT, cr.end_date, a.source, n.type, a.cleared::TIMESTAMP, a.amount::NUMERIC, a.transdate AS post_date, a.lsmb_entry_id
     FROM sl30.acc_trans a
     JOIN sl30.chart s ON chart_id=s.id
     JOIN reconciliation__account_list() coa ON coa.accno=s.accno
@@ -652,20 +655,28 @@ SELECT cr.id::INT, a.source, n.type, a.cleared::TIMESTAMP, a.amount::NUMERIC, a.
     ) n ON n.trans_id = a.trans_id
     ORDER BY post_date,cr.id,n.type,a.source ASC NULLS LAST,a.amount
 )
-SELECT reconciliation__add_entry(id, source, type, cleared, amount) AS id, cr_entry.post_date, cr_entry.lsmb_entry_id
+SELECT reconciliation__add_entry(id, source, type, cleared, amount) AS id, cr_entry.end_date, cr_entry.post_date, cr_entry.lsmb_entry_id
 INTO TEMPORARY _cr_report_line
 FROM cr_entry;
 
 UPDATE cr_report_line cr SET post_date = cr1.post_date,
                              ledger_id = cr1.lsmb_entry_id,
-                             cleared = pg_temp.is_date(clear_time),
+                             cleared = pg_temp.is_cleared(clear_time,cr1.end_date),
                              insert_time = date_trunc('second',cr1.post_date),
                              our_balance = their_balance
 FROM (
-  SELECT id,post_date,lsmb_entry_id
+  SELECT id,post_date,end_date,lsmb_entry_id
   FROM _cr_report_line
 ) cr1
 WHERE cr.id = cr1.id;
+
+-- Patch their_total, now that we have all the data in cr_report_line
+UPDATE cr_report SET their_total=reconciliation__get_cleared_balance(cr.chart_id,cr.end_date)
+FROM (
+    SELECT id, chart_id, end_date
+    FROM cr_report
+) cr WHERE cr_report.id = cr.id;
+
 -- Patch for suspect clear dates
 -- The UI should reflect this
 -- Unsubmit the suspect report to allow easy edition
@@ -674,6 +685,7 @@ WHERE id IN (
     SELECT DISTINCT report_id FROM cr_report_line
     WHERE clear_time - post_date > 150
 );
+
 -- Approve valid reports.
 UPDATE cr_report SET approved = true
 WHERE submitted;
