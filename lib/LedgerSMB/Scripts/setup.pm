@@ -23,7 +23,7 @@ package LedgerSMB::Scripts::setup;
 use strict;
 use warnings;
 
-use Digest::MD5;
+use Digest::MD5 qw(md5_hex);
 use HTTP::Status qw( HTTP_OK HTTP_UNAUTHORIZED );
 use Locale::Country;
 use Try::Tiny;
@@ -421,6 +421,7 @@ sub run_backup {
         die $request->{_locale}->text('Error creating backup file');
 
     if ($request->{backup_type} eq 'email') {
+
         my $mail = LedgerSMB::Mailer->new(
             from     => $LedgerSMB::Sysconfig::backup_email_from,
             to       => $request->{email},
@@ -741,24 +742,10 @@ sub _failed_check {
     }
 
     my $hiddens = {
-       table => $check->table,
-   id_column => $check->{id_column},
-    id_where => $check->{id_where},
-      insert => $check->{insert},
-        name => $check->{name},
+       check => $check->name,
+verify_check => md5_hex($check->test_query),
     database => $request->{database}
     };
-    # We need to flatten the columns array, because dyna-form doesn't
-    # know about complex values for the 'hiddens' attribute
-    my $i = 1;
-    for my $edit (@{$check->columns // []}) {
-      $hiddens->{"edit_$i"} = $edit;
-      $i++;
-    }
-    # If we are inserting and id is displayed, we want to insert
-    # at this exact location
-    $hiddens->{id_displayed} = $check->{insert}
-                and grep( /^$check->{id_column}$/, @{$check->display_cols} );
 
     my $rows = [];
     while (my $row = $sth->fetchrow_hashref('NAME_lc')) {
@@ -789,34 +776,33 @@ sub _failed_check {
 
     my $heading = { map { $_ => $_ } @{$check->display_cols} };
     my %buttons = map { $_ => 1 } @{$check->buttons};
-    my $buttons = [
+    my $buttons;
+    push @$buttons,
            { type => 'submit',
              name => 'action',
-            value => $check->columns ? 'fix_tests' : 'cancel',
-             text => $request->{_locale}->text($check->columns
-                                                ? 'Save and Retry'
-                                                : 'Cancel'),
+            value => 'fix_tests',
           tooltip => { id => 'action-fix-tests',
-                       position => ['above', 'below', 'after', 'before'],
+                       position => qw/above below after before/,
                        msg => $check->{tooltips}{'Save and Retry'}},
-            class => 'submit' }
-    ];
-    push @$buttons, 
+             text => $request->{_locale}->text('Save and Retry'),
+            class => 'submit' },
+        if $check->columns;
+    push @$buttons,
            { type => 'submit',
              name => 'action',
             value => 'cancel',
           tooltip => { id => 'action-cancel',
-                       position => ['above', 'below', 'after', 'before'],
+                       position => qw/above below after before/,
                        msg => $check->{tooltips}{'Cancel'}},
              text => $request->{_locale}->text('Cancel'),
             class => 'submit' }
-    if $buttons{Cancel};
-    push @$buttons, 
+    if $buttons{Cancel} or !$check->columns;
+    push @$buttons,
            { type => 'submit',
              name => 'action',
             value => 'force',
           tooltip => { id => 'action-force',
-                       position => ['above', 'below', 'after', 'before'],
+                       position => qw/above below after before/,
                        msg => $check->{tooltips}{'Force'}},
              text => $request->{_locale}->text('Force'),
             class => 'submit' }
@@ -875,10 +861,14 @@ sub fix_tests{
     my $table = $check->table;
     my $where = $check->id_where;
     my @edits = @{$check->columns};
+    # If we are inserting and id is displayed, we want to insert
+    # at this exact location
+    my $id_displayed = $check->{insert}
+                and grep( /^$check->{id_column}$/, @{$check->display_cols} );
 
     my $query;
-    if ($request->{insert}) {
-        my @id = $request->{id_displayed} ? $request->{id_column} : ();
+    if ($check->{insert}) {
+        my @id = $id_displayed ? $request->{id_column} : ();
         push @id,@edits;
         my $columns = join(', ', map { $dbh->quote_identifier($_) } @id);
         my $values = join(', ', map { '?' } @id);
@@ -895,12 +885,12 @@ sub fix_tests{
         my $id = $request->{"id_$count"};
         my @values;
         push @values, $id
-            if $request->{insert} and $request->{id_displayed};
+            if $check->{insert} and $id_displayed;
         for my $edit (@edits) {
           push @values, $request->{"${edit}_$id"};
         }
         push @values, $request->{"id_$count"}
-           if ! $request->{insert};
+           if ! $check->{insert};
 
         $sth->execute(@values) ||
             $request->error($sth->errstr);
@@ -1422,6 +1412,27 @@ Cancels work.  Returns to login screen.
 =cut
 sub cancel{
     return __default(@_);
+}
+
+=item force
+
+Force work.  Forgets unmatching tests, applies a curing statement and move on.
+
+=cut
+
+sub force{
+    my ($request) = @_;
+    my $database = _init_db($request);
+
+    my %test = map { $_->name => $_ } LedgerSMB::Upgrade_Tests->get_tests();
+    my $force_queries = $test{$request->{check}}->{force_queries};
+
+    for my $force_query ( @$force_queries ) {
+        my $dbh = $request->{dbh};
+        $dbh->do($force_query);
+        $dbh->commit;
+    }
+    return upgrade($request);
 }
 
 =item rebuild_modules
