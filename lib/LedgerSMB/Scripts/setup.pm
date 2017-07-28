@@ -818,8 +818,10 @@ sub fix_tests{
     my ($request) = @_;
 
     _init_db($request);
-    my $dbh = $request->{dbh};
-    my $table = $dbh->quote_identifier($request->{table});
+    $request->{dbh}->{AutoCommit} = 0;
+    my $locale = $request->{_locale};
+
+    my $table = $request->{dbh}->quote_identifier($request->{table});
     my $where = $request->{id_where};
     $dbh->{AutoCommit} = 0;
 
