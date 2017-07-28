@@ -216,6 +216,7 @@ Tooltip for each button
 has tooltips => (is => 'ro',
     isa => 'HashRef[Str]',
     default => sub {
+        my $locale = LedgerSMB::App_State::Locale;
         return {
             'Save and Retry' => marktext('Save the fixes provided and attempt to continue migration'),
             'Cancel' => marktext('Cancel the migration')
@@ -1144,8 +1145,7 @@ push @tests, __PACKAGE__->new(
   max_version => '3.0'
 );
 
-
-### On the vendor side, SL doesn't use pricegroups
+ ### On the vendor side, SL doesn't use pricegroups
 # push @tests, __PACKAGE__->new(
 #     test_query => "select *
 #                      from partsvendor
