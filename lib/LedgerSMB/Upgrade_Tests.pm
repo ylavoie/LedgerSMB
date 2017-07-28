@@ -1032,23 +1032,6 @@ push @tests, __PACKAGE__->new(
     max_version => '3.0'
     );
 
-    push @tests, __PACKAGE__->new(
-        test_query => "select ac.trans_id,ac.id,ac.memo, ac.amount,c.description,c.accno,c.link,ac.cleared
-                        from acc_trans ac
-                        join chart c on ac.chart_id=c.id
-                        where c.link not like '%paid'
-                        and ac.cleared is not null
-                        order by accno,transdate,id",
-      display_name => $locale->text('Reconciliations on non-bank accounts'),
-              name => 'invalid_cleared_dates',
-      display_cols => ['trans_id', 'id', 'memo', 'amount', 'description','accno', 'cleared'],
-     instructions => $locale->text(
-                       "There shouldn't be reconciliations on non-bank accounts. Please review the dates in the original application"),
-            table => 'acc_trans',
-          appname => 'sql-ledger',
-      min_version => '2.7',
-      max_version => '3.0'
-    );
 
 push @tests, __PACKAGE__->new(
     test_query => "select concat(ac.trans_id,'-',ac.id) as id,
@@ -1073,8 +1056,7 @@ push @tests, __PACKAGE__->new(
   max_version => '3.0'
 );
 
-
-### On the vendor side, SL doesn't use pricegroups
+ ### On the vendor side, SL doesn't use pricegroups
 # push @tests, __PACKAGE__->new(
 #     test_query => "select *
 #                      from partsvendor
