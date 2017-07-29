@@ -19,6 +19,7 @@ use Moose;
 use Moose::Util::TypeConstraints;
 use namespace::autoclean;
 use LedgerSMB::Locale qw(marktext);
+use List::Util qw(any);
 
 =head1 FUNCTIONS
 
@@ -122,6 +123,20 @@ C<text> is the textual value to be presented in the UI.
 
 has selectable_values => (is => 'ro', isa => 'HashRef', required => 0);
 
+sub _displayed_key {
+    my ($self,$hash) = @_;
+    my @keys = ref $hash eq 'ARRAY' ? @$hash : keys $hash;
+    for my $key (@keys) {
+        die "'$key' not displayed in test '$self->{name}'"
+            if not any { $key } $self->{display_cols};
+    }
+};
+
+after 'selectable_values' => sub {
+    my $self = shift;
+    $self->_displayed_key($self->{selectable_values});
+};
+
 =item force_queries
 
 Array of queries to run on Force. Typically, they will be use to remove missing
@@ -150,15 +165,16 @@ Repair query key to set the values if we can repair
 
 =cut
 
-has id_where => (is => 'ro', isa => 'Str', required => 0, default => 'id');
+has id_where => (is => 'ro', isa => 'Str', required => 0, default => '');
 
-=item id_column
+=item id_columns
 
 Repair column to use as id
 
 =cut
 
-has id_column => (is => 'ro', isa => 'Str', required => 0, default => 'id');
+has id_columns => (is => 'ro', isa => 'ArrayRef[Str]', required => 0,
+                   default => sub { return ['id'] });
 
 =item columns
 
@@ -167,6 +183,11 @@ Repair query columns to run once per result
 =cut
 
 has columns => (is => 'ro', isa => 'ArrayRef[Str]', required => 0);
+
+after 'columns' => sub {
+    my $self = shift;
+    $self->_displayed_key($self->{columns});
+};
 
 =item display_cols
 
@@ -222,6 +243,14 @@ has tooltips => (is => 'ro',
     }},
     required => 0);
 
+after 'tooltips' => sub {
+    my $self = shift;
+    for my $key (keys $self->{tooltips}) {
+        die "No button '$key' in test '$self->{name}'"
+            if not grep /^$key$/,$self->{buttons};
+    }
+};
+
 =back
 
 =head1 Methods
@@ -232,6 +261,21 @@ sub _get_tests {
     my ($request) = @_;
 
     my @tests;
+
+push @tests, __PACKAGE__->new(
+    test_query => "SELECT * FROM pg_settings
+                    WHERE name = 'client_encoding'
+                      AND setting <> 'UTF8'",
+    display_name => marktext('Client encoding must be UTF8'),
+    name => 'client_encoding',
+    display_cols => ['name','setting','unit','category','short_desc','extra_desc','context','vartype','source','min_val','max_val','enumvals','boot_val','reset_val','sourcefile','sourceline'],
+ instructions => marktext(
+                   'Please fix the client encoding'),
+    table => 'pg_settings',
+    appname => 'sql-ledger',
+    min_version => '2.7',
+    max_version => '3.0'
+    );
 
 # 1.2-1.3 tests
 
@@ -362,7 +406,7 @@ push @tests, __PACKAGE__->new(
  display_name => marktext('No NULL Amounts'),
          name => 'no_null_ac_amounts',
  display_cols => ["trans_id", "chart_id", "transdate"],
-    id_column => 'trans_id',
+   id_columns => ['trans_id'],
  instructions => marktext(
                    'There are NULL values in the amounts column of your
 source database. Please either find professional help to migrate your
@@ -454,6 +498,98 @@ push @tests, __PACKAGE__->new(
 );
 
 push @tests, __PACKAGE__->new(
+   test_query => "select distinct gifi_accno from account
+                   where not exists (select 1
+                                       from gifi
+                                      where gifi.accno = account.gifi_accno)
+                         and gifi_accno is not null
+                         and gifi_accno !~ '^\\s*\$'",
+ display_name => marktext('GIFI accounts not in "gifi" table'),
+         name => 'missing_gifi_table_rows',
+ display_cols => [ 'gifi_accno' ],
+        table => 'account',
+ instructions => marktext("Please use the 1.3/1.4 UI to add the GIFI accounts"),
+      appname => 'ledgersmb',
+  min_version => '1.3',
+  max_version => '1.4'
+);
+
+#=pod
+
+# This must be done before the acc_trans test, for they have duplicates
+# and need a unique key
+    push @tests, __PACKAGE__->new(
+        # Add a unique key to allow editing
+        # Make the test serially reusable and protect against triggers
+        test_query => "ALTER TABLE acc_trans DISABLE TRIGGER USER;
+                       ALTER TABLE acc_trans DROP COLUMN IF EXISTS i_key;
+                      CREATE TABLE acc_trans1 (LIKE acc_trans INCLUDING ALL);
+                       ALTER TABLE acc_trans1 DISABLE TRIGGER USER;
+                       ALTER TABLE acc_trans1 add column i_key SERIAL UNIQUE;
+                      INSERT INTO acc_trans1 SELECT * FROM acc_trans;
+                        DROP TABLE acc_trans;
+                       ALTER TABLE acc_trans1 RENAME TO acc_trans;
+                       ALTER TABLE acc_trans ENABLE TRIGGER USER;
+                      SELECT trans_id
+                        FROM acc_trans
+                       WHERE i_key IS NULL",
+      display_name => marktext('Transactions unique key'),
+              name => 'add_unique_acc_trans_key',
+      display_cols => ['trans_id'],
+           columns => ['trans_id'],
+        id_columns => ['i_key'],
+          id_where => 'i_key IS NULL AND ',
+      instructions => marktext(
+                       "This should never show. We added a unique key to acc_trans"),
+           buttons => ['Save and Retry', 'Cancel'],
+          tooltips => {
+    'Save and Retry' => marktext('Save the fixes provided and attempt to continue migration'),
+            'Cancel' => marktext('Cancel the <b>migration</b>'),
+          },
+             table => 'acc_trans',
+           appname => 'sql-ledger',
+       min_version => '2.7',
+       max_version => '3.0'
+    );
+
+
+push @tests, __PACKAGE__->new(
+   test_query => "select *, eca.id as id  from entity_credit_account eca
+                     join entity_class ec on eca.entity_class = ec.id
+                     join entity e on eca.entity_id = e.id
+                   where meta_number in
+                       (select meta_number from entity_credit_account
+                        group by meta_number having count(*) > 1)
+                   order by meta_number",
+ display_name => marktext('No duplicate meta_numbers'),
+         name => 'no_meta_number_dupes',
+ display_cols => [ 'meta_number', 'class', 'description', 'name' ],
+      columns => ['meta_number'],
+        table => 'entity_credit_account',
+ instructions => marktext("Make sure all meta numbers are unique."),
+      appname => 'ledgersmb',
+  min_version => '1.3',
+  max_version => '1.4'
+);
+
+push @tests, __PACKAGE__->new(
+   test_query => "select distinct gifi_accno from chart
+                   where not exists (select 1
+                                       from gifi
+                                      where gifi.accno = chart.gifi_accno)
+                         and gifi_accno is not null
+                         and gifi_accno !~ '^\\s*\$'",
+ display_name => marktext('GIFI accounts not in "gifi" table'),
+         name => 'missing_gifi_table_rows',
+ display_cols => [ 'gifi_accno' ],
+        table => 'chart',
+ instructions => marktext("Please use the 1.2 UI to add the GIFI accounts"),
+      appname => 'ledgersmb',
+  min_version => '1.2',
+  max_version => '1.2'
+);
+
+push @tests, __PACKAGE__->new(
    test_query => "select distinct gifi_accno as accno from chart
                    where not exists (select 1
                                        from gifi
@@ -465,8 +601,8 @@ push @tests, __PACKAGE__->new(
  display_cols => [ 'accno', 'description' ],
         table => 'gifi',
       columns => ['description'],
-    id_column => 'accno',
-     id_where => 'description IS NULL AND accno',
+   id_columns => ['accno'],
+     id_where => 'description IS NULL AND ',
  instructions => marktext("Please add the missing GIFI accounts"),
       appname => 'sql-ledger',
   min_version => '2.7',
@@ -1130,6 +1266,50 @@ push @tests, __PACKAGE__->new(
  instructions => marktext(
                    'Suspect or invalid cleared delays have been detected. Please review the dates in the original application'),
         table => 'ap',
+      appname => 'sql-ledger',
+  min_version => '2.7',
+  max_version => '2.8'
+);
+
+    push @tests, __PACKAGE__->new(
+        # Add a unique key to allow editing
+        # Make the test serially reusable and protect against triggers
+        test_query => "SELECT ac.i_key, ac.trans_id, ac.id, ac.memo, ac.amount, xx.description, 
+                              ch.accno, ch.link, ch.charttype, ch.category, ac.cleared, approved
+                         FROM acc_trans ac 
+                         JOIN (
+                                   SELECT g.id, g.description FROM gl g
+                             UNION SELECT a.id, n.name        FROM ar a JOIN customer n ON n.id = a.customer_id
+                             UNION SELECT a.id, n.name        FROM ap a JOIN vendor n   ON n.id = a.vendor_id
+                         ) xx ON xx.id = ac.trans_id
+                         JOIN chart ch ON (ac.chart_id = ch.id)
+                        WHERE ( ch.category NOT IN ( 'A', 'L', 'Q' ) 
+                             OR ch.link NOT LIKE '%paid' ) 
+                          AND ac.cleared IS NOT NULL 
+                          AND ac.approved
+                     ORDER BY accno, transdate, ac.id",
+      display_name => marktext('Reconciliations on non-bank accounts'),
+              name => 'invalid_cleared_dates',
+      display_cols => ['i_key', 'trans_id', 'id', 'memo', 'amount', 'description',
+                       'accno', 'link', 'charttype', 'category', 'cleared', 'approved'],
+           columns => ['cleared'],
+        id_columns => ['i_key'],
+          id_where => 'approved and cleared IS NOT NULL AND ',
+      instructions => marktext(
+                       "There shouldn't be reconciliations on non-bank accounts.<br>
+Please review the dates in the original application"),
+           buttons => ['Save and Retry', 'Cancel', 'Force'],
+          tooltips => {
+    'Save and Retry' => marktext('Save the fixes provided and attempt to continue migration'),
+            'Cancel' => marktext('Cancel the <b>migration</b>'),
+             'Force' => marktext('This will <b>ignore</b> the non-necessary reconciliations')
+          },
+     force_queries => ["UPDATE acc_trans ac SET cleared = NULL
+                      WHERE chart_id in ( c.category NOT IN ( 'A', 'L' ) 
+                           OR c.link NOT LIKE '%paid' ) 
+                        AND ac.cleared IS NOT NULL 
+                        AND ac.approved;"],
+             table => 'acc_trans',
       appname => 'sql-ledger',
   min_version => '2.7',
   max_version => '3.0'
