@@ -664,8 +664,8 @@ sub _upgrade_test_is_applicable {
     my ($dbinfo, $test) = @_;
 
     return (($test->min_version le $dbinfo->{version})
-         && ($test->max_version ge $dbinfo->{version})
-         && ($test->appname eq $dbinfo->{appname}));
+            && ($test->max_version ge $dbinfo->{version})
+            && ($test->appname eq $dbinfo->{appname}));
 }
 
 sub _applicable_upgrade_tests {
@@ -779,14 +779,14 @@ verify_check => md5_hex($check->test_query),
         if ( $buttons_set{$_->{label}} && $_->{cond}) {
             push @$buttons, {
                  type => 'submit',
-                 name => 'action',
+             name => 'action',
                 value => $_->{value},
               tooltip => { id => 'action-' . $_->{value},
                            msg => $check->{tooltips}->{$_->{label}}
                                 ? $request->{_locale}->maketext($check->{tooltips}->{$_->{label}})
                                 : undef,
-                           position => 'above'
-                         },
+                       position => 'above'
+                     },
                  text => $request->{_locale}->maketext($_->{label}),
                 class => 'submit'
             }
@@ -1163,12 +1163,12 @@ sub process_and_run_upgrade_script {
         format_options => {extension => 'sql'},
         output_file => 'upgrade.sql',
         format => 'TXT' );
-        $dbtemplate->render($request);
-        $database->run_file(
+    $dbtemplate->render($request);
+    $database->run_file(
         file =>  $LedgerSMB::Sysconfig::tempdir . "/upgrade.sql",
         log => $temp . "_stdout",
         errlog => $temp . "_stderr"
-    );
+        );
 
     my $sth = $dbh->prepare(qq(select value='yes'
                                  from defaults
@@ -1202,8 +1202,6 @@ sub process_and_run_upgrade_script {
 }
 
 =item run_upgrade
-
-
 
 =cut
 
@@ -1396,7 +1394,7 @@ Force work.  Forgets unmatching tests, applies a curing statement and move on.
 
 =cut
 
-sub force {
+sub force{
     my ($request) = @_;
     my $database = _init_db($request);
 
@@ -1504,4 +1502,3 @@ License.txt for details.
 =cut
 
 1;
-

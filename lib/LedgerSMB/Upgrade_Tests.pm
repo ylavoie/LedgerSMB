@@ -1275,13 +1275,13 @@ Please review the dates in the original application"),
                            AND ac.cleared IS NOT NULL
                            AND ac.approved;"],
              table => 'acc_trans',
-           appname => 'sql-ledger',
-       min_version => '2.7',
-       max_version => '3.0'
-    );
+      appname => 'sql-ledger',
+  min_version => '2.7',
+  max_version => '3.0'
+);
 
 
- ### On the vendor side, SL doesn't use pricegroups
+### On the vendor side, SL doesn't use pricegroups
 # push @tests, __PACKAGE__->new(
 #     test_query => "select *
 #                      from partsvendor
