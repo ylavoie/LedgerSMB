@@ -215,7 +215,7 @@ sub _display_report {
         if !$recon->{submitted} && $contents;
     $recon->{can_approve} = $request->is_allowed_role({allowed_roles => ['reconciliation_approve']});
     $recon->{form_id} = $request->{form_id};
-    warn scalar @{$recon->{report_lines}};
+    $recon->get();
     my $template = LedgerSMB::Template->new(
         user=> $recon->{_user},
         template => 'reconciliation/report',
@@ -275,7 +275,7 @@ sub _display_report {
 
     $recon->{zero_string} = LedgerSMB::PGNumber->from_input(0)->to_output(money => 1);
 
-    $recon->{statement_gl_calc} = $neg_factor *
+  $recon->{statement_gl_calc} = $neg_factor *
                                     ($recon->{their_total}
                                     + $recon->{outstanding_total}
                                     + $recon->{mismatch_our_total});

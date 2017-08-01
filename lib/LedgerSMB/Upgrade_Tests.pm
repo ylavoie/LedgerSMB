@@ -967,41 +967,19 @@ push @tests, __PACKAGE__->new(
     max_version => '3.0'
     );
 
-    push @tests, __PACKAGE__->new(
-        test_query => "select ac.trans_id,ac.id,ac.memo, ac.amount,c.description,c.accno,c.link,ac.cleared
-                        from acc_trans ac
-                        join chart c on ac.chart_id=c.id
-                        where c.link not like '%paid'
-                        and ac.cleared is not null
-                        order by accno,transdate,id",
-      display_name => $locale->text('Reconciliations on non-bank accounts'),
-              name => 'invalid_cleared_dates',
-      display_cols => ['trans_id', 'id', 'memo', 'amount', 'description','accno', 'cleared'],
-     instructions => $locale->text(
-                       "There shouldn't be reconciliations on non-bank accounts. Please review the dates in the original application"),
-            table => 'acc_trans',
-          appname => 'sql-ledger',
-      min_version => '2.7',
-      max_version => '3.0'
-    );
-
 push @tests, __PACKAGE__->new(
-    test_query => "select concat(ac.trans_id,'-',ac.id) as id,
-                          ap.transdate, ap.datepaid,
-                          ac.cleared-ac.transdate as delay, ap.amount,v.name,
-                          ac.transdate,ac.cleared
-                  from ap
-                  join acc_trans ac on ap.id=ac.trans_id
-                  left join vendor v on v.id=ap.vendor_id
-                  where ((ac.cleared-ac.transdate > 150 or ac.cleared-ac.transdate < 0)
-                         or ac.cleared < ap.datepaid and ac.id = (select max(id) from acc_trans where ap.id=acc_trans.trans_id))
-                    and ac.id > 0
-                  order by ac.cleared,id, ac.transdate, ap.datepaid",
+    test_query => "select distinct ap.id,ap.transdate,ap.datepaid,ac.cleared-ap.datepaid as delay, ap.amount,v.name, ac.cleared
+                    from ap
+                    join acc_trans ac on ap.id=ac.trans_id
+                    left join vendor v on v.id=ap.vendor_id
+                    where (ac.cleared-ap.datepaid > 60 or ac.cleared-ap.datepaid < 0)
+                    order by ap.transdate, ap.datepaid",
   display_name => $locale->text('Invalid or suspect cleared delays'),
           name => 'invalid_cleared_dates',
-  display_cols => ['name', 'id', 'datepaid', 'transdate', 'cleared', 'delay', 'amount'],
+  display_cols => ['transdate', 'datepaid', 'delay', 'amount', 'name', 'cleared'],
+       columns => ['datepaid'],
  instructions => $locale->text(
-                   'Suspect or invalid cleared delays have been detected. Please review the dates in the original application'),
+                   'Suspect or invalid cleared delays have been detected. Please review dates'),
         table => 'ap',
       appname => 'sql-ledger',
   min_version => '2.7',
