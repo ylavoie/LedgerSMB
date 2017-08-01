@@ -993,7 +993,7 @@ push @tests, __PACKAGE__->new(
                   from ap
                   join acc_trans ac on ap.id=ac.trans_id
                   left join vendor v on v.id=ap.vendor_id
-                  where ((ac.cleared-ac.transdate > 60 or ac.cleared-ac.transdate < 0)
+                  where ((ac.cleared-ac.transdate > 150 or ac.cleared-ac.transdate < 0)
                          or ac.cleared < ap.datepaid and ac.id = (select max(id) from acc_trans where ap.id=acc_trans.trans_id))
                     and ac.id > 0
                   order by ac.cleared,id, ac.transdate, ap.datepaid",
