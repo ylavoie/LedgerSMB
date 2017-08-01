@@ -121,11 +121,11 @@ $$
      WHERE report_id = in_report_id
            AND report_id IN (SELECT id FROM cr_report
                               WHERE entered_username = SESSION_USER
-                                    AND submitted IS NOT TRUE
-                                    AND approved IS NOT TRUE);
+                                AND submitted IS NOT TRUE
+                                AND approved IS NOT TRUE);
     DELETE FROM cr_report
      WHERE id = in_report_id AND entered_username = SESSION_USER
-           AND submitted IS NOT TRUE AND approved IS NOT TRUE
+       AND submitted IS NOT TRUE AND approved IS NOT TRUE
     RETURNING TRUE;
 $$ LANGUAGE SQL SECURITY DEFINER;
 
@@ -166,7 +166,7 @@ CREATE OR REPLACE FUNCTION cr_report_block_changing_approved()
 RETURNS TRIGGER AS
 $$
 BEGIN
-   IF OLD.approved IS TRUE THEN
+   IF OLD.approved THEN
        RAISE EXCEPTION 'Report is approved.  Cannot change!';
    END IF;
    IF TG_OP = 'DELETE' THEN
@@ -201,7 +201,7 @@ $$
           ) g ON g.id = ac.trans_id
     WHERE c.id = $1 AND cleared
       AND (cleared_on IS NULL OR cleared_on <= in_report_date) -- cleared confirmed and date is prior the report
-      AND ac.approved
+      AND ac.approved IS TRUE
       AND ac.transdate <= in_report_date
     GROUP BY c.id, c.category;
 $$ LANGUAGE sql;
@@ -249,23 +249,24 @@ CREATE OR REPLACE FUNCTION reconciliation__report_approve (in_report_id INT) ret
 
         WITH current_rows AS (
           SELECT compound_array(entries) AS entries FROM (
-                select as_array(ac.entry_id) as entries
-          FROM acc_trans ac
-          JOIN transactions t on (ac.trans_id = t.id)
-          JOIN (select id, entity_credit_account::text as ref, 'ar' as table FROM ar
-          UNION select id, entity_credit_account::text,        'ap' as table FROM ap
-          UNION select id, reference, 'gl' as table FROM gl) gl
-                ON (gl.table = t.table_name AND gl.id = t.id)
-          LEFT JOIN cr_report_line rl ON (rl.report_id = in_report_id
-                  AND ((rl.ledger_id = ac.entry_id
-                    AND ac.voucher_id IS NULL)
-                    OR (rl.voucher_id = ac.voucher_id))
-                  AND rl.cleared)
-          WHERE (ac.cleared IS FALSE OR ac.cleared_on IS NULL)
-                  AND ac.chart_id = (select chart_id from cr_report where id = in_report_id)
-          GROUP BY gl.ref, ac.source, ac.transdate,
-                  ac.memo, ac.voucher_id, gl.table, ac.entry_id
-          HAVING count(rl.report_id) > 0) a
+            SELECT as_array(ac.entry_id) as entries
+              FROM acc_trans ac
+              JOIN transactions t on (ac.trans_id = t.id)
+              JOIN (select id, entity_credit_account::text as ref, 'ar' as table FROM ar
+              UNION select id, entity_credit_account::text,        'ap' as table FROM ap
+              UNION select id, reference, 'gl' as table FROM gl) gl
+                    ON (gl.table = t.table_name AND gl.id = t.id)
+              LEFT JOIN cr_report_line rl
+                     ON rl.report_id = in_report_id
+                    AND (   ac.voucher_id IS NULL AND rl.ledger_id = ac.entry_id
+                         OR ac.voucher_id = rl.voucher_id)
+                    AND rl.cleared
+              WHERE (ac.cleared IS FALSE OR ac.cleared_on IS NULL)
+                AND ac.chart_id = (select chart_id from cr_report where id = in_report_id)
+           GROUP BY gl.ref, ac.source, ac.transdate,
+                    ac.memo, ac.voucher_id, gl.table, ac.entry_id
+             HAVING count(rl.report_id) > 0
+        ) a
       )
       UPDATE acc_trans
          SET cleared = TRUE, cleared_on = clear_time, reconciled_on = now()
@@ -528,21 +529,20 @@ $$
                      transdate, 'gl' as table
                 FROM gl WHERE approved) gl
                 ON (gl.table = t.table_name AND gl.id = t.id)
-        LEFT JOIN cr_report_line rl ON (rl.report_id = in_report_id
-                AND rl.ledger_id = ac.entry_id
-                AND  (ac.voucher_id IS NULL
-                   OR ac.voucher_id = rl.voucher_id))
+        LEFT JOIN cr_report_line rl
+               ON rl.report_id = in_report_id
+                AND (rl.ledger_id = ac.entry_id
+                     AND ac.voucher_id IS NULL
+                      OR ac.voucher_id = rl.voucher_id)
         LEFT JOIN cr_report r ON r.id = in_report_id
         LEFT JOIN exchangerate ex ON gl.transdate = ex.transdate
         WHERE (ac.cleared IS FALSE OR ac.cleared_on IS NULL)
-                AND ac.approved IS TRUE
-                AND ac.chart_id = t_chart_id
-                AND ac.transdate <= t_end_date
-                AND (t_recon_fx IS NOT TRUE
-                    AND ac.fx_transaction IS NOT TRUE
-                    OR (t_recon_fx
-                        AND (gl.table <> 'gl'
-                              OR ac.fx_transaction IS TRUE)))
+          AND ac.approved
+          AND ac.chart_id = t_chart_id
+          AND ac.transdate <= t_end_date
+          AND (t_recon_fx IS NOT TRUE AND ac.fx_transaction IS NOT TRUE
+               OR (t_recon_fx AND (gl.table <> 'gl'
+                   OR ac.fx_transaction IS TRUE)))
         GROUP BY gl.ref, ac.source, ac.transdate,
                 ac.memo, ac.voucher_id, gl.table,
                 case when gl.table = 'gl' then gl.id else 1 end,
@@ -637,15 +637,15 @@ $$
         FROM acc_trans a
         JOIN (
                 SELECT id FROM ar
-                WHERE approved
+                WHERE approved IS TRUE
                 UNION
                 SELECT id FROM ap
-                WHERE approved
+                WHERE approved IS TRUE
                 UNION
                 SELECT id FROM gl
-                WHERE approved
+                WHERE approved IS TRUE
         ) gl ON a.trans_id = gl.id
-        WHERE a.approved
+        WHERE a.approved IS TRUE
           AND a.chart_id = in_account_id
           AND a.transdate <= in_date;
 
@@ -692,7 +692,7 @@ BEGIN
             RETURN QUERY
                 SELECT rp.id,
                         CASE WHEN in_end_date IS NULL THEN NULL
-                        ELSE      in_end_date - clear_time
+                        ELSE      clear_time - in_end_date
                         END AS d
                 FROM recon_payee rp
                 WHERE rp.report_id = in_report_id;
