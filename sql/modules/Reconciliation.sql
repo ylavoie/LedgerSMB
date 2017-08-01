@@ -48,7 +48,7 @@ BEGIN
            AND crl.clear_time IS NOT NULL
       GROUP BY cr.their_total;
 
-        UPDATE cr_report set submitted = TRUE where id = in_report_id;
+        UPDATE cr_report SET submitted = TRUE WHERE id = in_report_id;
         PERFORM reconciliation__save_set(in_report_id, in_line_ids, in_end_date);
 
         RETURN FOUND;
@@ -201,7 +201,7 @@ $$
           ) g ON g.id = ac.trans_id
     WHERE c.id = $1 AND cleared
       AND (cleared_on IS NULL OR cleared_on <= in_report_date) -- cleared confirmed and date is prior the report
-      AND ac.approved IS TRUE
+      AND ac.approved
       AND ac.transdate <= in_report_date
     GROUP BY c.id, c.category;
 $$ LANGUAGE sql;
@@ -540,9 +540,8 @@ $$
           AND ac.approved
           AND ac.chart_id = t_chart_id
           AND ac.transdate <= t_end_date
-          AND (t_recon_fx IS NOT TRUE AND ac.fx_transaction IS NOT TRUE
-               OR (t_recon_fx AND (gl.table <> 'gl'
-                   OR ac.fx_transaction IS TRUE)))
+          AND (  t_recon_fx IS NOT TRUE AND ac.fx_transaction IS NOT TRUE
+              OR t_recon_fx AND (gl.table <> 'gl' OR ac.fx_transaction))
         GROUP BY gl.ref, ac.source, ac.transdate,
                 ac.memo, ac.voucher_id, gl.table,
                 case when gl.table = 'gl' then gl.id else 1 end,
@@ -637,15 +636,15 @@ $$
         FROM acc_trans a
         JOIN (
                 SELECT id FROM ar
-                WHERE approved IS TRUE
+                WHERE approved
                 UNION
                 SELECT id FROM ap
-                WHERE approved IS TRUE
+                WHERE approved
                 UNION
                 SELECT id FROM gl
-                WHERE approved IS TRUE
+                WHERE approved
         ) gl ON a.trans_id = gl.id
-        WHERE a.approved IS TRUE
+        WHERE a.approved
           AND a.chart_id = in_account_id
           AND a.transdate <= in_date;
 
