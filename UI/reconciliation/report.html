@@ -193,7 +193,7 @@ END ?>
                     END;
                 END;
             ?>
-            <td id='<?lsmb id ?>' class='<?lsmb class ?>'>
+            <td id='<?lsmb id ?>' class='date <?lsmb class ?>'>
                 <?lsmb INCLUDE tooltip element_data; ?>
             <?lsmb row.clear_time ?></td>
             <td><?lsmb row.scn ?> </td>
@@ -203,6 +203,7 @@ END ?>
             <td class="money"><?lsmb reverse ? row.our_debits    : row.our_credits ?></td>
             <td class="money"><?lsmb reverse ? row.their_credits : row.their_debits ?></td>
             <td class="money"><?lsmb reverse ? row.their_debits  : row.their_credits ?></td>
+            <td><?lsmb row.days ?></td>
         </tr>
     <?lsmb i = i + 1 -?>
     <?lsmb END ?>
