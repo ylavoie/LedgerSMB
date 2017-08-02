@@ -595,6 +595,7 @@ push @tests,__PACKAGE__->new(
     max_version => '3.0'
     );
 
+
     push @tests,__PACKAGE__->new(
         test_query => "select id, 'auto-business-' || id as description, 0 as discount from (
                           select distinct id from (
@@ -1109,10 +1110,10 @@ push @tests, __PACKAGE__->new(
                         where c.link not like '%paid'
                         and ac.cleared is not null
                         order by accno,transdate,id",
-      display_name => $locale->text('Reconciliations on non-bank accounts'),
+      display_name => marktext('Reconciliations on non-bank accounts'),
               name => 'invalid_cleared_dates',
       display_cols => ['trans_id', 'id', 'memo', 'amount', 'description','accno', 'cleared'],
-     instructions => $locale->text(
+     instructions => marktext(
                        "There shouldn't be reconciliations on non-bank accounts. Please review the dates in the original application"),
             table => 'acc_trans',
           appname => 'sql-ledger',
@@ -1132,10 +1133,10 @@ push @tests, __PACKAGE__->new(
                          or ac.cleared < ap.datepaid and ac.id = (select max(id) from acc_trans where ap.id=acc_trans.trans_id))
                     and ac.id > 0
                   order by ac.cleared,id, ac.transdate, ap.datepaid",
-  display_name => $locale->text('Invalid or suspect cleared delays'),
+  display_name => marktext('Invalid or suspect cleared delays'),
           name => 'invalid_cleared_dates',
   display_cols => ['name', 'id', 'datepaid', 'transdate', 'cleared', 'delay', 'amount'],
- instructions => $locale->text(
+ instructions => marktext(
                    'Suspect or invalid cleared delays have been detected. Please review the dates in the original application'),
         table => 'ap',
       appname => 'sql-ledger',
@@ -1143,7 +1144,8 @@ push @tests, __PACKAGE__->new(
   max_version => '3.0'
 );
 
- ### On the vendor side, SL doesn't use pricegroups
+
+### On the vendor side, SL doesn't use pricegroups
 # push @tests, __PACKAGE__->new(
 #     test_query => "select *
 #                      from partsvendor
