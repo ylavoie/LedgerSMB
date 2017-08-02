@@ -32,22 +32,7 @@ CREATE OR REPLACE FUNCTION reconciliation__submit_set(
         in_report_id int, in_line_ids int[], in_end_date date
       ) RETURNS bool AS
 $$
-DECLARE t_balance NUMERIC;
-DECLARE t_cleared FLOAT;
 BEGIN
-        SELECT reconciliation__get_cleared_balance(cr.chart_id,cr.end_date)
-          INTO t_cleared
-          FROM cr_report cr
-         WHERE cr.id = in_report_id;
-
-        SELECT CAST(t_cleared - SUM(crl.our_balance) - cr.their_total AS FLOAT) INTO t_balance
-          FROM cr_report_line crl
-          JOIN cr_report cr ON cr.id = crl.report_id
-         WHERE cr.id = in_report_id
-           AND crl.cleared IS TRUE
-           AND crl.clear_time IS NOT NULL
-      GROUP BY cr.their_total;
-
         UPDATE cr_report SET submitted = TRUE WHERE id = in_report_id;
         PERFORM reconciliation__save_set(in_report_id, in_line_ids, in_end_date);
 
