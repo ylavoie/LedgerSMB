@@ -582,7 +582,7 @@ push @tests, __PACKAGE__->new(
  instructions => $locale->text(
                    'Contrary to SQL-ledger, LedgerSMB vendors must be assigned to a business. ' .
                    'Please review the selection or select the proper business from the list'),
-selectable_values => { business_id => "SELECT concat(description,' -- ',discount) AS id, id as value
+selectable_values => { business_id => "SELECT concat(description,' -- ',discount) AS text, id as value
                                         FROM business
                                         ORDER BY id"},
     table => 'vendor',
@@ -605,7 +605,7 @@ push @tests, __PACKAGE__->new(
  instructions => $locale->text(
                    'Contrary to SQL-ledger, LedgerSMB customers must be assigned to a business. ' .
                    'Please review the selection or select the proper business from the list'),
-selectable_values => { business_id => "SELECT concat(description,' -- ',discount) AS id, id as value
+selectable_values => { business_id => "SELECT concat(description,' -- ',discount) AS text, id as value
                                         FROM business
                                         ORDER BY id"},
     table => 'customer',
