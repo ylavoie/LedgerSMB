@@ -764,7 +764,7 @@ sub _failed_check {
                    name => $column . "_$id",
                    id => $id,
                    options => $selectable_value,
-                   default_blank => 1,
+                   default_blank => ( 1 != @$selectable_value )
            } }
            : { input => {
                    name => $column . "_$id",
@@ -785,11 +785,13 @@ sub _failed_check {
     my $buttons = [
            { type => 'submit',
              name => 'action',
-            value => 'fix_tests',
+            value => $check->columns ? 'fix_tests' : 'cancel',
+             text => $request->{_locale}->text($check->columns
+                                                ? 'Save and Retry'
+                                                : 'Cancel'),
           tooltip => { id => 'action-fix-tests',
                        position => ['above', 'below', 'after', 'before'],
                        msg => $check->{tooltips}{'Save and Retry'}},
-             text => $request->{_locale}->text('Save and Retry'),
             class => 'submit' }
     ];
     push @$buttons, 
