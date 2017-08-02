@@ -577,9 +577,9 @@ push @tests, __PACKAGE__->new(
     test_query => "SELECT id, name, business_id
                      FROM vendor
                     WHERE business_id NOT IN (SELECT id
-                			      FROM business)
+                     FROM business)
                       AND business_id <> 0
-                   ORDER BY name",
+                 ORDER BY name",
     display_name => $locale->text('Vendor not in a business'),
     name => 'no_business_for_vendor',
     display_cols => ['id', 'name', 'business_id'],
