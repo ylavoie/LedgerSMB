@@ -602,7 +602,8 @@ EXCEPTION WHEN OTHERS THEN
   RETURN FALSE;
 END;$$;
 
-INSERT INTO cr_report(chart_id, their_total,  submitted, end_date, updated, entered_by, entered_username)
+-- The computation of their_total is wrong
+INSERT INTO cr_report(chart_id, their_total, submitted, end_date, updated, entered_by, entered_username)
   SELECT coa.id, SUM(SUM(-amount)) OVER (PARTITION BY coa.id ORDER BY a.end_date), TRUE,
             a.end_date,max(a.updated),
             (SELECT entity_id FROM robot WHERE last_name = 'Migrator'),
@@ -626,6 +627,7 @@ INSERT INTO cr_report(chart_id, their_total,  submitted, end_date, updated, ente
         ) a
         JOIN sl30.chart s ON chart_id=s.id
         JOIN reconciliation__account_list() coa ON coa.accno=s.accno
+        WHERE cleared <= pg_temp.last_day(transdate)
         GROUP BY coa.id, a.end_date
         ORDER BY coa.id, a.end_date;
 
@@ -667,6 +669,13 @@ FROM (
   FROM _cr_report_line
 ) cr1
 WHERE cr.id = cr1.id;
+
+-- Patch their_total, now that we have all the data in cr_report_line
+UPDATE cr_report SET their_total=reconciliation__get_cleared_balance(cr.chart_id,cr.end_date)
+FROM (
+	SELECT id, chart_id, end_date
+	FROM cr_report
+) cr WHERE cr_report.id = cr.id;
 
 -- Patch for suspect clear dates
 -- The UI should reflect this
