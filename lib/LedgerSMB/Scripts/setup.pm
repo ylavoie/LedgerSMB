@@ -419,10 +419,6 @@ sub run_backup {
         die $request->{_locale}->text('Error creating backup file');
 
     if ($request->{backup_type} eq 'email') {
-
-
-
-
         my $mail = LedgerSMB::Mailer->new(
             from     => $LedgerSMB::Sysconfig::backup_email_from,
             to       => $request->{email},
@@ -751,6 +747,10 @@ sub _failed_check {
       $hiddens->{"edit_$i"} = $edit;
       $i++;
     }
+    # If we are inserting and id is displayed, we want to insert
+    # at this exact location
+    $hiddens->{id_displayed} = $check->{insert}
+                and grep( /^$check->{id_column}$/, @{$check->display_cols} );
 
     my $rows = [];
     while (my $row = $sth->fetchrow_hashref('NAME_lc')) {
@@ -832,8 +832,10 @@ sub fix_tests{
 
     my $query;
     if ($request->{insert}) {
-        my $columns = join(', ', map { $dbh->quote_identifier($_) } @edits);
-        my $values = join(', ', map { '?' } @edits);
+        my @id = $request->{id_displayed} ? $request->{id_column} : ();
+        push @id,@edits;
+        my $columns = join(', ', map { $dbh->quote_identifier($_) } @id);
+        my $values = join(', ', map { '?' } @id);
         $query = "INSERT INTO $table ($columns) VALUES ($values)";
     }
     else {
@@ -846,6 +848,8 @@ sub fix_tests{
     for my $count (1 .. $request->{count}){
         my $id = $request->{"id_$count"};
         my @values;
+        push @values, $id
+            if $request->{insert} and $request->{id_displayed};
         for my $edit (@edits) {
           push @values, $request->{"${edit}_$id"};
         }
