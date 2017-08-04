@@ -738,6 +738,7 @@ sub _failed_check {
    id_column => $check->{id_column},
     id_where => $check->{id_where},
       insert => $check->{insert},
+        name => $check->{name},
     database => $request->{database}
     };
     # We need to flatten the columns array, because dyna-form doesn't
@@ -780,13 +781,37 @@ sub _failed_check {
     $sth->finish();
 
     my $heading = { map { $_ => $_ } @{$check->display_cols} };
+    my %buttons = map { $_ => 1 } @{$check->buttons};
     my $buttons = [
            { type => 'submit',
              name => 'action',
             value => 'fix_tests',
+          tooltip => { id => 'action-fix-tests',
+                       position => ['above', 'below', 'after', 'before'],
+                       msg => $check->{tooltips}{'Save and Retry'}},
              text => $request->{_locale}->text('Save and Retry'),
-            class => 'submit' },
+            class => 'submit' }
     ];
+    push @$buttons, 
+           { type => 'submit',
+             name => 'action',
+            value => 'cancel',
+          tooltip => { id => 'action-cancel',
+                       position => ['above', 'below', 'after', 'before'],
+                       msg => $check->{tooltips}{'Cancel'}},
+             text => $request->{_locale}->text('Cancel'),
+            class => 'submit' }
+    if $buttons{Cancel};
+    push @$buttons, 
+           { type => 'submit',
+             name => 'action',
+            value => 'force',
+          tooltip => { id => 'action-force',
+                       position => ['above', 'below', 'after', 'before'],
+                       msg => $check->{tooltips}{'Force'}},
+             text => $request->{_locale}->text('Force'),
+            class => 'submit' }
+    if $buttons{Force} && $check->{force_queries};
 
     my $template = LedgerSMB::Template->new(
         path => 'UI',
@@ -1376,6 +1401,27 @@ Cancels work.  Returns to login screen.
 =cut
 sub cancel{
     return __default(@_);
+}
+
+=item force
+
+Force work.  Forgets unmatching tests, applies a curing statement and move on.
+
+=cut
+
+sub force{
+    my ($request) = @_;
+    my $database = _init_db($request);
+
+    my %test = map { $_->name => $_ } LedgerSMB::Upgrade_Tests->get_tests();
+    my $force_queries = $test{$request->{name}}->{force_queries};
+
+    for my $force_query ( @$force_queries ) {
+        my $dbh = $request->{dbh};
+        $dbh->do($force_query);
+        $dbh->commit;
+    }
+    return upgrade($request);
 }
 
 =item rebuild_modules
