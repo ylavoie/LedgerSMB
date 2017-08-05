@@ -192,7 +192,7 @@ has instructions => (is => 'ro', isa => 'Str', required => 1);
 
 =item buttons
 
-Enabled for buttons
+Enabled buttons
 
 =cut
 
@@ -220,6 +220,8 @@ has tooltips => (is => 'ro',
             'Cancel' => $locale->text('Cancel the migration')
     }},
     required => 0);
+
+=back
 
 sub _get_tests {
     my ($request) = @_;

@@ -746,6 +746,7 @@ sub _failed_check {
 verify_check => md5_hex($check->test_query),
     database => $request->{database}
     };
+
     my $rows = [];
     while (my $row = $sth->fetchrow_hashref('NAME_lc')) {
       my $id = $row->{$check->{id_column}};
