@@ -611,8 +611,8 @@ push @tests,__PACKAGE__->new(
       display_cols => ['id', 'description', 'discount'],
       instructions => marktext(
                        'Undefined businesses.
-Please make sure business used by vendors and constomers are defined.
-Hover on buttons to see their effects and impacts'),
+Please make sure business used by vendors and constomers are defined.<br>
+<i>Hover on buttons to see their effects and impacts</i>'),
            columns => ['description', 'discount'],
              table => 'business',
            appname => 'sql-ledger',
