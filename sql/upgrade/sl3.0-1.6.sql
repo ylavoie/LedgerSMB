@@ -17,7 +17,6 @@ ALTER TABLE sl30.customer ADD COLUMN entity_id int;
 ALTER TABLE sl30.customer ADD COLUMN company_id int;
 ALTER TABLE sl30.customer ADD COLUMN credit_id int;
 
-
 --Accounts
 
 INSERT INTO gifi
@@ -111,68 +110,6 @@ UPDATE sl30.customer SET credit_id =
         (SELECT id FROM entity_credit_account e
         WHERE e.meta_number = customernumber and entity_class = 2
         and e.entity_id = customer.entity_id);
-
---Payments
-
-CREATE OR REPLACE FUNCTION payment_migrate
-(in_id                            int,      -- Payment id
- in_trans_id                      int,      -- Transaction id
- in_exchangerate                  numeric,  -- Exchange rate
- in_paymentmethod_id              int)      -- Payment method
-RETURNS INT AS $$
-    DECLARE var_payment_id int;
-    DECLARE var_employee int;
-    DECLARE default_currency char(3);
-    DECLARE current_exchangerate numeric;
-    DECLARE var_account_class int;
-    DECLARE var_datepaid date;
-    DECLARE var_curr char(3);
-    DECLARE var_notes text;
-    DECLARE var_source text[];
-    DECLARE var_memo text[];
-    DECLARE var_lsmb_entry_id int;
-    DECLARE var_entity_credit_account int;
-BEGIN
-    var_account_class = 1; -- AP
-
-    SELECT * INTO default_currency  FROM defaults_get_defaultcurrency();
-    SELECT * INTO current_exchangerate FROM currency_get_exchangerate(var_curr, var_datepaid, var_account_class);
-
-    SELECT INTO var_employee p.id
-    FROM users u
-    JOIN person p ON (u.entity_id=p.entity_id)
-    WHERE username = SESSION_USER LIMIT 1;
-
-    SELECT sl30_ac.transdate, sl30_ac.source, sl30_ac.lsmb_entry_id,
-           ap.entity_credit_account
-    INTO var_datepaid, var_notes, var_lsmb_entry_id,
-         var_entity_credit_account
-    FROM sl30.payment sl30_p
-    JOIN sl30.acc_trans sl30_ac ON (sl30_p.trans_id = sl30_ac.trans_id AND sl30_p.id=sl30_ac.id)
-    JOIN sl30.chart sl30_c on (sl30_c.id = sl30_ac.chart_id)
-    JOIN acc_trans ac ON ac.entry_id = sl30_ac.lsmb_entry_id
-    JOIN ap ON ap.id=ac.trans_id
-    WHERE sl30_c.link ~ 'AP' AND link ~ 'paid'
-    AND sl30_ac.trans_id=in_trans_id
-    AND sl30_ac.id=in_id;
-
-    -- Handle regular transaction
-    INSERT INTO payment (reference, payment_class, payment_date,
-                         employee_id, currency, notes, entity_credit_id)
-    VALUES (setting_increment('paynumber'),
-            var_account_class, var_datepaid, var_employee,
-            var_curr, var_notes, var_entity_credit_account);
-    SELECT currval('payment_id_seq') INTO var_payment_id; -- WE'LL NEED THIS VALUE TO USE payment_link table
-
-    INSERT INTO payment_links
-    VALUES (var_payment_id, var_lsmb_entry_id, 1);
-
-    RETURN var_payment_id;
-END;
-$$ LANGUAGE PLPGSQL;
-
-PERFORM payment_migrate(p.id, p.trans_id, cast(p.exchangerate as numeric), p.paymentmethod_id)
-FROM sl30.payment p;
 
 --Company
 
@@ -404,8 +341,6 @@ SELECT entity_id, startdate, enddate, r.description, ssn, sales,
        (select entity_id from sl30.employee where id = em.acsrole_id)
   FROM sl30.employee em
 LEFT JOIN sl30.acsrole r on em.acsrole_id = r.id;
-
-
 
 -- must rebuild this table due to changes since 1.2
 
@@ -645,6 +580,68 @@ LEFT JOIN sl30.invoice ON acc_trans.id = invoice.id
   WHERE chart_id IS NOT NULL
     AND acc_trans.trans_id IN (SELECT id FROM transactions);
 
+--Payments
+
+CREATE OR REPLACE FUNCTION payment_migrate
+(in_id                            int,      -- Payment id
+ in_trans_id                      int,      -- Transaction id
+ in_exchangerate                  numeric,  -- Exchange rate
+ in_paymentmethod_id              int)      -- Payment method
+RETURNS INT AS $$
+    DECLARE var_payment_id int;
+    DECLARE var_employee int;
+    DECLARE default_currency char(3);
+    DECLARE current_exchangerate numeric;
+    DECLARE var_account_class int;
+    DECLARE var_datepaid date;
+    DECLARE var_curr char(3);
+    DECLARE var_notes text;
+    DECLARE var_source text[];
+    DECLARE var_memo text[];
+    DECLARE var_lsmb_entry_id int;
+    DECLARE var_entity_credit_account int;
+BEGIN
+    var_account_class = 1; -- AP
+
+    SELECT * INTO default_currency  FROM defaults_get_defaultcurrency();
+    SELECT * INTO current_exchangerate FROM currency_get_exchangerate(var_curr, var_datepaid, var_account_class);
+
+    SELECT INTO var_employee p.id
+    FROM users u
+    JOIN person p ON (u.entity_id=p.entity_id)
+    WHERE username = SESSION_USER LIMIT 1;
+
+    SELECT sl30_ac.transdate, sl30_ac.source, sl30_ac.lsmb_entry_id,
+           ap.entity_credit_account
+    INTO var_datepaid, var_notes, var_lsmb_entry_id,
+         var_entity_credit_account
+    FROM sl30.payment sl30_p
+    JOIN sl30.acc_trans sl30_ac ON (sl30_p.trans_id = sl30_ac.trans_id AND sl30_p.id=sl30_ac.id)
+    JOIN sl30.chart sl30_c on (sl30_c.id = sl30_ac.chart_id)
+    JOIN acc_trans ac ON ac.entry_id = sl30_ac.lsmb_entry_id
+    JOIN ap ON ap.id=ac.trans_id
+    WHERE sl30_c.link ~ 'AP' AND link ~ 'paid'
+    AND sl30_ac.trans_id=in_trans_id
+    AND sl30_ac.id=in_id;
+
+    -- Handle regular transaction
+    INSERT INTO payment (reference, payment_class, payment_date,
+                         employee_id, currency, notes, entity_credit_id)
+    VALUES (setting_increment('paynumber'),
+            var_account_class, var_datepaid, var_employee,
+            var_curr, var_notes, var_entity_credit_account);
+    SELECT currval('payment_id_seq') INTO var_payment_id; -- WE'LL NEED THIS VALUE TO USE payment_link table
+
+    INSERT INTO payment_links
+    VALUES (var_payment_id, var_lsmb_entry_id, 1);
+
+    RETURN var_payment_id;
+END;
+$$ LANGUAGE PLPGSQL;
+
+SELECT payment_migrate(p.id, p.trans_id, cast(p.exchangerate as numeric), p.paymentmethod_id)
+FROM sl30.payment p;
+
 -- Reconciliations
 -- Serially reuseable
 INSERT INTO cr_coa_to_account(chart_id, account)
@@ -676,7 +673,7 @@ EXCEPTION WHEN OTHERS THEN
 END;$$;
 
 -- The computation of their_total is wrong at this time
-INSERT INTO cr_report(chart_id, their_total,  submitted, end_date, updated, entered_by, entered_username)
+INSERT INTO cr_report(chart_id, their_total, submitted, end_date, updated, entered_by, entered_username)
   SELECT coa.id, 0, TRUE,
             a.end_date,max(a.updated),
             (SELECT entity_id FROM robot WHERE last_name = 'Migrator'),
@@ -778,7 +775,6 @@ SELECT ac.entry_id, 2, slac.project_id+1000
   FROM acc_trans ac
   JOIN sl30.acc_trans slac ON slac.lsmb_entry_id = ac.entry_id
  WHERE project_id > 0;
-
 
 INSERT INTO business_unit_inv (entry_id, class_id, bu_id)
 SELECT inv.id, 1, gl.department_id

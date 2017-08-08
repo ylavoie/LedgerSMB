@@ -177,18 +177,19 @@ CREATE OR REPLACE FUNCTION reconciliation__get_cleared_balance(in_chart_id int,
    in_report_date date DEFAULT date_trunc('second', now()))
 RETURNS numeric AS
 $$
-    SELECT sum(ac.amount) * CASE WHEN c.category in('A', 'E') THEN -1 ELSE 1 END
-        FROM account c
-        JOIN acc_trans ac ON (ac.chart_id = c.id)
-    JOIN (      SELECT id FROM ar WHERE approved
-          UNION SELECT id FROM ap WHERE approved
-          UNION SELECT id FROM gl WHERE approved
-          ) g ON g.id = ac.trans_id
-    WHERE c.id = $1 AND cleared
-      AND (cleared_on IS NULL OR cleared_on <= in_report_date) -- cleared confirmed and date is prior the report
-      AND ac.approved IS true
-      AND ac.transdate <= in_report_date
-    GROUP BY c.id, c.category;
+    SELECT COALESCE((
+    SELECT SUM(ac.amount) * CASE WHEN c.category in('A', 'E') THEN -1 ELSE 1 END
+      FROM account c
+      JOIN acc_trans ac ON (ac.chart_id = c.id)
+      JOIN (      SELECT id FROM ar WHERE approved
+            UNION SELECT id FROM ap WHERE approved
+            UNION SELECT id FROM gl WHERE approved
+           ) g ON g.id = ac.trans_id
+     WHERE c.id = in_chart_id AND cleared
+       AND (cleared_on IS NULL OR cleared_on <= in_report_date) -- cleared confirmed and date is prior the report
+       AND ac.approved IS true
+       AND ac.transdate <= in_report_date
+     GROUP BY c.id, c.category),0);
 $$ LANGUAGE sql;
 
 COMMENT ON FUNCTION reconciliation__get_cleared_balance(in_chart_id int,in_report_date date) IS
