@@ -466,14 +466,10 @@ sub _tt_url {
 
 sub _maketext {
     my $self = shift;
-    my $escape = shift;
 
-    if (defined $self->{locale}) {
-        return $escape->($self->{locale}->maketext(@_));
-    }
-    else {
-        return $escape->(@_);
-    }
+    return defined $self->{locale}
+        ? $self->{locale}->maketext(@_)
+        : shift;
 }
 
 sub _render {
@@ -499,12 +495,11 @@ sub _render {
         value => 'screen'
     } if $LedgerSMB::App_State::Locale;
 
-
     my $format = "LedgerSMB::Template::$self->{format}";
     my $escape = $format->can('escape');
     my $cleanvars = $self->{no_escape} ? $vars : preprocess($vars, $escape);
     $cleanvars->{escape} = sub { return $escape->(@_); };
-    $cleanvars->{text} = sub { return $self->_maketext($escape, @_); };
+    $cleanvars->{text} = sub { return $self->_maketext(@_); };
     $cleanvars->{tt_url} = \&_tt_url;
 
     my $output;
