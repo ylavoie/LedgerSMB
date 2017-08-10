@@ -606,13 +606,12 @@ push @tests,__PACKAGE__->new(
                              and id not in (select id from business)
                         order by id
                       ) a",
-      display_name => marktext('Empty businesses'),
+      display_name => marktext('<b>Undefined businesses</b>'),
               name => 'no_businesses',
       display_cols => ['id', 'description', 'discount'],
       instructions => marktext(
-                       'Undefined businesses.
-Please make sure business used by vendors and constomers are defined.
-Hover on buttons to see their effects and impacts'),
+'Please make sure business used by vendors and constomers are defined.<br>
+<b><u>Hover on buttons</b> to see their effects and impacts</u>'),
            columns => ['description', 'discount'],
              table => 'business',
            appname => 'sql-ledger',
