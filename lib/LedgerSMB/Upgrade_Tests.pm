@@ -483,6 +483,37 @@ push @tests, __PACKAGE__->new(
   max_version => '1.4'
 );
 
+push @tests, __PACKAGE__->new(
+   test_query => "select * from from cr_coa_to_account ccta
+                   where chart_id in (select crcoa.chart_id
+                                        from cr_coa_to_account crcoa
+                                       where ccta.chart_id = crcoa.chart_id
+                                    group by crcoa.chart_id
+                                      having count(crcoa.chart_id) > 1)",
+ display_name => marktext('Accounts marked for recon -- once'),
+         name => 'non_duplicate_recon_accounts_marker',
+ display_cols => [ 'chart_id', 'account' ],
+        table => 'cr_coa_to_account',
+ instructions => marktext("Please use pgAdmin3 or psql to remove the duplicates"),
+      appname => 'ledgersmb',
+  min_version => '1.3',
+  max_version => '1.4'
+);
+
+push @tests, __PACKAGE__->new(
+   test_query => "select * from from cr_coa_to_account ccta
+                   where not exists (select 1
+                                       from account
+                                      where account.id = ccta.chart_id)",
+ display_name => marktext('Accounts marked for recon exist'),
+         name => 'recon_accounts_exist',
+ display_cols => [ 'chart_id', 'account' ],
+        table => 'cr_coa_to_account',
+ instructions => marktext("Please use pgAdmin3 or psql to look up the 'chart_id' value in the 'account' table and change it to an existing value"),
+      appname => 'ledgersmb',
+  min_version => '1.3',
+  max_version => '1.4'
+);
 
 
 #=pod
@@ -1238,18 +1269,18 @@ push @tests, __PACKAGE__->new(
     push @tests, __PACKAGE__->new(
         # Add a unique key to allow editing
         # Make the test serially reusable and protect against triggers
-        test_query => "SELECT ac.i_key, ac.trans_id, ac.id, ac.memo, ac.amount, xx.description,
+        test_query => "SELECT ac.i_key, ac.trans_id, ac.id, ac.memo, ac.amount, xx.description, 
                               ch.accno, ch.link, ch.charttype, ch.category, ac.cleared, approved
-                         FROM acc_trans ac
+                         FROM acc_trans ac 
                          JOIN (
                                    SELECT g.id, g.description FROM gl g
                              UNION SELECT a.id, n.name        FROM ar a JOIN customer n ON n.id = a.customer_id
                              UNION SELECT a.id, n.name        FROM ap a JOIN vendor n   ON n.id = a.vendor_id
                          ) xx ON xx.id = ac.trans_id
                          JOIN chart ch ON (ac.chart_id = ch.id)
-                        WHERE ( ch.category NOT IN ( 'A', 'L', 'Q' )
-                             OR ch.link NOT LIKE '%paid' )
-                          AND ac.cleared IS NOT NULL
+                        WHERE ( ch.category NOT IN ( 'A', 'L', 'Q' ) 
+                             OR ch.link NOT LIKE '%paid' ) 
+                          AND ac.cleared IS NOT NULL 
                           AND ac.approved
                      ORDER BY accno, transdate, ac.id",
       display_name => marktext('Reconciliations on non-bank accounts'),
@@ -1271,9 +1302,9 @@ Please review the dates in the original application"),
                          WHERE chart_id in ( SELECT id
                                                FROM chart c
                                               WHERE c.category NOT IN ( 'A', 'L' )
-                                                 OR c.link NOT LIKE '%paid' )
-                           AND ac.cleared IS NOT NULL
-                           AND ac.approved;"],
+                           OR c.link NOT LIKE '%paid' ) 
+                        AND ac.cleared IS NOT NULL 
+                        AND ac.approved;"],
              table => 'acc_trans',
       appname => 'sql-ledger',
   min_version => '2.7',
