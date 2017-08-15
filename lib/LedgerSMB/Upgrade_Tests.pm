@@ -223,7 +223,8 @@ subtype 'button'
     => message { "Invalid button '$_'" };
 
 has buttons => (is => 'ro', isa => 'ArrayRef[button]',
-    default => sub { return ['Save and Retry', 'Cancel']}, required => 0);
+                default => sub {['Save and Retry', 'Cancel']},
+                required => 0);
 
 =item tooltips
 
