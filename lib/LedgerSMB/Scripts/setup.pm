@@ -25,7 +25,6 @@ use warnings;
 
 use Digest::MD5 qw(md5_hex);
 use HTTP::Status qw( HTTP_OK HTTP_UNAUTHORIZED );
-use utf8;
 use Locale::Country;
 use Try::Tiny;
 
@@ -92,7 +91,6 @@ sub _get_database {
                   dbname => $request->{database},
     ));
 }
-
 
 sub _init_db {
     my ($request) = @_;
@@ -187,8 +185,6 @@ sub get_dispatch_table {
         operation => $request->{_locale}->text("Cancel"),
         next_action => 'cancel' } );
 }
-
-
 
 sub login {
     use LedgerSMB::Locale;
@@ -338,7 +334,6 @@ sub copy_db {
     return complete($request);
 }
 
-
 =item backup_db
 
 Backs up a full db
@@ -372,7 +367,6 @@ sub _begin_backup {
     );
     return $template->render_to_psgi($request);
 };
-
 
 =item run_backup
 
@@ -579,7 +573,6 @@ sub _get_linked_accounts {
     return @accounts;
 }
 
-
 =item upgrade_settigs
 
 =cut
@@ -671,8 +664,8 @@ sub _upgrade_test_is_applicable {
     my ($dbinfo, $test) = @_;
 
     return (($test->min_version le $dbinfo->{version})
-            && ($test->max_version ge $dbinfo->{version})
-            && ($test->appname eq $dbinfo->{appname}));
+         && ($test->max_version ge $dbinfo->{version})
+         && ($test->appname eq $dbinfo->{appname}));
 }
 
 sub _applicable_upgrade_tests {
@@ -681,6 +674,8 @@ sub _applicable_upgrade_tests {
     return grep { _upgrade_test_is_applicable($dbinfo, $_) }
                   LedgerSMB::Upgrade_Tests->get_tests;
 }
+
+my @checks;
 
 sub upgrade {
     my ($request) = @_;
@@ -691,7 +686,11 @@ sub upgrade {
     $request->{dbh}->{AutoCommit} = 0;
     my $locale = $request->{_locale};
 
-    for my $check (_applicable_upgrade_tests($dbinfo)) {
+    @checks = _applicable_upgrade_tests($dbinfo)
+        if !@checks;
+
+    for my $check (@checks) {
+        next if $check->skip eq 'On';
         my $sth = $request->{dbh}->prepare($check->test_query);
         $sth->execute()
             or die "Failed to execute pre-migration check " . $check->name . ", " . $sth->errstr;
@@ -772,9 +771,10 @@ verify_check => md5_hex($check->test_query),
     my %buttons_set = map { $_ => 1 } @{$check->buttons};
     my $buttons;
     for (
-        { value => 'fix_tests', label => 'Save and Retry', cond => $check->columns              },
-        { value => 'cancel',    label => 'Cancel',         cond => 1                            },
-        { value => 'force',     label => 'Force',          cond => defined $check->force_queries}
+        { value => 'fix_tests', label => 'Save and Retry', cond => defined($check->{columns})},
+        { value => 'cancel',    label => 'Cancel',         cond => 1                         },
+        { value => 'force',     label => 'Force',          cond => $check->{force_queries}   },
+        { value => 'skip',      label => 'Skip',           cond => $check->{skip} eq 'Off'   }
     ) {
         if ( $buttons_set{$_->{label}} && $_->{cond}) {
             push @$buttons, {
@@ -980,7 +980,6 @@ sub select_coa {
     return $template->render_to_psgi($request);
 }
 
-
 =item skip_coa
 
 Entry point when on the CoA selection screen the 'Skip' button
@@ -997,7 +996,6 @@ sub skip_coa {
 
     return template_screen($request);
 }
-
 
 =item _render_new_user
 
@@ -1050,8 +1048,6 @@ sub _render_new_user {
 
     return $template->render_to_psgi($request);
 }
-
-
 
 =item save_user
 
@@ -1129,7 +1125,6 @@ sub save_user {
    return rebuild_modules($request);
 }
 
-
 =item process_and_run_upgrade_script
 
 =cut
@@ -1168,12 +1163,12 @@ sub process_and_run_upgrade_script {
         format_options => {extension => 'sql'},
         output_file => 'upgrade.sql',
         format => 'TXT' );
-    $dbtemplate->render($request);
-    $database->run_file(
+        $dbtemplate->render($request);
+        $database->run_file(
         file =>  $LedgerSMB::Sysconfig::tempdir . "/upgrade.sql",
         log => $temp . "_stdout",
         errlog => $temp . "_stderr"
-        );
+    );
 
     my $sth = $dbh->prepare(qq(select value='yes'
                                  from defaults
@@ -1205,7 +1200,6 @@ sub process_and_run_upgrade_script {
     $dbh->commit;
     return $dbh->disconnect;
 }
-
 
 =item run_upgrade
 
@@ -1282,7 +1276,6 @@ sub run_sl30_migration {
 
     return create_initial_user($request);
 }
-
 
 =item create_initial_user
 
@@ -1372,7 +1365,6 @@ sub save_user_roles {
     return edit_user_roles($request);
 }
 
-
 =item reset_password
 
 =cut
@@ -1389,8 +1381,6 @@ sub reset_password {
     return edit_user_roles($request);
 }
 
-
-
 =item cancel
 
 Cancels work.  Returns to login screen.
@@ -1406,17 +1396,34 @@ Force work.  Forgets unmatching tests, applies a curing statement and move on.
 
 =cut
 
-sub force{
+sub force {
     my ($request) = @_;
     my $database = _init_db($request);
 
-    my %test = map { $_->name => $_ } LedgerSMB::Upgrade_Tests->get_tests();
-    my $force_queries = $test{$request->{check}}->{force_queries};
+    my %checks = map { $_->name => $_ } @checks;
+    my $check = $checks{$request->{check}};
+    my $force_queries = $check->{force_queries};
 
     for my $force_query ( @$force_queries ) {
         my $dbh = $request->{dbh};
         $dbh->do($force_query);
         $dbh->commit;
+    }
+    return upgrade($request);
+}
+
+=item skip
+
+Mark the test to be skipped
+
+=cut
+
+sub skip {
+    my ($request) = @_;
+
+    for (@checks) {
+        $_->{skip} = 'On'
+            if $_->{name} = $request->{check}
     }
     return upgrade($request);
 }
@@ -1485,7 +1492,6 @@ sub system_info {
         )->render_to_psgi($request);
 }
 
-
 =back
 
 =head1 COPYRIGHT
@@ -1497,5 +1503,5 @@ License.txt for details.
 
 =cut
 
-
 1;
+

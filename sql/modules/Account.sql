@@ -407,66 +407,67 @@ BEGIN
 
     SELECT count(*) > 0 INTO t_tax FROM tax WHERE in_id = chart_id;
     t_tax := t_tax OR in_tax;
-        -- check to ensure summary accounts are exclusive
-        -- necessary for proper handling by legacy code
-    FOR t_link IN SELECT description FROM account_link_description
-    WHERE summary='t'
-        LOOP
-                IF t_link.description = ANY (in_link) and array_upper(in_link, 1) > 1 THEN
-                        RAISE EXCEPTION 'Invalid link settings:  Summary';
-                END IF;
-        END LOOP;
-        -- heading settings
-        IF in_heading IS NULL THEN
-                SELECT id INTO t_heading_id FROM account_heading
-                WHERE accno < in_accno order by accno desc limit 1;
-        ELSE
-                t_heading_id := in_heading;
+    -- check to ensure summary accounts are exclusive
+    -- necessary for proper handling by legacy code
+    FOR t_link IN SELECT description
+                    FROM account_link_description
+                   WHERE summary='t'
+    LOOP
+        IF t_link.description = ANY (in_link) and array_upper(in_link, 1) > 1 THEN
+                RAISE EXCEPTION 'Invalid link settings:  Summary';
         END IF;
+    END LOOP;
 
-    -- don't remove custom links.
-        DELETE FROM account_link
-        WHERE account_id = in_id
-              and description in ( select description
-                                    from  account_link_description
-                                    where custom = 'f');
+    -- heading settings
+    IF in_heading IS NULL THEN
+            SELECT id INTO t_heading_id FROM account_heading
+            WHERE accno < in_accno order by accno desc limit 1;
+    ELSE
+            t_heading_id := in_heading;
+    END IF;
 
-        UPDATE account
-        SET accno = in_accno,
-                description = in_description,
-                category = in_category,
-                gifi_accno = in_gifi_accno,
-                heading = t_heading_id,
-                contra = in_contra,
-                obsolete = coalesce(in_obsolete,'f'),
-                tax = t_tax,
-                is_temp = coalesce(in_is_temp,'f')
-        WHERE id = in_id;
+-- don't remove custom links.
+    DELETE FROM account_link
+    WHERE account_id = in_id
+          and description in ( select description
+                                from  account_link_description
+                                where custom = 'f');
 
-        IF FOUND THEN
-                t_id := in_id;
-        ELSE
-                -- can't obsolete on insert, but this can be changed if users
-                -- request it --CT
-                INSERT INTO account (accno, description, category, gifi_accno,
-                        heading, contra, tax, is_temp)
-                VALUES (in_accno, in_description, in_category, in_gifi_accno,
-                        t_heading_id, in_contra, in_tax, coalesce(in_is_temp, 'f'));
+    UPDATE account
+    SET accno = in_accno,
+        description = in_description,
+        category = in_category,
+        gifi_accno = in_gifi_accno,
+        heading = t_heading_id,
+        contra = in_contra,
+        obsolete = coalesce(in_obsolete,'f'),
+        tax = t_tax,
+        is_temp = coalesce(in_is_temp,'f')
+    WHERE id = in_id;
 
-                t_id := currval('account_id_seq');
-        END IF;
+    IF FOUND THEN
+        t_id := in_id;
+    ELSE
+        -- can't obsolete on insert, but this can be changed if users
+        -- request it --CT
+        INSERT INTO account (accno, description, category, gifi_accno,
+                    heading, contra, tax, is_temp)
+        VALUES (in_accno, in_description, in_category, in_gifi_accno,
+                t_heading_id, in_contra, in_tax, coalesce(in_is_temp, 'f'));
 
-        FOR t_link IN
-                select in_link[generate_series] AS val
-                FROM generate_series(array_lower(in_link, 1),
-                        array_upper(in_link, 1))
-        LOOP
-                INSERT INTO account_link (account_id, description)
-                VALUES (t_id, t_link.val);
-        END LOOP;
+        t_id := currval('account_id_seq');
+    END IF;
 
+    FOR t_link IN
+        SELECT in_link[generate_series] AS val
+        FROM generate_series(array_lower(in_link, 1),
+                array_upper(in_link, 1))
+    LOOP
+        INSERT INTO account_link (account_id, description)
+        VALUES (t_id, t_link.val);
+    END LOOP;
 
-        RETURN t_id;
+    RETURN t_id;
 END;
 $$ language plpgsql;
 

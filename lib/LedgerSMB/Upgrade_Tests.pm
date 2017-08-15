@@ -19,6 +19,7 @@ use Moose;
 use Moose::Util::TypeConstraints;
 use namespace::autoclean;
 use LedgerSMB::Locale qw(marktext);
+use LedgerSMB::I18N;
 use List::Util qw(any);
 
 =head1 FUNCTIONS
@@ -45,11 +46,8 @@ Returns the test object with the name.
 
 sub get_by_name {
     my ($self, $name) = @_;
-    my @tests = $self->_get_tests;
-    for my $test (@tests){
-       return $test if $test->name eq $name;
-    }
-    return;
+    my %tests = map { $_->name => $_ } $self->_get_tests;
+    return $tests{$name};
 }
 
 =back
@@ -124,17 +122,17 @@ C<text> is the textual value to be presented in the UI.
 has selectable_values => (is => 'ro', isa => 'HashRef', required => 0);
 
 sub _displayed_key {
-    my ($self,$hash) = @_;
-    my @keys = ref $hash eq 'ARRAY' ? @$hash : keys $hash;
+    my ($self,@keys) = @_;
     for my $key (@keys) {
         die "'$key' not displayed in test '$self->{name}'"
-            if not any { $key } $self->{display_cols};
+            if not grep( $key, $self->{display_cols});
     }
 };
 
 after 'selectable_values' => sub {
     my $self = shift;
-    $self->_displayed_key($self->{selectable_values});
+    $self->_displayed_key(keys %{$self->{selectable_values}})
+        if $self->{selectable_values};
 };
 
 =item force_queries
@@ -221,12 +219,11 @@ Enabled buttons
 
 subtype 'button'
     => as 'Str'
-    => where { $_ =~ /Save and Retry|Cancel|Force/ }
+    => where { $_ =~ /Save and Retry|Cancel|Force|Skip/ }
     => message { "Invalid button '$_'" };
 
 has buttons => (is => 'ro', isa => 'ArrayRef[button]',
-                default => sub {['Save and Retry', 'Cancel']},
-                required => 0);
+    default => sub { return ['Save and Retry', 'Cancel']}, required => 0);
 
 =item tooltips
 
@@ -235,20 +232,37 @@ Tooltip for each button
 =cut
 
 has tooltips => (is => 'ro',
-    isa => 'HashRef[Str]',
-    default => sub {
-        return {
-            'Save and Retry' => marktext('Save the fixes provided and attempt to continue migration'),
-            'Cancel' => marktext('Cancel the <b>migration</b>')
-    }},
-    required => 0);
-
-after 'tooltips' => sub {
-    my $self = shift;
-    for my $key (keys $self->{tooltips}) {
-        die "No button '$key' in test '$self->{name}'"
-            if not grep /^$key$/,$self->{buttons};
+    isa => 'Maybe[HashRef[Str]]', required => 0,
+    default => undef,   # Force initializer call
+    initializer => sub {
+        my ( $self, $value, $writer_sub_ref, $attribute_meta ) = @_;
+        for ($value) {
+            die LedgerSMB::I18N::text("No button '[_1]' in test '[_2]'",$_,$self->{name})
+                if not grep( /^$_$/, @{$self->{buttons}});
+        }
+        my %defaults = ('Save and Retry' => marktext('Save the fixes provided and attempt to continue migration'),
+                                'Cancel' => marktext('Cancel the <b>whole migration</b>'));
+        for (keys %defaults) {
+            $value->{$_} = $defaults{$_}
+                if not $value->{$_};
+        }
+        $writer_sub_ref->($value);
     }
+);
+
+=item skip
+
+Skip this test
+
+=cut
+
+enum SkipValues => [qw/ Disabled Off On /];
+has skip => (is =>'rw', isa => 'SkipValues', default => 'Disabled');
+
+after 'skip' => sub {
+    my $self = shift;
+    $self->{skip} = 'Off'
+        if $self->{skip} eq 'Disabled' and grep( /^Skip$/, @{$self->{buttons}});
 };
 
 =back
@@ -514,6 +528,8 @@ push @tests, __PACKAGE__->new(
   max_version => '1.4'
 );
 
+
+
 #=pod
 
 # This must be done before the acc_trans test, for they have duplicates
@@ -542,10 +558,6 @@ push @tests, __PACKAGE__->new(
       instructions => marktext(
                        "This should never show. We added a unique key to acc_trans"),
            buttons => ['Save and Retry', 'Cancel'],
-          tooltips => {
-    'Save and Retry' => marktext('Save the fixes provided and attempt to continue migration'),
-            'Cancel' => marktext('Cancel the <b>migration</b>'),
-          },
              table => 'acc_trans',
            appname => 'sql-ledger',
        min_version => '2.7',
@@ -794,10 +806,7 @@ Please make sure business used by vendors and constomers are defined.<br>
                         UPDATE vendor SET business_id = NULL
                          WHERE business_id NOT IN (
                             SELECT id FROM business);'],
-          # I want to add to the tooltips already defaulted properly - YL
           tooltips => {
-            'Save and Retry' => marktext('Save the fixes provided and attempt to continue migration'),
-            'Cancel' => marktext('Cancel the <b>migration</b>'),
             'Force' => marktext('This will <b>remove</b> the business references in <u>vendor</u> and <u>customer</u> tables')
           }
         );
@@ -1274,22 +1283,22 @@ push @tests, __PACKAGE__->new(
     push @tests, __PACKAGE__->new(
         # Add a unique key to allow editing
         # Make the test serially reusable and protect against triggers
-        test_query => "SELECT ac.i_key, ac.trans_id, ac.id, ac.memo, ac.amount, xx.description, 
+        test_query => "SELECT ac.i_key, ac.trans_id, ac.id, ac.memo, ac.amount, xx.description,
                               ch.accno, ch.link, ch.charttype, ch.category, ac.cleared, approved
-                         FROM acc_trans ac 
+                         FROM acc_trans ac
                          JOIN (
                                    SELECT g.id, g.description FROM gl g
                              UNION SELECT a.id, n.name        FROM ar a JOIN customer n ON n.id = a.customer_id
                              UNION SELECT a.id, n.name        FROM ap a JOIN vendor n   ON n.id = a.vendor_id
                          ) xx ON xx.id = ac.trans_id
                          JOIN chart ch ON (ac.chart_id = ch.id)
-                        WHERE ( ch.category NOT IN ( 'A', 'L', 'Q' ) 
-                             OR ch.link NOT LIKE '%paid' ) 
-                          AND ac.cleared IS NOT NULL 
+                        WHERE ( ch.category NOT IN ( 'A', 'L', 'Q' )
+                             OR ch.link NOT LIKE '%paid' )
+                          AND ac.cleared IS NOT NULL
                           AND ac.approved
                      ORDER BY accno, transdate, ac.id",
       display_name => marktext('Reconciliations on non-bank accounts'),
-              name => 'invalid_cleared_dates',
+              name => 'reconciliation_on_non_bank_accounts',
       display_cols => ['i_key', 'trans_id', 'id', 'memo', 'amount', 'description',
                        'accno', 'link', 'charttype', 'category', 'cleared', 'approved'],
            columns => ['cleared'],
@@ -1298,25 +1307,26 @@ push @tests, __PACKAGE__->new(
       instructions => marktext(
                        "There shouldn't be reconciliations on non-bank accounts.<br>
 Please review the dates in the original application"),
-           buttons => ['Save and Retry', 'Cancel', 'Force'],
+           buttons => ['Save and Retry', 'Cancel', 'Force', 'Skip'],
           tooltips => {
-    'Save and Retry' => marktext('Save the fixes provided and attempt to continue migration'),
-            'Cancel' => marktext('Cancel the <b>migration</b>'),
-             'Force' => marktext('This will <b>ignore</b> the non-necessary reconciliations')
+               'Force' => marktext('This will <b>ignore</b> the non-necessary reconciliations'),
+               'Skip'  => marktext('This will <b>skip</b> this test <b><u>without doing any correction</u></b>')
           },
      force_queries => ["UPDATE acc_trans ac SET cleared = NULL
-                      WHERE chart_id in ( c.category NOT IN ( 'A', 'L' ) 
-                           OR c.link NOT LIKE '%paid' ) 
-                        AND ac.cleared IS NOT NULL 
-                        AND ac.approved;"],
+                         WHERE chart_id in ( SELECT id
+                                               FROM chart c
+                                              WHERE c.category NOT IN ( 'A', 'L' )
+                                                 OR c.link NOT LIKE '%paid' )
+                           AND ac.cleared IS NOT NULL
+                           AND ac.approved;"],
              table => 'acc_trans',
-      appname => 'sql-ledger',
-  min_version => '2.7',
-  max_version => '3.0'
-);
+           appname => 'sql-ledger',
+       min_version => '2.7',
+       max_version => '3.0'
+    );
 
 
-### On the vendor side, SL doesn't use pricegroups
+ ### On the vendor side, SL doesn't use pricegroups
 # push @tests, __PACKAGE__->new(
 #     test_query => "select *
 #                      from partsvendor
