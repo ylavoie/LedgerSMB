@@ -92,7 +92,6 @@ sub _get_database {
     ));
 }
 
-
 sub _init_db {
     my ($request) = @_;
     my ($reauth, $database) = _get_database($request);
@@ -186,8 +185,6 @@ sub get_dispatch_table {
         operation => $request->{_locale}->text("Cancel"),
         next_action => 'cancel' } );
 }
-
-
 
 sub login {
     use LedgerSMB::Locale;
@@ -337,7 +334,6 @@ sub copy_db {
     return complete($request);
 }
 
-
 =item backup_db
 
 Backs up a full db
@@ -371,7 +367,6 @@ sub _begin_backup {
     );
     return $template->render_to_psgi($request);
 };
-
 
 =item run_backup
 
@@ -577,7 +572,6 @@ sub _get_linked_accounts {
 
     return @accounts;
 }
-
 
 =item upgrade_settigs
 
