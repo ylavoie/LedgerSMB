@@ -36,14 +36,14 @@
         
         <meta name="robots" content="noindex,nofollow" />
 </head><body id="setup-login" class="lsmb claro">
-    <div class="setupconsole" style="position:relative;height:100%">
+    <div class="setupconsole" style="position:relative;height:25em">
         <div id="loading">
             <img style="display: block; margin: auto auto;"
-                 src="js/dijit/icons/images/loadingAnimation.gif"
-                 alt="If this text is showing, there's most likely a problem with the Dojo setup"
-                 title="Loading ..."
-                 width="20" height="20" />
-        </div>
+         src="js/dijit/icons/images/loadingAnimation.gif"
+         alt="If this text is showing, there's most likely a problem with the Dojo setup"
+         title="Loading ..."
+         width="20" height="20" />
+    </div>
         <div id="logindiv">
             <div class="login" align="center">
                 <h1 class="login"
@@ -63,53 +63,53 @@
                     Database administrator credentials
                 </div>
             </div>
-            <form id="loginform"
+<form id="loginform"
                   name="credentials"
                   style="margin-top:1em">
-                <div class="login_form">
-                    <div class="tabular col-1">
-                        <div id="userpass">
-                            <div class="inputrow">
-                                <label id="s-user-label" for="s-user" class="username">DB admin login</label>
+<div class="login_form">
+<div class="tabular col-1">
+<div id="userpass">
+<div class="inputrow">
+<label id="s-user-label" for="s-user" class="username">DB admin login</label>
           <select id="s-user" class="username" title="DB admin login" name="s_user" size="15" data-dojo-type="dijit/form/ComboBox" data-dojo-props="value:'', placeHolder:'Select or Enter User'">
             
             <option  id="s-user-1" value="lsmb_dbadmin" >lsmb_dbadmin</option><option  id="s-user-2" value="postgres" >postgres</option>
           </select>
-                            </div>
-                            <div class="inputrow">
-                                <label id="s-password-label" for="s-password" class="password">Password</label>
+</div>
+<div class="inputrow">
+<label id="s-password-label" for="s-password" class="password">Password</label>
       
           <input id="s-password" class="password" title="Password" type="password" name="s_password" size="15" data-dojo-type="dijit/form/ValidationTextBox" />
-                            </div>
-                        </div>
-                        <div class="inputrow">
-                            <label id="database-label" for="database" class="database">Database</label>
+</div>
+</div>
+<div class="inputrow">
+<label id="database-label" for="database" class="database">Database</label>
       
           <input id="database" class="database" title="Database" type="text" name="database" size="15" data-dojo-type="dijit/form/ValidationTextBox" maxlength="255" />
                         </div>
                     </div>
                     <div class="inputrow"
                          style="text-align:right; padding-right: 4ex; margin-top: 1ex">
-                        <button data-dojo-type="lsmb/SetupLoginButton"
-                                class="submit"
-                                data-dojo-props="action:'login'"
-                            >Login</button>
-                        <button data-dojo-type="lsmb/SetupLoginButton"
-                                class="submit"
-                                data-dojo-props="action:'create_db'"
-                            >Create</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
+  <button data-dojo-type="lsmb/SetupLoginButton"
+          class="submit"
+          data-dojo-props="action:'login'"
+          >Login</button>
+  <button data-dojo-type="lsmb/SetupLoginButton"
+          class="submit"
+          data-dojo-props="action:'create_db'"
+          >Create</button>
+</div>
+</div>
+</form>
+</div>
+</div>
 </body>
 </html>
 <script>
   require(['dojo/dom', 'dojo/dom-style', 'dojo/ready'],
   function(dom, style, ready) {
     ready(80, function() {
-        style.set(dom.byId('loading'), 'display', 'none');
-    });
+  style.set(dom.byId('loading'), 'display', 'none');
+  });
   });
 </script>
