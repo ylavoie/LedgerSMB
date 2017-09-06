@@ -47,8 +47,9 @@ use Plack::Builder;
 
 # Development specific
 use Plack::Middleware::Debug::Log4perl;
-#use Plack::Middleware::InteractiveDebugger;
 #use Plack::Middleware::Debug::TemplateToolkit;
+use Plack::Middleware::InteractiveDebugger;
+use Plack::Middleware::Lint;
 #TODO: Explore https://github.com/elindsey/Devel-hdb
 
 Log::Log4perl::init(\$LedgerSMB::Sysconfig::log4perl_config);
@@ -66,17 +67,20 @@ builder {
 #           qw/Dancer::Settings Dancer::Logger Dancer::Version/
     ] if $ENV{PLACK_ENV} =~ "development";
 
-#    enable 'Debug::TemplateToolkit';    # enable debug panel
+    enable_if { $ENV{PLACK_ENV} eq 'development' } 'HTMLLint';
+
+    #    enable 'Debug::TemplateToolkit';    # enable debug panel
     enable 'Log4perl', category => 'plack';
 
 #    enable 'TemplateToolkit',
 #        INCLUDE_PATH => 'UI',     # required
 #        pass_through => 1;        # delegate missing templates to $app
 
-    LedgerSMB::PSGI::setup_url_space(
+    my $app = LedgerSMB::PSGI::setup_url_space(
             development => ($ENV{PLACK_ENV} eq 'development'),
             coverage => $ENV{COVERAGE}
             );
+    return Plack::Middleware::Lint->wrap($app);
 };
 
 # -*- perl-mode -*-
