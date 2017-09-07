@@ -381,6 +381,7 @@
       END;
     ?>
     <?lsmb  # Add the id if it's been generated.  Replace all non alphanumeric characters with dashes -- nicer CSS.
+      # This will fail tooltips, for which we will need to compensate later. - YL
       IF element_id;
         element_data.id = element_id.replace('[^\p{IsAlnum}]', '-');
       END;
