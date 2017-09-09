@@ -83,7 +83,7 @@ END; ?>
 <tbody>
    <?lsmb- ROWCOUNT = 0;
    PFX = attributes.input_prefix;
-   FOREACH ROW IN tbody.rows;
+   FOREACH ROW IN rows;
    ROWCOUNT = ROWCOUNT + 1 -?>
    <tr class="<?lsmb ROW.html_class _ ' ' _ ROW.row_id ?>">
       <?lsmb PROCESS input element_data = {
@@ -197,6 +197,14 @@ END; ?>
                        "data-dojo-type"=DOJO
                                   name=PFX _ COL.col_id _ '_tfoot_' _ ROWCOUNT
                                   value=ROW.${COL.col_id} } ?>
+       <?lsmb ELSIF TYPE == 'select_text' -?>
+       <?lsmb PROCESS select element_data = {
+                                  id=COL.col_id _ '-' _ ROWCOUNT
+                                  class=COL.class
+                       "data-dojo-type"=DOJO
+                                  name=PFX _ COL.col_id _ '_tfoot_' _ ROWCOUNT
+                        default_values=ROW.${COL.col_id}
+                               options=COL.options } ?>
          <?lsmb- ELSIF TYPE == 'checkbox';
                    IF ROW.${COL.name};
                       CHECKED = "checked";
