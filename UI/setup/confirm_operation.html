@@ -62,6 +62,19 @@ include_stylesheet=["setup/stylesheet.css"] ?>
    class = 'submit'
     text = text('List Users') #'
 }; ?>
+<?lsmb INCLUDE button element_data = {
+    name = 'action'
+   value = 'import_users'
+    type = 'submit'
+   class = 'submit'
+    text = text('Import Users') #'
+};
+INCLUDE tooltip element_data = {
+      id = 'action-import-users'
+     msg = 'Import SQL-Ledger Users'
+position = ['above']
+}; ?>
+</div>
 </div>
 <div id="templates">
 <div><?lsmb text('Templates') ?></div>

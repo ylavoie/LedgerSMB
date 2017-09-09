@@ -6,7 +6,6 @@ requires 'perl', '5.14.0';
 requires 'CGI::Emulate::PSGI';
 requires 'CGI::Parse::PSGI';
 requires 'Config::IniFiles';
-requires 'Config::Simple';
 requires 'DBD::Pg', '3.3.0';
 requires 'DBI';
 requires 'DateTime';

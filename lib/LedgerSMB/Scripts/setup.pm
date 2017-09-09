@@ -23,6 +23,7 @@ package LedgerSMB::Scripts::setup;
 use strict;
 use warnings;
 
+use Config::IniFiles;
 use Digest::MD5 qw(md5_hex);
 use HTTP::Status qw( HTTP_OK HTTP_UNAUTHORIZED );
 use Locale::Country;
@@ -1252,7 +1253,7 @@ sub run_sl28_migration {
     process_and_run_upgrade_script($request, $database, "sl28",
                    "sl2.8-$CURRENT_MINOR_VERSION");
 
-    return create_initial_user($request);
+    return import_users($request);
 }
 
 =item run_sl30_migration
@@ -1272,7 +1273,116 @@ sub run_sl30_migration {
     process_and_run_upgrade_script($request, $database, "sl30",
                                    "sl3.0-$CURRENT_MINOR_VERSION");
 
-    return create_initial_user($request);
+    return import_users($request);
+}
+
+=item import_users
+
+=cut
+
+sub import_users {
+    my ($request) = @_;
+
+    _init_db($request) unless $request->{dbh};
+    @{$request->{salutations}} = $request->call_procedure(
+        funcname => 'person__list_salutations'
+    );
+
+    @{$request->{countries}} = $request->call_procedure(
+        funcname => 'location_list_country'
+    );
+
+    my $locale = $request->{_locale};
+
+    #TODO: Map SL ACS and refine priviledges
+    @{$request->{perm_sets}} = (
+        {id => '0', label => $locale->text('Manage Users')},
+        {id => '1', label => $locale->text('Full Permissions')},
+        {id => '-1', label => $locale->text('No changes')},
+    );
+    $request->{members_directory} //= '/usr/share/sql-ledger/users/members';
+    my $members = Config::IniFiles->new(-file => $request->{members_directory});
+
+    my $hiddens = {
+        database => $request->{database}
+    };
+    use Data::Printer;
+    use Data::Dumper;
+    warn p $request;
+
+    my $columns_id = [
+        { field => 'name',         name => 'Name',          type => 'input_text'  },
+        { field => 'password',     name => 'Password',      type => 'password'    },
+        { field => 'role',         name => 'Role',          type => 'input_text'  },
+        { field => 'signature',    name => 'Signature',     type => 'input_text'  },
+        { field => 'countrycode',  name => 'Country Code',  type => 'select_text',
+          options => map {  text => $_->{name},
+                           value => $_->{id} },$request->{countries}              },
+        { field => 'tel',          name => 'Phone',         type => 'input_text'  },
+        { field => 'fax',          name => 'Fax',           type => 'input_text'  },
+        { field => 'email',        name => 'email',         type => 'input_text'  },
+        { field => 'dateformat',   name => 'Date Format',   type => 'input_text'  },
+        { field => 'numberformat', name => 'Number Format', type => 'input_text'  },
+        { field => 'outputformat', name => 'Output Format', type => 'input_text'  },
+#       { field => 'printer',      name => 'Printer',       type => 'input_text'  },
+        { field => 'acs',          name => 'ACS',           type => 'input_text'  }
+    ];
+    my $heading;
+    for (@$columns_id) {
+        $heading->{$_->{field}} => $request->{_locale}->text($_->{name});
+    }
+    my @Users = $members->Sections;
+    my $rows = [];
+    my $columns = [];
+
+    for my $column (@$columns_id) {
+        if ($column->{type} =~ /input_text|password/) {
+            push @$columns, { name => $column->{name},
+                            col_id => $column->{field},
+                              type => $column->{type} };
+        }
+        elsif ($column->{type} =~ /select_text/) {
+            push @$columns, { name => $column->{name},
+                            col_id => $column->{field},
+                           options => $column->{options},
+                              type => $column->{type} };
+        }
+        else {
+            die p $column;
+        }
+    }
+    for my $user (@Users) {
+        next if $user !~ /\@$request->{database}/;
+        my $count = scalar(@$rows);
+        my $row;
+        $row->{id} = $user;
+        for (@$columns_id) {
+            my $field = $_->{field};
+            my $name = $field . "_" . $count;
+            $row->{$field} = $members->val($user,$field) // '';
+        };
+        $hiddens->{"id_$count"} = $user;
+        push @$rows, $row;
+    }
+    $hiddens->{count} = scalar(@$rows);
+#    use Data::Printer;
+#    warn p $rows;
+#    warn p $hiddens;
+
+    my $template = LedgerSMB::Template->new_UI(
+        $request,
+        template => 'setup/import_users',
+    );
+    return $template->render_to_psgi({
+           request            => $request,
+           heading            => $heading,
+           headers            => [$request->{_locale}->maketext('Select SQL-Ledger user to import')],
+           columns            => $columns,
+           rows               => $rows,
+           hiddens            => $hiddens,
+#           buttons            => $buttons,
+           include_stylesheet => 'setup/stylesheet.css',
+    });
 }
 
 =item create_initial_user
