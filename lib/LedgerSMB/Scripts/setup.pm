@@ -1308,7 +1308,6 @@ sub import_users {
     };
     use Data::Printer;
     use Data::Dumper;
-    warn p $request;
 
     my $columns_id = [
         { field => 'name',         name => 'Name',          type => 'input_text'  },
@@ -1317,7 +1316,7 @@ sub import_users {
         { field => 'signature',    name => 'Signature',     type => 'input_text'  },
         { field => 'countrycode',  name => 'Country Code',  type => 'select_text',
           options => map {  text => $_->{name},
-                           value => $_->{id} },$request->{countries}              },
+                           value => $_->{id} },@{$request->{countries}}           },
         { field => 'tel',          name => 'Phone',         type => 'input_text'  },
         { field => 'fax',          name => 'Fax',           type => 'input_text'  },
         { field => 'email',        name => 'email',         type => 'input_text'  },
@@ -1327,6 +1326,7 @@ sub import_users {
 #       { field => 'printer',      name => 'Printer',       type => 'input_text'  },
         { field => 'acs',          name => 'ACS',           type => 'input_text'  }
     ];
+    warn p $columns_id;
     my $heading;
     for (@$columns_id) {
         $heading->{$_->{field}} => $request->{_locale}->text($_->{name});
