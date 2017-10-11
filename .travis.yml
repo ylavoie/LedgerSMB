@@ -15,6 +15,9 @@ env:
     - secure: q9IckmvMBEEQ6EeM4U8K4y96Lx6tEaxs/A5GYUJxNJVhUkx3YqJKeERArZc4fpoV3CtUCFPDs/tktiFJn1LDeh3s9vJitUAGMU2AQxiUNARXK4EkEdPhvbX+CtusIIKDXYwEqXLiymv6mmpcc9/19CvHUzr9CiKZbb/LpS8lWqc=
     - secure: cZKPTfU0h4rH2IIRr1Ds1XRPDrloe/K+menYm+VK54hE4MM2zTtNDmWn0fyPdeHeJDRrTF0pyobje8RG9E2Ld5YPHXve1/lVkieoPeqzm9V8hlvZlkgTQJiMAvKzjhSlUJx8AKPjX+jQZfhgAS1hnuWwOIB1cAA7fMpPJ7rPVWo=
 
+services:
+  - docker
+
 notifications:
   webhooks: https://ledgersmb.org/webhook/travis_ci_notifications
 
@@ -118,6 +121,14 @@ before_install:
   - export PERL_MM_OPT="INSTALL_BASE=$HOME/locallib"
   - export PERL_MB_OPT="--install_base=$HOME/locallib"
   - npm install uglify-js@">=2.0 <3.0"
+  # Pull the W3C Validator
+  - export VALIDATOR_URI="http://localhost:45000/w3c-validator/check"
+  - docker pull heitorganzeli/docker-w3c-html5-validator
+  - docker run
+            --detach=true
+            --publish=127.0.0.1:45000:80
+            --name=w3c_validator
+            heitorganzeli/docker-w3c-html5-validator
 
 install:
   - cpanm --quiet --notest --with-develop --with-feature=edi --with-feature=xls --installdeps .
@@ -177,6 +188,7 @@ after_success:
   - utils/test/github-badge-cache-buster.sh
 
 after_failure:
+  - docker logs  w3c_validator
   # display the available resources
   - utils/diagnostics/t/01-system-resources.t
   # display the dmesg log. may give some hints about system related failures. eg: has the OOM killer triggered

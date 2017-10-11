@@ -10,6 +10,8 @@ use Template;
 use Template::Constants qw( :debug );
 use WebService::Validator::HTML::W3C;
 
+my $validator_uri = $ENV{'VALIDATOR_URI'} // 'http://localhost:45000/w3c-validator/check';
+
 my @on_disk = ();
 
 sub collect {
@@ -33,18 +35,32 @@ sub strip_pattern {
     return $text;
 }
 
+sub max ($$) { $_[$_[0] < $_[1]] }
+sub min ($$) { $_[$_[0] > $_[1]] }
+
 sub reportable_line {
     my ($p,$e,$line,$lines) = @_;
-    return $p . ' at ' . $line . ' - ' .$e->msg
-              . ($line ? (' in {{ ' . $lines->[$line] . ' }}')
-                       : '');
+    $line //= 0;
+    my @context = $p . ' at ' . $line . ' - ' .$e->msg;
+    if ( $line ) {
+        push @context, '# in {{ ';
+        for (my $i = max(1,$line-2); $i <= min($line+2,scalar(@$lines)); $i++) {
+            push @context, '# ' . $i . ': ' . $lines->[$i-1];
+        }
+        push @context,  '# }}';
+    }
+    push @context, '';
+    return [@context];
 }
 
 sub content_test {
     my ($filename) = @_;
+    my $has_body = 0;
+    my $has_doctype = 0;
     my $ui_header_used = $filename =~ m/UI\/lib\//;
     my $is_snippet = $filename !~ m#(log(in|out))|main|setup/#
                   || $filename =~ m#setup/ui-db-credentials|'lib/ui-header#;
+    $is_snippet = 0;
 
     my (@tab_lines, @trailing_space_lines);
     my $text = '';
@@ -53,14 +69,21 @@ sub content_test {
     while (<$fh>) {
         push @tab_lines, ($.) if /\t/;
         push @trailing_space_lines, ($.) if / $/;
+        $has_body = 1 if /<body\b/;
+        $has_doctype = 1 if /<!DOCTYPE\b/i;
         $ui_header_used = 1 if /ui-header\.html/;
-        $text .= $_;
         $is_snippet = 1
-            if 1 == @tab_lines
-            && $text =~ /HTML Snippet, for import only/
+            if /HTML Snippet, for import only/;
+        $text .= $_;
     }
     close $fh;
-    warn "$filename, snippet: $is_snippet, ui-header: $ui_header_used";
+#    warn "$filename, snippet: $is_snippet, ui-header: $ui_header_used";
+
+    #Strip comments, keep lines for error reporting
+    $text = strip_pattern($text,qr/(.*)(\<!--.+-->)(.*)/s);
+    $text = ("<?lsmb PROCESS 'elements.html'; PROCESS 'dynatable.html' ?>"
+          . $text)
+          if $is_snippet;
 
     my %tt_config = (
         START_TAG => quotemeta('<?lsmb'),
@@ -111,8 +134,11 @@ sub content_test {
         } while !$tt_text;
     }
 =cut
-#    warn $tt->error() if !$tt_text;
-
+    if (!$tt_text) {
+        fail $filename . ':' . $tt->error();
+        warn $text;
+        return;
+    }
 =x
     $lint->load_plugin(WhiteList => +{
         rule => +{
@@ -141,11 +167,12 @@ sub content_test {
 
     #Fix source text.
     $tt_text = '<!DOCTYPE html>' . $tt_text
-        if $is_snippet;
+        if $is_snippet && !$ui_header_used
+        || $has_body && !($has_doctype || $ui_header_used);
 
     my $v = WebService::Validator::HTML::W3C->new(
-                validator_uri => 'http://fileserver:45000/w3c-validator/check',
-                detailed    =>  1
+                validator_uri => $validator_uri,
+                detailed      =>  1
             );
 
     my @reportable_errors;
@@ -160,14 +187,18 @@ sub content_test {
     if ( $v->validate_markup( $tt_text )) {
         my @lines = split '\n', $tt_text;
         unshift @lines, '';
+
         foreach my $error ( sort {
                                     $a->line <=> $b->line or
                                     $a->msg  cmp $b->msg
-                                 } @{$v->errors} ) {
+                                 } @{$v->errors}
+                          )
+        {
             #TODO: Fix undefined detection in TT
             next if $error->msg =~ /Bad value (\w|\-|\.)* for attribute (\w|\-|\.)+ on element (\w|\-|\.)+/;
             next if $error->msg =~ /Element option without attribute label must not be empty/;
             next if $error->msg =~ /Argument \W+ isn't numeric/;
+
             #TODO: Should be a warning
             next if $error->msg =~ /Use CSS instead/;
 
@@ -176,31 +207,41 @@ sub content_test {
             next if $error->msg =~ /Element head is missing a required instance of child element title/;
 
             #W3C isn't Dojo aware
-            next if $error->msg =~ 'there is no attribute "DATA-DOJO-(CONFIG|PROPS|TYPE)"';
-#            next if $error->msg =~ 'no document type declaration; will parse without validation'
-#                 && !$is_snippet;
-#            next if $error->msg =~ 'no document type declaration; implying "<!DOCTYPE HTML SYSTEM>"'
-#                 && !$is_snippet;
-            my $line = $error->line // 0;
-            push @reportable_errors, reportable_line('Error',$error,$line,\@lines);
+            next if $error->msg =~ /there is no attribute "DATA-DOJO-(CONFIG|PROPS|TYPE)"/;
+
+            push @reportable_errors, reportable_line('Error',$error,$error->line,\@lines);
         }
         foreach my $warning ( sort {
                                     ($a->line//0) <=> ($b->line//0) or
                                     $a->msg  cmp $b->msg
-                                 } @{$v->warnings} ) {
-            my $line = $warning->line // 0;
-            push @reportable_warnings, reportable_line('Warning',$warning,$line,\@lines);
+                                 } @{$v->warnings}
+                            )
+        {
+            push @reportable_warnings, reportable_line('Warning',$warning,$warning->line,\@lines);
         }
-        ok(scalar @reportable_errors == 0, "Source critique for '$filename'")
-            or diag(join("\n", @reportable_errors));
-        TODO: {
-            local $TODO = "Warnings";
-            diag(join("\n", @reportable_warnings));
+        #TODO: Use Diag
+        if ( !ok(scalar @reportable_errors == 0, "Source critique for '$filename'")) {
+            local $\ = "\n";
+            for my $error (@reportable_errors) {
+                print STDERR $_ for @$error;
+            }
         }
+=x
+        #TODO: Use note and restore this
+        if ( !ok(scalar @reportable_warnings == 0, "Source critique for '$filename'")) {
+            TODO: {
+                local $TODO = "Warnings";
+                local $\ = "\n";
+                for my $warning (@reportable_warnings) {
+                    print STDERR $_ for @$warning;
+                }
+            }
+        }
+=cut
     } else {
         fail ('Failed to validate: ' . $v->validator_error);
     }
 }
 
-content_test($_) for @on_disk;
+content_test($_) for sort @on_disk;
 done_testing;

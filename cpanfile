@@ -136,4 +136,5 @@ on 'develop' => sub {
     requires 'Weasel::Driver::Selenium2', '0.05';
     requires 'Weasel::Widgets::Dojo';
     requires 'WebService::Validator::HTML::W3C';
+    requires 'XML::XPath';
 };
