@@ -111,6 +111,7 @@ feature 'debug', "Debug pane" =>
 on 'develop' => sub {
     requires 'App::Prove', '3.36';
     requires 'File::Util';
+    requires 'Hash::Merge';
     requires 'HTML::Lint';
     requires 'HTML::Lint::Parser', '2.26';
     requires 'HTML::Lint::Pluggable';
