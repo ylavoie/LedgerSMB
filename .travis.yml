@@ -2,7 +2,6 @@
 # https://github.com/travis-ci/travis-ci/issues/3251#issuecomment-219675294
 sudo: required
 dist: trusty
-language: perl
 env:
   global:
     # ledgersmb org uses Chris Travers' keys
@@ -15,70 +14,11 @@ env:
     - secure: q9IckmvMBEEQ6EeM4U8K4y96Lx6tEaxs/A5GYUJxNJVhUkx3YqJKeERArZc4fpoV3CtUCFPDs/tktiFJn1LDeh3s9vJitUAGMU2AQxiUNARXK4EkEdPhvbX+CtusIIKDXYwEqXLiymv6mmpcc9/19CvHUzr9CiKZbb/LpS8lWqc=
     - secure: cZKPTfU0h4rH2IIRr1Ds1XRPDrloe/K+menYm+VK54hE4MM2zTtNDmWn0fyPdeHeJDRrTF0pyobje8RG9E2Ld5YPHXve1/lVkieoPeqzm9V8hlvZlkgTQJiMAvKzjhSlUJx8AKPjX+jQZfhgAS1hnuWwOIB1cAA7fMpPJ7rPVWo=
 
+services:
+  - docker
+
 notifications:
   webhooks: https://ledgersmb.org/webhook/travis_ci_notifications
-
-matrix:
-  include:
-    - perl: '5.26'
-      addons:
-        postgresql: '9.6'
-        sauce_connect: true
-        apt:
-          packages:
-            - nginx postgresql-9.6-pgtap
-      env:
-        - POD_TESTING=1
-    - perl: '5.24'
-      addons:
-        postgresql: '9.5'
-        sauce_connect: true
-        apt:
-          packages:
-            - nginx postgresql-9.5-pgtap
-      env:
-        # - TEST_SAUCE=1
-        - DOJO_BUILT=0
-    - perl: '5.22'
-      addons:
-        postgresql: "9.4"
-        apt:
-          packages:
-            - nginx postgresql-9.4-pgtap
-      env:
-        - COVERAGE=1
-    - perl: '5.20'
-      addons:
-        postgresql: "9.4"
-        apt:
-          packages:
-            - nginx postgresql-9.4-pgtap
-      env:
-        - COA_TESTING=1
-    - perl: '5.18'
-      addons:
-        postgresql: "9.3"
-        apt:
-          packages:
-            - nginx postgresql-9.3-pgtap
-      env:
-        - DB_TESTING=1
-    - perl: '5.16'
-      addons:
-        postgresql: "9.2"
-        apt:
-          packages:
-            - nginx postgresql-9.2-pgtap
-      env:
-        - DB_TESTING=1
-    - perl: '5.14'
-      addons:
-        postgresql: "9.2"
-        apt:
-          packages:
-            - nginx postgresql-9.2-pgtap
-      env:
-        - DB_TESTING=1
 
 before_cache:
   - mkdir -p $HOME/dojo_archive
@@ -89,13 +29,163 @@ cache:
     - $HOME/travis_phantomjs
     - $HOME/dojo_archive
 
-before_install:
+stages:
+    - setup
+    - perl
+
+#====================================================================
+# Matrix
+#====================================================================
+matrix:
+  include:
+    # --------------- setup ---------------
+    - stage: setup
+      addons:
+        apt:
+          packages:
+            - nginx
+      name: setup
+      env: APP_ENV=LedgerSMB
+
+      before_script: true
+      script: true
+
+    # Stages inherit from the first one bearing the same name, so we need only
+    # to set differences in each
+    # --------------- perl 5.26 ---------------
+    - stage: perl
+      language: perl
+      perl: '5.26'
+      addons:
+        postgresql: '9.6'
+        sauce_connect: true
+        apt:
+          packages:
+            - postgresql-9.6-pgtap
+      env:
+        - APP_ENV=LedgerSMB
+        - POD_TESTING=1
+        
+      before_script:
+        - # Travis helpers
+        - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
+        - source ~/travis-perl-helpers/init
+        - build-perl 2>/dev/null
+        - perl -V
+        - export PERL_LOCAL_LIB_ROOT="$HOME/locallib${PERL_LOCAL_LIB_ROOT+:}$PERL_LOCAL_LIB_ROOT"
+        - export PERL5LIB="$HOME/locallib/lib/perl5${PERL5LIB+:}$PERL5LIB"
+        - export PATH="$HOME/locallib/bin:$PATH"
+        - export PERL_MM_OPT="INSTALL_BASE=$HOME/locallib"
+        - export PERL_MB_OPT="--install_base=$HOME/locallib"
+        - cpanm --quiet --notest --with-develop --with-feature=edi --with-feature=xls --installdeps .
+        - cpan-install --coverage
+        - if [ "${POD_TESTING}" != "" ]; then
+             cpanm --quiet --notest Test::Pod ;
+             cpanm --quiet --notest Test::Pod::Coverage ;
+          fi
+        - coverage-setup 2>/dev/null
+        - export DEVEL_COVER_OPTIONS=+ignore,"\.lttc\$"
+        - PERL5OPT="$PERL5OPT $HARNESS_PERL_SWITCHES" plackup -Ilib --port 5001 --server HTTP::Server::PSGI tools/starman.psgi --access_log /tmp/plackup-access.log 2> /tmp/plackup-error.log &
+        - utils/test/Is_LSMB_running.sh --early # fail early if starman is not running (can be skipped based on reponame or owner by setting an array in the script)
+        - if [ "${DOJO_BUILT}" != "" ]; then sed -i -e "s#dojo_built *= *(\d)+#dojo_built={dojo_built}#" ledgersmb.conf ; fi
+        # display the available resources
+        - utils/diagnostics/t/01-system-resources.t
+
+      script:
+        - RELEASE_TESTING=1
+           PGUSER=postgres PGPASSWORD=test
+           LSMB_TEST_DB=1 LSMB_NEW_DB=lsmbinstalltest
+           LSMB_BASE_URL="http://127.0.0.1:5000"
+           HARNESS_RULESFILE="t/testrules.yml"
+          prove -j9 -r
+                --pgtap-option dbname=lsmbinstalltest
+                --pgtap-option username=postgres
+                --feature-option tags=~@wip
+                t/ xt/
+    # --------------- perl 5.24 ---------------
+    - stage: perl
+      language: perl
+      perl: '5.24'
+      addons:
+        postgresql: '9.5'
+        sauce_connect: true
+        apt:
+          packages:
+            - postgresql-9.5-pgtap
+      env:
+        - APP_ENV=LedgerSMB
+        # - TEST_SAUCE=1
+        - DOJO_BUILT=0
+    # --------------- perl 5.22 ---------------
+    - stage: perl
+      language: perl
+      perl: '5.22'
+      addons:
+        postgresql: "9.4"
+        apt:
+          packages:
+            - postgresql-9.4-pgtap
+      env:
+        - APP_ENV=LedgerSMB
+        - COVERAGE=1
+    # --------------- perl 5.20 ---------------
+    - stage: perl
+      language: perl
+      perl: '5.20'
+      addons:
+        postgresql: "9.4"
+        apt:
+          packages:
+            - postgresql-9.4-pgtap
+      env:
+        - APP_ENV=LedgerSMB
+        - COA_TESTING=1
+    # --------------- perl 5.18 ---------------
+    - stage: perl
+      language: perl
+      perl: '5.18'
+      addons:
+        postgresql: "9.3"
+        apt:
+          packages:
+            - postgresql-9.3-pgtap
+      env:
+        - APP_ENV=LedgerSMB
+        - DB_TESTING=1
+    # --------------- perl 5.16 ---------------
+    - stage: perl
+      language: perl
+      perl: '5.16'
+      addons:
+        postgresql: "9.2"
+        apt:
+          packages:
+            - postgresql-9.2-pgtap
+      env:
+        - APP_ENV=LedgerSMB
+        - DB_TESTING=1
+    # --------------- perl 5.14 ---------------
+    - stage: perl
+      language: perl
+      perl: '5.14'
+      addons:
+        postgresql: "9.2"
+        apt:
+          packages:
+            - postgresql-9.2-pgtap
+      env:
+        - APP_ENV=LedgerSMB
+        - DB_TESTING=1
+
+#====================================================================
+install:
   # list all the running services before we start. Perhaps we can stop some of them to save resources.
   - sudo service --status-all
   # display the available resources
   - utils/diagnostics/t/01-system-resources.t
   - source /opt/jdk_switcher/jdk_switcher.sh
   - jdk_switcher use oraclejdk8
+  # PhantomJS
   - phantomjs --version
   - export PATH=$HOME/travis_phantomjs/phantomjs-2.1.1-linux-x86_64/bin:$PATH
   - phantomjs --version
@@ -108,56 +198,28 @@ before_install:
       hash -r ;
       phantomjs --version ;
     fi
-  - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
-  - source ~/travis-perl-helpers/init
-  - build-perl 2>/dev/null
-  - perl -V
-  - export PERL_LOCAL_LIB_ROOT="$HOME/locallib${PERL_LOCAL_LIB_ROOT+:}$PERL_LOCAL_LIB_ROOT"
-  - export PERL5LIB="$HOME/locallib/lib/perl5${PERL5LIB+:}$PERL5LIB"
-  - export PATH="$HOME/locallib/bin:$PATH"
-  - export PERL_MM_OPT="INSTALL_BASE=$HOME/locallib"
-  - export PERL_MB_OPT="--install_base=$HOME/locallib"
+  - ((phantomjs --webdriver=4422 2>/dev/null >/dev/null &) && echo "PhantomJS started succesfully") || (echo "Failed to start PhantomJS!" ; exit 1)
+  # Validator
+  - docker pull heitorganzeli/docker-w3c-html5-validator
+  # npm
   - npm install uglify-js@">=2.0 <3.0"
-
-install:
-  - cpanm --quiet --notest --with-develop --with-feature=edi --with-feature=xls --installdeps .
-  - cpan-install --coverage
-  - if [ "${POD_TESTING}" != "" ]; then
-       cpanm --quiet --notest Test::Pod ;
-       cpanm --quiet --notest Test::Pod::Coverage ;
-    fi
-
-before_script:
+  # Pull LedgerSMB
   - make dist DIST_VER=travis DIST_DIR=${HOME}/built-dist/tar-output
   - cd ${HOME}/built-dist
   - tar xzf tar-output/ledgersmb-travis.tar.gz
   - cd ledgersmb
   - cp conf/ledgersmb.conf.default ledgersmb.conf
   - cp t/.proverc ./
-  - coverage-setup 2>/dev/null
-  - export DEVEL_COVER_OPTIONS=+ignore,"\.lttc\$"
+  # Set NGinx
   - sed -e "s#{ROOT}#$PWD#" conf/nginx-travis.conf >/tmp/nginx.conf
-  - ((phantomjs --webdriver=4422 2>/dev/null >/dev/null &) && echo "PhantomJS started succesfully") || (echo "Failed to start PhantomJS!" ; exit 1)
-  - #PERL5OPT="$PERL5OPT $HARNESS_PERL_SWITCHES" plackup -Ilib --port 5001 --server HTTP::Server::PSGI tools/starman.psgi >/dev/null 2>/dev/null &
-  - PERL5OPT="$PERL5OPT $HARNESS_PERL_SWITCHES" plackup -Ilib --port 5001 --server HTTP::Server::PSGI tools/starman.psgi --access_log /tmp/plackup-access.log 2> /tmp/plackup-error.log &
-  - #sleep 5  # give starman a chance to start # we now have better handling for this in Is_LSMB_running.sh
-  - utils/test/Is_LSMB_running.sh --early # fail early if starman is not running (can be skipped based on reponame or owner by setting an array in the script)
   - nginx -c /tmp/nginx.conf
-  - if [ "${DOJO_BUILT}" != "" ]; then sed -i -e "s#dojo_built *= *(\d)+#dojo_built={dojo_built}#" ledgersmb.conf ; fi
-  # display the available resources
-  - utils/diagnostics/t/01-system-resources.t
-
-script:
-  - RELEASE_TESTING=1
-     PGUSER=postgres PGPASSWORD=test
-     LSMB_TEST_DB=1 LSMB_NEW_DB=lsmbinstalltest
-     LSMB_BASE_URL="http://127.0.0.1:5000"
-     HARNESS_RULESFILE="t/testrules.yml"
-    prove -j9 -r
-          --pgtap-option dbname=lsmbinstalltest
-          --pgtap-option username=postgres
-          --feature-option tags=~@wip
-          t/ xt/
+  # Start the W3C Validator
+  - export VALIDATOR_URI="http://localhost:45000/w3c-validator/check"
+  - docker run
+            --detach=true
+            --publish=127.0.0.1:45000:80
+            --name=w3c_validator
+            heitorganzeli/docker-w3c-html5-validator
 
 after_success:
   - >
@@ -177,6 +239,7 @@ after_success:
   - utils/test/github-badge-cache-buster.sh
 
 after_failure:
+  - docker logs  w3c_validator
   # display the available resources
   - utils/diagnostics/t/01-system-resources.t
   # display the dmesg log. may give some hints about system related failures. eg: has the OOM killer triggered
