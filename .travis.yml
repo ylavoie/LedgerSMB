@@ -2,7 +2,7 @@
 # https://github.com/travis-ci/travis-ci/issues/3251#issuecomment-219675294
 sudo: required
 dist: trusty
-language: perl
+#language: perl
 env:
   global:
     # ledgersmb org uses Chris Travers' keys
@@ -56,6 +56,7 @@ matrix:
     # to set differences in each
     # --------------- perl 5.26 ---------------
     - stage: perl
+      language: perl
       perl: '5.26'
       addons:
         postgresql: '9.6'
@@ -64,7 +65,6 @@ matrix:
           packages:
             - nginx postgresql-9.6-pgtap
       env:
-        - APP_ENV=LedgerSMB
         - POD_TESTING=1
 
       before_script:
@@ -111,9 +111,9 @@ matrix:
           packages:
             - nginx postgresql-9.5-pgtap
       env:
-        - APP_ENV=LedgerSMB
         # - TEST_SAUCE=1
         - DOJO_BUILT=0
+
     # --------------- perl 5.22 ---------------
     - stage: perl
       perl: '5.22'
@@ -123,8 +123,8 @@ matrix:
           packages:
             - nginx postgresql-9.4-pgtap
       env:
-        - APP_ENV=LedgerSMB
         - COVERAGE=1
+
     # --------------- perl 5.20 ---------------
     - stage: perl
       perl: '5.20'
@@ -134,8 +134,8 @@ matrix:
           packages:
             - nginx postgresql-9.4-pgtap
       env:
-        - APP_ENV=LedgerSMB
         - COA_TESTING=1
+
     # --------------- perl 5.18 ---------------
     - stage: perl
       perl: '5.18'
@@ -145,8 +145,8 @@ matrix:
           packages:
             - nginx postgresql-9.3-pgtap
       env:
-        - APP_ENV=LedgerSMB
         - DB_TESTING=1
+
     # --------------- perl 5.16 ---------------
     - stage: perl
       perl: '5.16'
@@ -156,8 +156,8 @@ matrix:
           packages:
             - nginx postgresql-9.2-pgtap
       env:
-        - APP_ENV=LedgerSMB
         - DB_TESTING=1
+
     # --------------- perl 5.14 ---------------
     - stage: perl
       perl: '5.14'
@@ -167,7 +167,6 @@ matrix:
           packages:
             - nginx postgresql-9.2-pgtap
       env:
-        - APP_ENV=LedgerSMB
         - DB_TESTING=1
 
 #====================================================================
