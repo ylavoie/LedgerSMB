@@ -2,7 +2,6 @@
 # https://github.com/travis-ci/travis-ci/issues/3251#issuecomment-219675294
 sudo: required
 dist: trusty
-language: perl
 env:
   global:
     # ledgersmb org uses Chris Travers' keys
@@ -20,7 +19,8 @@ notifications:
 
 matrix:
   include:
-    - perl: '5.26'
+    - language: perl
+      perl: '5.26'
       addons:
         postgresql: '9.6'
         sauce_connect: true
@@ -29,7 +29,8 @@ matrix:
             - nginx postgresql-9.6-pgtap
       env:
         - POD_TESTING=1
-    - perl: '5.24'
+    - language: perl
+      perl: '5.24'
       addons:
         postgresql: '9.5'
         sauce_connect: true
@@ -39,7 +40,8 @@ matrix:
       env:
         # - TEST_SAUCE=1
         - DOJO_BUILT=0
-    - perl: '5.22'
+    - language: perl
+      perl: '5.22'
       addons:
         postgresql: "9.4"
         apt:
@@ -47,7 +49,8 @@ matrix:
             - nginx postgresql-9.4-pgtap
       env:
         - COVERAGE=1
-    - perl: '5.20'
+    - language: perl
+      perl: '5.20'
       addons:
         postgresql: "9.4"
         apt:
@@ -55,7 +58,8 @@ matrix:
             - nginx postgresql-9.4-pgtap
       env:
         - COA_TESTING=1
-    - perl: '5.18'
+    - language: perl
+      perl: '5.18'
       addons:
         postgresql: "9.3"
         apt:
@@ -63,7 +67,8 @@ matrix:
             - nginx postgresql-9.3-pgtap
       env:
         - DB_TESTING=1
-    - perl: '5.16'
+    - language: perl
+      perl: '5.16'
       addons:
         postgresql: "9.2"
         apt:
@@ -71,7 +76,8 @@ matrix:
             - nginx postgresql-9.2-pgtap
       env:
         - DB_TESTING=1
-    - perl: '5.14'
+    - language: perl
+      perl: '5.14'
       addons:
         postgresql: "9.2"
         apt:
@@ -96,6 +102,7 @@ before_install:
   - utils/diagnostics/t/01-system-resources.t
   - source /opt/jdk_switcher/jdk_switcher.sh
   - jdk_switcher use oraclejdk8
+  # PhantomJS
   - phantomjs --version
   - export PATH=$HOME/travis_phantomjs/phantomjs-2.1.1-linux-x86_64/bin:$PATH
   - phantomjs --version
@@ -108,6 +115,10 @@ before_install:
       hash -r ;
       phantomjs --version ;
     fi
+  - ((phantomjs --webdriver=4422 2>/dev/null >/dev/null &) && echo "PhantomJS started succesfully") || (echo "Failed to start PhantomJS!" ; exit 1)
+  # NPM
+  - npm install uglify-js@">=2.0 <3.0"
+  # Perl
   - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
   - source ~/travis-perl-helpers/init
   - build-perl 2>/dev/null
@@ -117,7 +128,6 @@ before_install:
   - export PATH="$HOME/locallib/bin:$PATH"
   - export PERL_MM_OPT="INSTALL_BASE=$HOME/locallib"
   - export PERL_MB_OPT="--install_base=$HOME/locallib"
-  - npm install uglify-js@">=2.0 <3.0"
 
 install:
   - cpanm --quiet --notest --with-develop --with-feature=edi --with-feature=xls --installdeps .
@@ -137,10 +147,7 @@ before_script:
   - coverage-setup 2>/dev/null
   - export DEVEL_COVER_OPTIONS=+ignore,"\.lttc\$"
   - sed -e "s#{ROOT}#$PWD#" conf/nginx-travis.conf >/tmp/nginx.conf
-  - ((phantomjs --webdriver=4422 2>/dev/null >/dev/null &) && echo "PhantomJS started succesfully") || (echo "Failed to start PhantomJS!" ; exit 1)
-  - #PERL5OPT="$PERL5OPT $HARNESS_PERL_SWITCHES" plackup -Ilib --port 5001 --server HTTP::Server::PSGI tools/starman.psgi >/dev/null 2>/dev/null &
   - PERL5OPT="$PERL5OPT $HARNESS_PERL_SWITCHES" plackup -Ilib --port 5001 --server HTTP::Server::PSGI tools/starman.psgi --access_log /tmp/plackup-access.log 2> /tmp/plackup-error.log &
-  - #sleep 5  # give starman a chance to start # we now have better handling for this in Is_LSMB_running.sh
   - utils/test/Is_LSMB_running.sh --early # fail early if starman is not running (can be skipped based on reponame or owner by setting an array in the script)
   - nginx -c /tmp/nginx.conf
   - if [ "${DOJO_BUILT}" != "" ]; then sed -i -e "s#dojo_built *= *(\d)+#dojo_built={dojo_built}#" ledgersmb.conf ; fi
