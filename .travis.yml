@@ -2,6 +2,7 @@
 # https://github.com/travis-ci/travis-ci/issues/3251#issuecomment-219675294
 sudo: required
 dist: trusty
+language: perl
 env:
   global:
     # ledgersmb org uses Chris Travers' keys
@@ -44,8 +45,6 @@ matrix:
         apt:
           packages:
             - nginx
-      name: setup
-      env: APP_ENV=LedgerSMB
 
       before_script: true
       script: true
@@ -54,7 +53,6 @@ matrix:
     # to set differences in each
     # --------------- perl 5.26 ---------------
     - stage: perl
-      language: perl
       perl: '5.26'
       addons:
         postgresql: '9.6'
@@ -63,13 +61,9 @@ matrix:
           packages:
             - postgresql-9.6-pgtap
       env:
-        - APP_ENV=LedgerSMB
         - POD_TESTING=1
-        
+
       before_script:
-        - # Travis helpers
-        - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
-        - source ~/travis-perl-helpers/init
         - build-perl 2>/dev/null
         - perl -V
         - export PERL_LOCAL_LIB_ROOT="$HOME/locallib${PERL_LOCAL_LIB_ROOT+:}$PERL_LOCAL_LIB_ROOT"
@@ -102,9 +96,9 @@ matrix:
                 --pgtap-option username=postgres
                 --feature-option tags=~@wip
                 t/ xt/
+
     # --------------- perl 5.24 ---------------
     - stage: perl
-      language: perl
       perl: '5.24'
       addons:
         postgresql: '9.5'
@@ -113,12 +107,10 @@ matrix:
           packages:
             - postgresql-9.5-pgtap
       env:
-        - APP_ENV=LedgerSMB
         # - TEST_SAUCE=1
         - DOJO_BUILT=0
     # --------------- perl 5.22 ---------------
     - stage: perl
-      language: perl
       perl: '5.22'
       addons:
         postgresql: "9.4"
@@ -126,11 +118,9 @@ matrix:
           packages:
             - postgresql-9.4-pgtap
       env:
-        - APP_ENV=LedgerSMB
         - COVERAGE=1
     # --------------- perl 5.20 ---------------
     - stage: perl
-      language: perl
       perl: '5.20'
       addons:
         postgresql: "9.4"
@@ -138,11 +128,9 @@ matrix:
           packages:
             - postgresql-9.4-pgtap
       env:
-        - APP_ENV=LedgerSMB
         - COA_TESTING=1
     # --------------- perl 5.18 ---------------
     - stage: perl
-      language: perl
       perl: '5.18'
       addons:
         postgresql: "9.3"
@@ -150,11 +138,9 @@ matrix:
           packages:
             - postgresql-9.3-pgtap
       env:
-        - APP_ENV=LedgerSMB
         - DB_TESTING=1
     # --------------- perl 5.16 ---------------
     - stage: perl
-      language: perl
       perl: '5.16'
       addons:
         postgresql: "9.2"
@@ -162,11 +148,9 @@ matrix:
           packages:
             - postgresql-9.2-pgtap
       env:
-        - APP_ENV=LedgerSMB
         - DB_TESTING=1
     # --------------- perl 5.14 ---------------
     - stage: perl
-      language: perl
       perl: '5.14'
       addons:
         postgresql: "9.2"
@@ -174,7 +158,6 @@ matrix:
           packages:
             - postgresql-9.2-pgtap
       env:
-        - APP_ENV=LedgerSMB
         - DB_TESTING=1
 
 #====================================================================
@@ -201,8 +184,17 @@ install:
   - ((phantomjs --webdriver=4422 2>/dev/null >/dev/null &) && echo "PhantomJS started succesfully") || (echo "Failed to start PhantomJS!" ; exit 1)
   # Validator
   - docker pull heitorganzeli/docker-w3c-html5-validator
+  - export VALIDATOR_URI="http://localhost:45000/w3c-validator/check"
+  - docker run
+            --detach=true
+            --publish=127.0.0.1:45000:80
+            --name=w3c_validator
+            heitorganzeli/docker-w3c-html5-validator
   # npm
   - npm install uglify-js@">=2.0 <3.0"
+  # Travis helpers
+  - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
+  - source ~/travis-perl-helpers/init
   # Pull LedgerSMB
   - make dist DIST_VER=travis DIST_DIR=${HOME}/built-dist/tar-output
   - cd ${HOME}/built-dist
@@ -213,13 +205,6 @@ install:
   # Set NGinx
   - sed -e "s#{ROOT}#$PWD#" conf/nginx-travis.conf >/tmp/nginx.conf
   - nginx -c /tmp/nginx.conf
-  # Start the W3C Validator
-  - export VALIDATOR_URI="http://localhost:45000/w3c-validator/check"
-  - docker run
-            --detach=true
-            --publish=127.0.0.1:45000:80
-            --name=w3c_validator
-            heitorganzeli/docker-w3c-html5-validator
 
 after_success:
   - >
