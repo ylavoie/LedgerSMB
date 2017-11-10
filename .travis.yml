@@ -46,6 +46,9 @@ matrix:
           packages:
             - nginx
 
+      env:
+        - APP_ENV=LedgerSMB
+
       before_script: true
       script: true
 
@@ -59,8 +62,9 @@ matrix:
         sauce_connect: true
         apt:
           packages:
-            - postgresql-9.6-pgtap
+            - nginx postgresql-9.6-pgtap
       env:
+        - APP_ENV=LedgerSMB
         - POD_TESTING=1
 
       before_script:
@@ -105,8 +109,9 @@ matrix:
         sauce_connect: true
         apt:
           packages:
-            - postgresql-9.5-pgtap
+            - nginx postgresql-9.5-pgtap
       env:
+        - APP_ENV=LedgerSMB
         # - TEST_SAUCE=1
         - DOJO_BUILT=0
     # --------------- perl 5.22 ---------------
@@ -116,8 +121,9 @@ matrix:
         postgresql: "9.4"
         apt:
           packages:
-            - postgresql-9.4-pgtap
+            - nginx postgresql-9.4-pgtap
       env:
+        - APP_ENV=LedgerSMB
         - COVERAGE=1
     # --------------- perl 5.20 ---------------
     - stage: perl
@@ -126,8 +132,9 @@ matrix:
         postgresql: "9.4"
         apt:
           packages:
-            - postgresql-9.4-pgtap
+            - nginx postgresql-9.4-pgtap
       env:
+        - APP_ENV=LedgerSMB
         - COA_TESTING=1
     # --------------- perl 5.18 ---------------
     - stage: perl
@@ -136,8 +143,9 @@ matrix:
         postgresql: "9.3"
         apt:
           packages:
-            - postgresql-9.3-pgtap
+            - nginx postgresql-9.3-pgtap
       env:
+        - APP_ENV=LedgerSMB
         - DB_TESTING=1
     # --------------- perl 5.16 ---------------
     - stage: perl
@@ -146,8 +154,9 @@ matrix:
         postgresql: "9.2"
         apt:
           packages:
-            - postgresql-9.2-pgtap
+            - nginx postgresql-9.2-pgtap
       env:
+        - APP_ENV=LedgerSMB
         - DB_TESTING=1
     # --------------- perl 5.14 ---------------
     - stage: perl
@@ -156,8 +165,9 @@ matrix:
         postgresql: "9.2"
         apt:
           packages:
-            - postgresql-9.2-pgtap
+            - nginx postgresql-9.2-pgtap
       env:
+        - APP_ENV=LedgerSMB
         - DB_TESTING=1
 
 #====================================================================
