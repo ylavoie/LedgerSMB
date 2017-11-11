@@ -54,8 +54,8 @@ matrix:
 
     # Stages inherit from the first one bearing the same name, so we need only
     # to set differences in each
-    # --------------- perl 5.26 ---------------
-    - stage: perl
+    # --------------- test 5.26 ---------------
+    - stage: test
       language: perl
       perl: '5.26'
       addons:
@@ -102,7 +102,7 @@ matrix:
                 t/ xt/
 
     # --------------- perl 5.24 ---------------
-    - stage: perl
+    - stage: test
       language: perl
       perl: '5.24'
       addons:
@@ -116,7 +116,7 @@ matrix:
         - DOJO_BUILT=0
 
     # --------------- perl 5.22 ---------------
-    - stage: perl
+    - stage: test
       language: perl
       perl: '5.22'
       addons:
@@ -128,7 +128,7 @@ matrix:
         - COVERAGE=1
 
     # --------------- perl 5.20 ---------------
-    - stage: perl
+    - stage: test
       language: perl
       perl: '5.20'
       addons:
@@ -140,7 +140,7 @@ matrix:
         - COA_TESTING=1
 
     # --------------- perl 5.18 ---------------
-    - stage: perl
+    - stage: test
       language: perl
       perl: '5.18'
       addons:
@@ -152,7 +152,7 @@ matrix:
         - DB_TESTING=1
 
     # --------------- perl 5.16 ---------------
-    - stage: perl
+    - stage: test
       language: perl
       perl: '5.16'
       addons:
@@ -164,7 +164,7 @@ matrix:
         - DB_TESTING=1
 
     # --------------- perl 5.14 ---------------
-    - stage: perl
+    - stage: test
       language: perl
       perl: '5.14'
       addons:
@@ -176,11 +176,14 @@ matrix:
         - DB_TESTING=1
 
 #====================================================================
-install:
+before_install:
   # list all the running services before we start. Perhaps we can stop some of them to save resources.
   - sudo service --status-all
   # display the available resources
   - utils/diagnostics/t/01-system-resources.t
+
+install:
+  # Set the Java Development Kit 8
   - source /opt/jdk_switcher/jdk_switcher.sh
   - jdk_switcher use oraclejdk8
   # PhantomJS
@@ -198,7 +201,7 @@ install:
     fi
   - ((phantomjs --webdriver=4422 2>/dev/null >/dev/null &) && echo "PhantomJS started succesfully") || (echo "Failed to start PhantomJS!" ; exit 1)
   # Validator
-  - docker pull heitorganzeli/docker-w3c-html5-validator
+  - docker pull heitorganzeli/docker-w3c-html5-validator | cat
   - export VALIDATOR_URI="http://localhost:45000/w3c-validator/check"
   - docker run
             --detach=true
