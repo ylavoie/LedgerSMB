@@ -16,7 +16,13 @@ use Template::Config;
 use Template::Stash;
 use Template::VMethods;
 
+use SGML::Parser::OpenSP;
+my $parser = SGML::Parser::OpenSP->new();
+$parser->handler(bless({}, 'main'));
+
 use WebService::Validator::HTML::W3C;
+
+use Data::Printer;
 
 $Template::Stash::PRIVATE = undef;  # Make sure we can access variables with a leading underscore
 
@@ -52,9 +58,9 @@ sub max ($$) { $_[$_[0] < $_[1]] }
 sub min ($$) { $_[$_[0] > $_[1]] }
 
 sub _reportable_line {
-    my ($p,$e,$line,$lines) = @_;
+    my ($prefix,$p,$msg,$line,$lines) = @_;
     $line //= 0;
-    my @context = $p . ' at ' . $line . ' - ' .$e->msg;
+    my @context = $prefix . ':' . $p . ' at ' . $line . ' - ' .$msg;
     if ( $line ) {
         push @context, '# in {{ ';
         for (my $i = max(1,$line-2); $i <= min($line+2,scalar(@$lines)); $i++) {
@@ -105,6 +111,10 @@ sub _hash_included {
     return 1;
 }
 
+my @reportable_errors;
+my @reportable_warnings;
+my @lines;
+
 sub content_test {
     my ($filename) = @_;
     my $has_body = 0;
@@ -115,6 +125,10 @@ sub content_test {
 
     my (@tab_lines, @trailing_space_lines);
     my $text = '';
+
+    @reportable_errors = ();
+    @reportable_warnings = ();
+    @lines = ();
 
     open my $fh, "<$filename";
     while (<$fh>) {
@@ -128,6 +142,10 @@ sub content_test {
         $text .= $_;
     }
     close $fh;
+    $parser->{ui_header_used} = $ui_header_used;
+    $parser->{is_snippet} = $is_snippet;
+    $parser->{has_doctype} = $has_doctype;
+    $parser->{has_body} = $has_body;
 
     #Strip comments, keep lines for error reporting
     $text = _strip_pattern($text,qr/(.*)(\<!--.+-->)(.*)/s);
@@ -135,11 +153,9 @@ sub content_test {
           . $text)
           if $is_snippet;
 
-    my @reportable_errors;
     push @reportable_errors,
            "Line(s) with tabs: " . (join ', ', @tab_lines)
         if @tab_lines;
-    my @reportable_warnings;
     push @reportable_errors,
            "Line with trailing space(s): " . (join ', ', @trailing_space_lines)
         if @trailing_space_lines;
@@ -261,7 +277,7 @@ sub content_test {
                 );
 
         if ( $v->validate_markup( $tt_text )) {
-            my @lines = split '\n', $tt_text;
+            @lines = split '\n', $tt_text;
             unshift @lines, '';
 
             if ( $v->errorcount ) {
@@ -354,7 +370,7 @@ sub content_test {
                     next if $error->msg =~ /there is no attribute "DATA-[A-Z\-]+"/;
                     next if $error->msg =~ /Bad value (button|combobox|listbox|option|presentation|slider|spinbutton) for attribute role on element (div|input|table|tbody|td|tr)/;
 
-                    push @reportable_errors, _reportable_line('Error',$error,$error->line,\@lines);
+                    push @reportable_errors, _reportable_line('W3C','Error',$error->msg,$error->line,\@lines);
                 }
             }
             if ( $v->warningcount ) {
@@ -364,13 +380,14 @@ sub content_test {
                                          } @{$v->warnings}
                                     )
                 {
-                    push @reportable_warnings, _reportable_line('Warning',$warning,$warning->line,\@lines);
+                    push @reportable_warnings, _reportable_line('W3C','Warning',$warning->msg,$warning->line,\@lines);
                 }
             }
         } else {
             fail ('Failed to validate: ' . $v->validator_error);
         }
     }
+    $parser->parse_string($tt_text);
     if ( scalar @reportable_warnings ) {
         TODO: {
             local $TODO = "Warnings";
@@ -393,4 +410,93 @@ sub content_test {
 
 subtest $_ => \&content_test, $_ for sort @on_disk;
 
+sub error
+{
+    my $self = shift;
+    my $erro = shift;
+    my $mess = $parser->split_message($erro);
+    my $Text = $mess->{primary_message}->{Text};
+    my $LineNumber = $mess->{primary_message}->{LineNumber};
+
+    return if ($Text =~ /no internal or external document type declaration subset/
+             ||$Text =~ /element "HTML" undefined/)
+         && ( $parser->{is_snippet} && !$parser->{ui_header_used}
+            || $parser->{has_body} && !($parser->{has_doctype} || $parser->{ui_header_used}));
+
+    push @reportable_errors, _reportable_line('OpenSC','Error',$Text,$LineNumber,\@lines)
+        if ( $mess->{primary_message}->{Severity} eq 'E' );
+
+    push @reportable_warnings, _reportable_line('OpenSC','Warning',$Text,$LineNumber,\@lines)
+        if ( $mess->{primary_message}->{Severity} eq 'W' );
+}
+
 done_testing;
+
+# The 2 method generate different sets of errors.
+#   OpenSC:"ALIGN" is not a member of a group specified for any attribute
+#   OpenSC:"NOSHADE" is not a member of a group specified for any attribute
+#   OpenSC:"NOWRAP" is not a member of a group specified for any attribute
+#   OpenSC:"REQUIRED" is not a member of a group specified for any attribute
+#   OpenSC:"XA0" is not a function name
+#   OpenSC:an attribute specification must start with a name or name token
+#   OpenSC:an attribute value must be a literal unless it contains only name characters
+#   OpenSC:an attribute value specification must start with a literal or a name character
+#   OpenSC:end tag for element "HTML" which is not open
+#   OpenSC:end tag for element "SCRIPT" which is not open
+#   OpenSC:end tag for element "TABLE" which is not open
+#   OpenSC:end tag for element "TH" which is not open
+#   OpenSC:end tag for element "TR" which is not open
+#   OpenSC:general entity "amp" not defined and no default entity
+#   OpenSC:general entity "callback" not defined and no default entity
+#   OpenSC:general entity "country" not defined and no default entity
+#   OpenSC:general entity "credit" not defined and no default entity
+#   OpenSC:general entity "employeenumber" not defined and no default entity
+#   OpenSC:general entity "entity" not defined and no default entity
+#   OpenSC:general entity "file" not defined and no default entity
+#   OpenSC:general entity "first" not defined and no default entity
+#   OpenSC:general entity "format" not defined and no default entity
+#   OpenSC:general entity "gt" not defined and no default entity
+#   OpenSC:general entity "id" not defined and no default entity
+#   OpenSC:general entity "last" not defined and no default entity
+#   OpenSC:general entity "lt" not defined and no default entity
+#   OpenSC:general entity "nbsp" not defined and no default entity
+#   OpenSC:general entity "order" not defined and no default entity
+#   OpenSC:general entity "quot" not defined and no default entity
+#   OpenSC:general entity "ref" not defined and no default entity
+#   OpenSC:general entity "user" not defined and no default entity
+#   OpenSC:no document element
+#   OpenSC:no document type declaration; will parse without validation
+#   OpenSC:no internal or external document type declaration subset; will parse without validation
+#   OpenSC:prolog can't be omitted unless CONCUR NO and LINK EXPLICIT NO and either IMPLYDEF ELEMENT YES or IMPLYDEF DOCTYPE YES
+
+#   W3C:"REQUIRED" is not a member of a group specified for any attribute
+#   W3C:= in an unquoted attribute value. Probable causes: Attributes running together or a URL query string in an unquoted attribute value.
+#   W3C:Attribute cols not allowed on element div at this point.
+#   W3C:Attribute height not allowed on element tr at this point.
+#   W3C:Attribute name not allowed on element div at this point.
+#   W3C:Attribute overflow not allowed on element div at this point.
+#   W3C:Attribute value missing.
+#   W3C:Bad value _download for attribute target on element a: Reserved keyword download used.
+#   W3C:Bad value _new for attribute target on element a: Reserved keyword new used.
+#   W3C:Duplicate ID .
+#   W3C:Duplicate ID buttonrow.
+#   W3C:Duplicate ID disclaimer.
+#   W3C:Element form not allowed as child of element tr in this context. (Suppressing further errors from this subtree.)
+#   W3C:End tag for  body seen, but there were unclosed elements.
+#   W3C:Start tag body seen but an element of the same type was already open.
+#   W3C:Start tag for table seen but the previous table is still open.
+#   W3C:Start tag form seen in table.
+#   W3C:Stray end tag form.
+#   W3C:Stray end tag table.
+#   W3C:Stray end tag td.
+#   W3C:Stray end tag tr.
+#   W3C:Stray start tag td.
+#   W3C:Stray start tag tr.
+#   W3C:The for attribute of the label element must refer to a non-hidden form control.
+#   W3C:Unclosed element div.
+#   W3C:Unclosed elements on stack.
+#   W3C:an attribute value specification must start with a literal or a name character
+#   W3C:end tag for element "SCRIPT" which is not open
+#   W3C:general entity "order_by" not defined and no default entity
+#   W3C:reference to entity "order_by" for which no system identifier could be generated
+#   W3C:td start tag in table body.
