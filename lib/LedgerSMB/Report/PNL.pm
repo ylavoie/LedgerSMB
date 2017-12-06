@@ -142,6 +142,7 @@ sub run_report {
         sub { my ($line) = @_;
               return { account_number => $line->{gifi},
                        account_description => $line->{gifi_description},
+                       account_category => $line->{account_category},
               };
        } :
        sub { my ($line) = @_; return $line; };

@@ -140,6 +140,7 @@ sub run_report {
         sub { my ($line) = @_;
               return { account_number => $line->{gifi_accno},
                        account_desc => $line->{gifi_description},
+                       account_category => $line->{account_category},
               };
         } : ($self->legacy_hierarchy) ?
         sub { my ($line) = @_;
