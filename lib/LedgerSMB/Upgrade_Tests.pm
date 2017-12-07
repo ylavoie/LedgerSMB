@@ -1084,7 +1084,7 @@ push @tests, __PACKAGE__->new(
           name => 'invalid_cleared_dates',
   display_cols => ['name', 'id', 'datepaid', 'transdate', 'cleared', 'delay', 'amount'],
  instructions => marktext(
-                   'Suspect or invalid cleared delays have been detected. Please review the dates in the original application'),
+                   'Cleared dates much later than the transaction dates are suspect. Cleared dates before the transaction dates are invalid. Please review the dates in the original application'),
         table => 'ap',
       appname => 'sql-ledger',
   min_version => '2.7',
