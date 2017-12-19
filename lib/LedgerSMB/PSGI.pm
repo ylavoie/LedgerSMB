@@ -19,6 +19,7 @@ use LedgerSMB::App_State;
 use LedgerSMB::Auth;
 use LedgerSMB::PSGI::Util;
 use LedgerSMB::Setting;
+use HTTP::AcceptLanguage;
 use HTTP::Status qw( HTTP_FOUND );
 
 use CGI::Emulate::PSGI;
@@ -97,6 +98,8 @@ sub psgi_app {
         $env->{'lsmb.company'},
         $env->{'lsmb.session_id'}, $env->{'lsmb.create_session_cb'},
         $env->{'lsmb.invalidate_session_cb'});
+    @{ $request->{languages} } = HTTP::AcceptLanguage->new($env->{HTTP_ACCEPT_LANGUAGE})->languages;
+    my $locale = $request->{_locale};
 
     $request->{action} = $env->{'lsmb.action_name'};
     my ($status, $headers, $body);
