@@ -184,6 +184,33 @@ Scenario: Login procedure with ampersand
   Then I should see my setup.pl credentials
 
 
+  Scenario: Create a company *with* CoA
+   Given a nonexistent company named "setup-test"
+     And a nonexistent user named "the-user"
+    When I navigate to the setup login page
+     And I log into the company using the super-user credentials
+    Then I should see the company creation page
+    When I confirm database creation with these parameters:
+        | parameter name    | value       |
+        | Country code      | de          |
+        | Chart of accounts | General.sql |
+        | Templates         | demo        |
+    Then I should see the user creation page
+    When I create a user with these values:
+        | label              | value            |
+        | Username           | the-user         |
+        | Password           | abcd3fg          |
+        | Salutation         | Mr.              |
+        | First Name         | A                |
+        | Last name          | Dmin             |
+        | Employee Number    | 00000001         |
+        | Country            | Germany          |
+        | Date of Birth      | 22.03.2012       |
+        | Tax ID/SSN         | 00000002         |
+        | Assign Permissions | Full Permissions |
+    Then I should see the setup confirmation page
+
+
 #Scenario: Upgrade a comapny from 1.4
 # Given a 1.4 company named "upgrade-test"
 #  When I navigate to the setup login page

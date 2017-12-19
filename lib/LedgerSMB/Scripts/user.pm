@@ -39,11 +39,41 @@ Displays the preferences screen.  No inputs needed.
 
 =cut
 
+use Data::Dumper;
+$Data::Dumper::Indent = 2;
+$Data::Dumper::Maxdepth = 2;
+$Data::Dumper::Sortkeys = 1;
+use Data::Printer caller_info => 1, colored => 1, separator => ', ',
+        color => {
+        array       => 'bright_white',  # array index numbers
+        number      => 'bright_blue',   # numbers
+        string      => 'bright_yellow', # strings
+        class       => 'bright_green',  # class names
+        method      => 'bright_green',  # method names
+        undef       => 'bright_red',    # the 'undef' value
+        hash        => 'magenta',       # hash keys
+        regex       => 'yellow',        # regular expressions
+        code        => 'green',         # code references
+        glob        => 'bright_cyan',   # globs (usually file handles)
+        vstring     => 'bright_blue',   # version strings (v5.16.0, etc)
+        repeated    => 'white on_red',  # references to seen values
+        caller_info => 'bright_cyan on_blue',   # details on what's being printed
+        weak        => 'cyan',          # weak references
+        tainted     => 'red',           # tainted content
+        escaped     => 'bright_red',    # escaped characters (\t, \n, etc)
+
+        # potential new Perl datatypes, unknown to Data::Printer
+        unknown     => 'bright_yellow on_blue',
+     };
+
 sub preference_screen {
     my ($request, $user) = @_;
+    warn np $user;
     if (! defined $user) {
         $user = LedgerSMB::DBObject::User->new({base => $request});
+    warn np $user;
         $user->get($user->{_user}->{id});
+    warn np $user;
     }
     $user->get_option_data;
 
@@ -80,6 +110,7 @@ sub save_preferences {
     if ($user->{confirm_password}){
         $user->change_my_password;
     }
+    warn np $user;
     $user = $user->save_preferences;
     return preference_screen($request, $user);
 }
@@ -93,6 +124,7 @@ preferences screen
 
 sub change_password {
     my ($request) = @_;
+    warn np $request->{dbh};
     my $user = LedgerSMB::DBObject::User->new({base => $request});
     if ($user->{confirm_password}){
         $user->change_my_password;

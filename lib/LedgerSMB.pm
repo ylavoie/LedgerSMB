@@ -185,7 +185,7 @@ my $json = JSON::MaybeXS->new( pretty => 1,
 
 sub new {
     my ($class, $cgi_args, $script_name, $query_string,
-        $uploads, $cookies, $auth) = @_;
+        $uploads, $cookies, $auth, $locale) = @_;
     my $self = {};
     bless $self, $class;
 
@@ -207,7 +207,7 @@ sub new {
     $self->{script} = $script_name;
 
     $self->_process_args($cgi_args);
-    $self->_set_default_locale();
+    $self->_set_default_locale($locale);
     $self->_process_cookies();
 
     return $self;
@@ -323,9 +323,9 @@ sub get_user_info {
 }
 
 sub _set_default_locale {
-    my ($self) = @_;
+    my ($self,$desired) = @_;
 
-    my $lang = $LedgerSMB::Sysconfig::language;
+    my $lang = $desired // $LedgerSMB::Sysconfig::language;
     $self->{_locale}=LedgerSMB::Locale->get_handle($lang);
     $self->error( __FILE__ . ':' . __LINE__
                   . ": Locale ($lang) not loaded: $!\n" )
