@@ -30,11 +30,17 @@ BEGIN;
 CREATE OR REPLACE FUNCTION reconciliation__submit_set(
         in_report_id int, in_line_ids int[]) RETURNS bool AS
 $$
+DECLARE
+        result NUMERIC;
 BEGIN
-        UPDATE cr_report set submitted = true where id = in_report_id;
-        PERFORM reconciliation__save_set(in_report_id, in_line_ids);
-
-        RETURN FOUND;
+        result = reconciliation__check_balanced(in_report_id);
+        IF result = 0 THEN
+            UPDATE cr_report set submitted = true where id = in_report_id;
+            PERFORM reconciliation__save_set(in_report_id, in_line_ids);
+            RETURN FOUND;
+        ELSE
+            RAISE EXCEPTION 'Unbalanced report by %', result::NUMERIC(4,2);
+        END IF;
 END;
 $$ LANGUAGE PLPGSQL;
 
@@ -43,6 +49,22 @@ COMMENT ON FUNCTION reconciliation__submit_set(
 $$Submits a reconciliation report for approval.
 in_line_ids is used to specify which report lines are cleared, finalizing the
 report.$$;
+
+CREATE OR REPLACE FUNCTION reconciliation__check_balanced(in_report_id int
+      ) RETURNS NUMERIC AS
+$$
+DECLARE
+        result NUMERIC;
+BEGIN
+      SELECT SUM(crl.our_balance) - cr.their_total INTO result
+        FROM cr_report_line crl
+        JOIN cr_report cr ON cr.id = crl.report_id
+       WHERE cr.id = in_report_id
+    GROUP BY cr.their_total;
+
+      RETURN COALESCE(result,0);
+END;
+$$ LANGUAGE PLPGSQL;
 
 CREATE OR REPLACE FUNCTION reconciliation__check(in_end_date date, in_chart_id int)
 RETURNS SETOF defaults
@@ -93,6 +115,30 @@ $$Sets which lines of the report are cleared.$$;
 CREATE OR REPLACE FUNCTION reconciliation__delete_my_report(in_report_id int)
 RETURNS BOOL AS
 $$
+DECLARE
+    failed BOOL;
+BEGIN
+    SELECT approved INTO failed FROM cr_report
+    WHERE id = in_report_id AND approved;
+    IF FOUND THEN
+        RAISE EXCEPTION 'Cannot delete approved recon report';
+        RETURN FALSE;
+    END IF;
+
+    -- Make sure that transactions present on this report do not have a
+    -- cleared_on date or they won't ever be accessible anymore.
+    SELECT COUNT(*)>0 INTO failed
+    FROM cr_report_line rl
+    JOIN acc_trans ac ON rl.ledger_id = ac.entry_id
+    WHERE report_id = in_report_id
+      AND cleared_on IS NOT NULL;
+
+    IF failed THEN
+        RAISE EXCEPTION 'Transactions already cleared on this report';
+        RETURN FALSE;
+    END IF;
+
+    --TODO: Why can't we cascade DELETE with a TRIGGER to prevent?
     DELETE FROM cr_report_line
      WHERE report_id = in_report_id
            AND report_id IN (SELECT id FROM cr_report
@@ -101,9 +147,10 @@ $$
                                     and approved IS NOT TRUE);
     DELETE FROM cr_report
      WHERE id = in_report_id AND entered_username = SESSION_USER
-           AND submitted IS NOT TRUE AND approved IS NOT TRUE
-    RETURNING TRUE;
-$$ LANGUAGE SQL SECURITY DEFINER;
+           AND submitted IS NOT TRUE AND approved IS NOT TRUE;
+    RETURN FOUND;
+END;
+$$ LANGUAGE PLPGSQL SECURITY DEFINER;
 
 -- Granting execute permission to public because everyone has an ability to
 -- delete their own reconciliation reports provided they have not been
@@ -166,20 +213,28 @@ disable the block_change_when_approved trigger on cr_report.$$;
 DROP FUNCTION IF EXISTS reconciliation__get_cleared_balance(int);
 CREATE OR REPLACE FUNCTION reconciliation__get_cleared_balance(in_chart_id int,
    in_report_date date DEFAULT date_trunc('second', now()))
-RETURNS numeric AS
+RETURNS NUMERIC AS
 $$
-    SELECT sum(ac.amount) * CASE WHEN c.category in('A', 'E') THEN -1 ELSE 1 END
-        FROM account c
-        JOIN acc_trans ac ON (ac.chart_id = c.id)
-    JOIN (      SELECT id FROM ar WHERE approved
-          UNION SELECT id FROM ap WHERE approved
-          UNION SELECT id FROM gl WHERE approved
-          ) g ON g.id = ac.trans_id
-    WHERE c.id = $1 AND cleared
-      AND ac.approved IS true
-      AND ac.transdate <= in_report_date
-    GROUP BY c.id, c.category;
-$$ LANGUAGE sql;
+DECLARE
+        result NUMERIC;
+BEGIN
+    SELECT COALESCE(
+        (SELECT SUM(ac.amount) * CASE WHEN c.category in('A', 'E') THEN -1 ELSE 1 END
+            INTO result
+            FROM account c
+            JOIN acc_trans ac ON (ac.chart_id = c.id)
+        JOIN (      SELECT id FROM ar WHERE approved
+              UNION SELECT id FROM ap WHERE approved
+              UNION SELECT id FROM gl WHERE approved
+              ) g ON g.id = ac.trans_id
+        WHERE c.id = $1 AND cleared
+          AND ac.approved IS true
+          AND ac.transdate <= in_report_date
+        GROUP BY c.id, c.category)
+    ,0);
+    RETURN result;
+END;
+$$ LANGUAGE PLPGSQL;
 
 COMMENT ON FUNCTION reconciliation__get_cleared_balance(in_chart_id int,in_report_date date) IS
 $$ Gets the cleared balance of the account specified by chart_id, as of in_report_date.
