@@ -43,7 +43,7 @@ Log::Log4perl::Layout::PatternLayout::add_global_cspec(
     'Z',
     sub { return $LedgerSMB::Middleware::RequestID::request_id.''; });
 Log::Log4perl::init(\$LedgerSMB::Sysconfig::log4perl_config);
-
+Log::Log4perl->wrapper_register(LedgerSMB::Middleware::Log4perl);
 
 LedgerSMB::PSGI::setup_url_space(
         development => ($ENV{PLACK_ENV} eq 'development'),

@@ -8,7 +8,7 @@ LedgerSMB::Middleware::Log4perl - Sets up Log4perl logging environment
 =head1 SYNOPSIS
 
  builder {
-   enable "+LedgerSMB::Middleware::DisableBackButton";
+   enable "+LedgerSMB::Middleware::Log4perl";
    $app;
  }
 
@@ -51,7 +51,6 @@ sub call {
     $env->{'psgix.logger'} = sub {
         my $args = shift;
         my $level = $args->{level};
-        local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + 1;
         $args->{message} =~ s/\n/\\n/g;
         $logger->$level($args->{message});
     };
@@ -59,7 +58,7 @@ sub call {
         my $msg = shift;
 
         $msg =~ s/\n/\\n/g;
-        $logger->warn($_);
+        $logger->warn($msg);
     };
 
     return $self->app->($env);

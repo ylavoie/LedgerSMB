@@ -59,6 +59,8 @@ sub check_config_option {
 #TODO: Explore https://github.com/elindsey/Devel-hdb
 
 Log::Log4perl::init(\$LedgerSMB::Sysconfig::log4perl_config);
+Log::Log4perl->wrapper_register(LedgerSMB::Middleware::Log4perl);
+#Log::Log4perl->wrapper_register(Smart::Comments);
 
 builder {
 
