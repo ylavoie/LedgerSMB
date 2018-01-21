@@ -103,6 +103,12 @@ BEGIN;
         RETURN NEXT results_eq('test', ARRAY[]::cr_report[], 'No previous report');
         DEALLOCATE test;
 
+        PREPARE test AS SELECT COUNT(*)::INT FROM acc_trans
+                        WHERE cleared
+                        AND entry_id NOT IN (SELECT ledger_id FROM cr_report_line);
+        RETURN NEXT results_eq('test', Array[4], 'Transactions that should be in cr_report');
+        DEALLOCATE test;
+
         PREPARE test AS SELECT reconciliation__new_report_id(test_get_account_id('-11111'), 100, '1000-01-01', false);
         RETURN NEXT results_eq('test', ARRAY[currval('cr_report_id_seq')::int+1], 'Create Recon Report');
         DEALLOCATE test;
@@ -170,12 +176,17 @@ BEGIN;
         RETURN NEXT results_eq('test', ARRAY['1001-01-01']::date[], 'One previous report at 1001-01-01');
         DEALLOCATE test;
 
+        PREPARE test AS SELECT reconciliation__get_cleared_balance(test_get_account_id('-11111'));
+        RETURN NEXT results_eq('test',ARRAY[130.],'Cleared balance post-approval is 130');
+        DEALLOCATE test;
+
         PREPARE test as SELECT count(*)::int
-                          FROM acc_trans
-                          JOIN account a ON (acc_trans.chart_id = a.id)
+                          FROM cr_report_line rl
+                          JOIN acc_trans ac ON rl.ledger_id = ac.entry_id
+                          JOIN account a ON ac.chart_id = a.id
                           WHERE a.accno = '-11111'
-                          AND NOT cleared;
-        RETURN NEXT results_eq('test',ARRAY[2],'1 Transactions closed');
+                          AND ac.cleared;
+        RETURN NEXT results_eq('test',ARRAY[10],'Transactions closed');
         DEALLOCATE test;
     END;
     $$ LANGUAGE plpgsql;
@@ -222,8 +233,15 @@ BEGIN;
         RETURN NEXT results_eq('test',ARRAY[10],'Correct number of report lines');
         DEALLOCATE test;
 
+        PREPARE test AS SELECT reconciliation__get_cleared_balance(test_get_account_id('-11112'));
+        RETURN NEXT results_eq('test',ARRAY[-10.],'Cleared balance pre-approval is -10');
+        DEALLOCATE test;
+
         PREPARE test AS SELECT reconciliation__submit_set(currval('cr_report_id_seq')::int, '{}');
-        RETURN NEXT results_eq('test',ARRAY[true],'1 Report Submitted');
+        RETURN NEXT lives_ok(
+            'test',
+            'We should not get a unique violation for an unbalanced report on submit'
+        );
         DEALLOCATE test;
 
         PREPARE test AS SELECT reconciliation__get_cleared_balance(test_get_account_id('-11112'));
@@ -252,7 +270,7 @@ BEGIN;
         RETURN NEXT results_eq('test', ARRAY[currval('cr_report_id_seq')::int+1],'Create Recon Report');
         DEALLOCATE test;
 
-        PREPARE test AS SELECT reconciliation__pending_transactions(currval('cr_report_id_seq')::int, 110);
+        PREPARE test AS SELECT reconciliation__pending_transactions(currval('cr_report_id_seq')::int, 130);
         RETURN NEXT results_eq('test', ARRAY[currval('cr_report_id_seq')::int],'Pending Transactions Ran');
         DEALLOCATE test;
 
@@ -265,12 +283,15 @@ BEGIN;
         PREPARE test AS SELECT reconciliation__submit_set(currval('cr_report_id_seq')::int, (select as_array(id::int)
                           FROM cr_report_line
                           WHERE report_id = currval('cr_report_id_seq')::int));
-        RETURN NEXT results_eq('test',ARRAY[true],'Report Submitted');
+        RETURN NEXT lives_ok(
+            'test',
+            'We should not get a unique violation for an unbalanced report on submit'
+        );
         DEALLOCATE test;
 
-        PREPARE test AS SELECT their_total::int
+        PREPARE test AS SELECT their_total
                           FROM reconciliation__report_summary(currval('cr_report_id_seq')::int);
-        RETURN NEXT results_eq('test',ARRAY[110],'Their Balance Updated');
+        RETURN NEXT results_eq('test',ARRAY[130.],'Their Balance Updated');
         DEALLOCATE test;
 
         PREPARE test AS SELECT reconciliation__get_cleared_balance(test_get_account_id('-11112'));
