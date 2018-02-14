@@ -26,19 +26,13 @@ notifications:
 # them as naked subroutines.
 
 # Test on PhantomJS, Chrome and Firefox
-# TODO: Higher than Selenium 3.6 requires W3C protocol and a newer Perl Selenium driver
-# after Perl::Selenium is upgraded, remove xvfb and use headless on Chrome and Firefox.
-# For now, those are working:
-# google-chrome: 64.0, chromedriver: 2.32, selenium:3.6
-# firefox:55, geckodriver: 0.18.0, selenium:3.4
-# firefox:47, geckodriver: 0.15.0, selenium:3.3.1
 
 matrix:
   include:
     - perl: '5.26'
       addons:
         postgresql: '9.6'
-        chrome: "62.0"
+        chrome: stable
         sauce_connect: true
         apt:
           packages:
@@ -48,12 +42,10 @@ matrix:
       env:
         - POD_TESTING=1
         - BROWSER=chrome
-        - CHROMEDRIVER=2.32
-        - SELENIUM=3.6.0
     - perl: '5.24'
       addons:
         postgresql: '9.5'
-        firefox: "55.0"
+        firefox: latest
         sauce_connect: true
         apt:
           packages:
@@ -64,8 +56,7 @@ matrix:
         # - TEST_SAUCE=1
         - DOJO_BUILT=0
         - BROWSER=firefox
-        - GECKODRIVER=0.18.0
-        - SELENIUM=3.4.0
+        - MOZ_HEADLESS=1
     - perl: '5.22'
       addons:
         postgresql: "9.4"
@@ -80,7 +71,7 @@ matrix:
     - perl: '5.20'
       addons:
         postgresql: "9.4"
-        firefox: "53.0"
+        firefox: latest
         apt:
           packages:
             - nginx postgresql-9.4-pgtap
@@ -89,12 +80,11 @@ matrix:
       env:
         - COA_TESTING=1
         - BROWSER=firefox
-        - GECKODRIVER=0.16.1
-        - SELENIUM=3.4.0
+        - MOZ_HEADLESS=1
     - perl: '5.18'
       addons:
         postgresql: "9.3"
-        chrome: "58.0"
+        chrome: stable
         apt:
           packages:
             - nginx postgresql-9.3-pgtap
@@ -103,12 +93,10 @@ matrix:
       env:
         - DB_TESTING=1
         - BROWSER=chrome
-        - CHROMEDRIVER=2.29
-        - SELENIUM=3.4.0
     - perl: '5.16'
       addons:
         postgresql: "9.2"
-        firefox: "52.0"
+        firefox: latest
         apt:
           packages:
             - nginx postgresql-9.2-pgtap
@@ -117,8 +105,7 @@ matrix:
       env:
         - DB_TESTING=1
         - BROWSER=firefox
-        - GECKODRIVER=0.15.0
-        - SELENIUM=3.3.1
+        - MOZ_HEADLESS=1
     - perl: '5.14'
       addons:
         postgresql: "9.2"
@@ -145,8 +132,6 @@ before_install:
   - sudo service --status-all
   # display the available resources
   - utils/diagnostics/t/01-system-resources.t
-  - source /opt/jdk_switcher/jdk_switcher.sh
-  - jdk_switcher use oraclejdk8
   - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
   - source ~/travis-perl-helpers/init
   - build-perl 2>/dev/null
@@ -157,27 +142,10 @@ before_install:
   - export PERL_MM_OPT="INSTALL_BASE=$HOME/locallib"
   - export PERL_MB_OPT="--install_base=$HOME/locallib"
   # Browser specifics
-  # TODO: Get the systemwide Selenium WebDriver out of the way to use those below
   - |
     case "${BROWSER}" in
       'chrome')
-          wget -q https://chromedriver.storage.googleapis.com/${CHROMEDRIVER}/chromedriver_linux64.zip ;
-          unzip chromedriver_linux64.zip ;
-          sudo chmod +x chromedriver ;
-          sudo mv chromedriver /usr/bin/ ;
-          rm chromedriver_linux64.zip ;
-          a=( ${SELENIUM//./ } );
-          SELENIUM_DIR="${a[0]}.${a[1]}"
-          wget -q http://selenium-release.storage.googleapis.com/${SELENIUM_DIR}/selenium-server-standalone-${SELENIUM}.jar ;
-        ;;
-      'firefox')
-          wget -q https://github.com/mozilla/geckodriver/releases/download/v${GECKODRIVER}/geckodriver-v${GECKODRIVER}-linux64.tar.gz ;
-          sudo sh -c 'tar -x geckodriver -zf geckodriver-v${GECKODRIVER}-linux64.tar.gz -O > /usr/bin/geckodriver' ;
-          sudo chmod +x /usr/bin/geckodriver ;
-          rm geckodriver-v${GECKODRIVER}-linux64.tar.gz ;
-          a=( ${SELENIUM//./ } );
-          SELENIUM_DIR="${a[0]}.${a[1]}"
-          wget -q http://selenium-release.storage.googleapis.com/${SELENIUM_DIR}/selenium-server-standalone-${SELENIUM}.jar ;
+          google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
         ;;
     esac
 
@@ -196,25 +164,14 @@ before_script:
   - coverage-setup 2>/dev/null
   - export DEVEL_COVER_OPTIONS=+ignore,"\.lttc\$"
   - sed -e "s#{ROOT}#$PWD#" conf/nginx-travis.conf >/tmp/nginx.conf
-
-  - |
-    case "${BROWSER}" in
-      'phantomjs')
-         phantomjs --version ;
-         ((phantomjs --webdriver=4422 2>/dev/null >/dev/null &) && echo "PhantomJS started succesfully") || (echo "Failed to start PhantomJS!" ; exit 1)
-      ;;
-      'chrome' | 'firefox')
-        sh -e /etc/init.d/xvfb start ;
-        java -jar selenium-server-standalone-${SELENIUM}.jar 2>/tmp/selenium.log >/dev/null -port 4422 &
-      ;;
-    esac
-
   - PERL5OPT="$PERL5OPT $HARNESS_PERL_SWITCHES" plackup -Ilib --port 5001 --server HTTP::Server::PSGI tools/starman.psgi --access_log /tmp/plackup-access.log 2> /tmp/plackup-error.log &
   - utils/test/Is_LSMB_running.sh --early # fail early if starman is not running (can be skipped based on reponame or owner by setting an array in the script)
   - nginx -c /tmp/nginx.conf
   - if [ "${DOJO_BUILT}" != "" ]; then sed -i -e "s#dojo_built *= *(\d)+#dojo_built={dojo_built}#" ledgersmb.conf ; fi
   # display the available resources
   - utils/diagnostics/t/01-system-resources.t
+  # Patch Weasel for a test of S::R::D 1.23
+  - sudo cp utils/test/*.pm /home/travis/locallib/lib/perl5/Weasel/Driver/
 
 script:
   - RELEASE_TESTING=1
