@@ -39,10 +39,10 @@ matrix:
             - nginx postgresql-9.6-pgtap
             - texlive-latex-recommended
             - texlive-xetex
+            - chromium-browser chromium-chromedriver
       env:
         - POD_TESTING=1
         - BROWSER=chrome
-        - CHROMEDRIVER=2.35
     - perl: '5.24'
       addons:
         postgresql: '9.5'
@@ -93,10 +93,10 @@ matrix:
             - nginx postgresql-9.3-pgtap
             - texlive-latex-recommended
             - texlive-xetex
+            - chromium-browser chromium-chromedriver
       env:
         - DB_TESTING=1
         - BROWSER=chrome
-        - CHROMEDRIVER=2.35
     - perl: '5.16'
       addons:
         postgresql: "9.2"
@@ -147,28 +147,12 @@ before_install:
   - export PERL_MM_OPT="INSTALL_BASE=$HOME/locallib"
   - export PERL_MB_OPT="--install_base=$HOME/locallib"
   # Browser specifics
-  - |
-    case "${BROWSER}" in
-      'chrome')
-          wget -q https://chromedriver.storage.googleapis.com/${CHROMEDRIVER}/chromedriver_linux64.zip ;
-          unzip chromedriver_linux64.zip ;
-          sudo chmod +x chromedriver ;
-          sudo mv chromedriver /usr/bin/ ;
-          rm chromedriver_linux64.zip ;
-          a=( ${SELENIUM//./ } );
-          SELENIUM_DIR="${a[0]}.${a[1]}"
-          wget -q http://selenium-release.storage.googleapis.com/${SELENIUM_DIR}/selenium-server-standalone-${SELENIUM}.jar ;
-        ;;
-      'firefox')
-          wget -q https://github.com/mozilla/geckodriver/releases/download/v${GECKODRIVER}/geckodriver-v${GECKODRIVER}-linux64.tar.gz ;
-          sudo sh -c 'tar -x geckodriver -zf geckodriver-v${GECKODRIVER}-linux64.tar.gz -O > /usr/bin/geckodriver' ;
-          sudo chmod +x /usr/bin/geckodriver ;
-          rm geckodriver-v${GECKODRIVER}-linux64.tar.gz ;
-          a=( ${SELENIUM//./ } );
-          SELENIUM_DIR="${a[0]}.${a[1]}"
-          wget -q http://selenium-release.storage.googleapis.com/${SELENIUM_DIR}/selenium-server-standalone-${SELENIUM}.jar ;
-        ;;
-    esac
+  - if [ "$BROWSER" == "firefox" ] ; then
+      wget -q https://github.com/mozilla/geckodriver/releases/download/v${GECKODRIVER}/geckodriver-v${GECKODRIVER}-linux64.tar.gz ;
+      sudo sh -c 'tar -x geckodriver -zf geckodriver-v${GECKODRIVER}-linux64.tar.gz -O > /usr/bin/geckodriver' ;
+      sudo chmod +x /usr/bin/geckodriver ;
+      rm geckodriver-v${GECKODRIVER}-linux64.tar.gz ;
+    fi
 
 install:
   - cpanm --quiet --notest --installdeps --with-develop --with-feature=edi --with-feature=latex-pdf-images --with-feature=latex-pdf-ps --with-feature=openoffice  --with-feature=starman --with-feature=xls .
@@ -186,17 +170,10 @@ before_script:
   - export DEVEL_COVER_OPTIONS=+ignore,"\.lttc\$"
   - sed -e "s#{ROOT}#$PWD#" conf/nginx-travis.conf >/tmp/nginx.conf
 
-  - |
-    case "${BROWSER}" in
-      'phantomjs')
+  - if [ "${BROWSER}" == "phantomjs" ] ; then
          phantomjs --version ;
          ((phantomjs --webdriver=4422 2>/dev/null >/dev/null &) && echo "PhantomJS started succesfully") || (echo "Failed to start PhantomJS!" ; exit 1)
-      ;;
-      'chrome' | 'firefox')
-        sh -e /etc/init.d/xvfb start ;
-        java -jar selenium-server-standalone-${SELENIUM}.jar 2>/tmp/selenium.log >/dev/null -port 4422 &
-      ;;
-    esac
+    fi
 
   - PERL5OPT="$PERL5OPT $HARNESS_PERL_SWITCHES" plackup -Ilib --port 5001 --server HTTP::Server::PSGI tools/starman.psgi --access_log /tmp/plackup-access.log 2> /tmp/plackup-error.log &
   - utils/test/Is_LSMB_running.sh --early # fail early if starman is not running (can be skipped based on reponame or owner by setting an array in the script)
@@ -206,9 +183,6 @@ before_script:
   - utils/diagnostics/t/01-system-resources.t
   # Patch Weasel for a test of S::R::D 1.23
   - sudo cp utils/test/*.pm /home/travis/locallib/lib/perl5/Weasel/Driver/
-  - phantomjs --version
-  - firefox --version
-  - chrome --version
 
 script:
   - RELEASE_TESTING=1
