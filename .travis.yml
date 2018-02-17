@@ -70,6 +70,7 @@ matrix:
       env:
         - COVERAGE=1
         - BROWSER=phantomjs
+        - QT_QPA_PLATFORM=offscreen
     - perl: '5.20'
       addons:
         postgresql: "9.4"
@@ -122,6 +123,7 @@ matrix:
       env:
         - DB_TESTING=1
         - BROWSER=phantomjs
+        - QT_QPA_PLATFORM=offscreen
 
 before_cache:
   - mkdir -p $HOME/dojo_archive
