@@ -47,7 +47,9 @@ use warnings;
 
 use Carp qw(croak);
 use MIME::Base64;
-use Selenium::Remote::Driver;
+use Selenium::Firefox;
+use Selenium::Chrome;
+use Selenium::PhantomJS;
 use Selenium::Remote::ErrorHandler;
 use Time::HiRes;
 use Weasel::DriverRole;
@@ -134,6 +136,7 @@ sub implements {
 
 A few capabilities can be specified in t/.pherkin.yaml
 Some can even be specified as environment variables, they will be expanded here if present.
+Revised for Selenium3. See https://github.com/teodesian/Selenium-Remote-Driver#no-standalone-server
 
 =cut
 
@@ -148,18 +151,26 @@ sub start {
         }
     } for (qw/browser_name remote_server_addr version platform error_handler/);
 
+    my $driver;
+
     if      ( $self->{caps}{browser_name} eq 'phantomjs' ) {
         $self->{caps}{'extra_capabilities'} = {
                                                 "phantomjs.page.customHeaders.Accept-Language" => "fr-CA",
                                               };
+        $driver = Selenium::PhantomJS->new(%{$self->caps},
+                                           binary_port => $self->{caps}{port});
     } elsif ( $self->{caps}{browser_name} eq 'chrome' ) {
         $self->{caps}{'extra_capabilities'} = {
                                            'chromeOptions' => {
                                                'args' => [
-                                                   "lang=fr-CA"
+                                                   "lang=fr-CA",
+                                                   "--headless",
                                                ]
                                            }
                                       };
+        $driver = Selenium::Chrome->new(%{$self->caps},
+                                        binary => '/usr/lib/chromium-browser/chromedriver',
+                                        custom_args => '--no-sandbox --headless');
     } elsif ( $self->{caps}{browser_name} eq 'firefox' ) {
         require Selenium::Firefox::Profile;
         my $profile = Selenium::Firefox::Profile->new;
@@ -167,11 +178,20 @@ sub start {
             'intl.accept_languages' => 'fr-CA',
         );
         $self->{caps}{'firefox_profile'} = $profile;
+        $self->{caps}{'extra_capabilities'} = {
+            'moz:firefoxOptions' => {
+              binary  => '/usr/bin/firefox',
+              args    => [ '--headless' ],
+            },
+        };
+        $Selenium::Remote::Driver::FORCE_WD3 = 1;
+        $driver = Selenium::Firefox->new(%{$self->caps});
     }
-    my $driver = Selenium::Remote::Driver->new(%{$self->caps},
-                                               binary_port => $self->{caps}{port},
-                                               error_handler => \&error_handler);
-
+    #See http://search.cpan.org/~teodesian/Selenium-Remote-Driver-1.23/lib/Selenium/Remote/Driver.pm
+    #Connect to an already running selenium server
+#    my $driver = Selenium::Remote::Driver->new(%{$self->caps},
+#                                               binary_port => $self->{caps}{port},
+#                                               error_handler => \&error_handler);
     $self->_driver($driver);
     $self->set_wait_timeout($self->wait_timeout);
     $self->set_window_size($self->window_size);
