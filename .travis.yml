@@ -1,6 +1,6 @@
 # run on GCE build as per suggested:
 # https://github.com/travis-ci/travis-ci/issues/3251#issuecomment-219675294
-#sudo: required
+sudo: required
 dist: trusty
 language: perl
 env:
@@ -66,7 +66,7 @@ matrix:
             - nginx postgresql-9.4-pgtap
             - texlive-latex-recommended
             - texlive-xetex
-            - phantomjs qt5-default libqt5gui5
+            - strace phantomjs qt5-default libqt5gui5
       env:
         - COVERAGE=1
         - BROWSER=phantomjs
@@ -134,7 +134,7 @@ cache:
 
 before_install:
   # list all the running services before we start. Perhaps we can stop some of them to save resources.
-  - sudo service --status-all
+  - service --status-all
   # display the available resources
   - utils/diagnostics/t/01-system-resources.t
   - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
@@ -147,13 +147,15 @@ before_install:
   - export PERL_MM_OPT="INSTALL_BASE=$HOME/locallib"
   - export PERL_MB_OPT="--install_base=$HOME/locallib"
   # Browser specifics
-  - if [ "$BROWSER" == "firefox" ] ; then
-      wget -q https://github.com/mozilla/geckodriver/releases/download/v${GECKODRIVER}/geckodriver-v${GECKODRIVER}-linux64.tar.gz ;
-      sudo sh -c 'tar -x geckodriver -zf geckodriver-v${GECKODRIVER}-linux64.tar.gz -O > /usr/bin/geckodriver' ;
-      sudo chmod +x /usr/bin/geckodriver ;
-      rm geckodriver-v${GECKODRIVER}-linux64.tar.gz ;
-    fi
-  - sudo dpkg --list | egrep "(chrom|firefox|phantom)"
+  - |
+    case "${BROWSER}" in
+      "firefox")
+        wget -q https://github.com/mozilla/geckodriver/releases/download/v${GECKODRIVER}/geckodriver-v${GECKODRIVER}-linux64.tar.gz
+        sudo sh -c 'tar -x geckodriver -zf geckodriver-v${GECKODRIVER}-linux64.tar.gz -O > /usr/bin/geckodriver'
+        sudo chmod +x /usr/bin/geckodriver
+        rm geckodriver-v${GECKODRIVER}-linux64.tar.gz
+        ;;
+    esac
 
 install:
   - cpanm --quiet --notest --installdeps --with-develop --with-feature=edi --with-feature=latex-pdf-images --with-feature=latex-pdf-ps --with-feature=openoffice  --with-feature=starman --with-feature=xls .
@@ -173,17 +175,22 @@ before_script:
   - |
     case "${BROWSER}" in
       "chrome")
-        chrome --version
-        chromedriver --version
+        chromium-browser --version
+        /usr/lib/chromium-browser/chromedriver --version
         ;;
       "firefox")
         firefox --version
         geckodriver --version
         ;;
       "phantomjs")
-         sudo find / -name 'libqoffscreen.so' -print
-         QT_QPA_PLATFORM=offscreen phantomjs --version ;
-         ((QT_QPA_PLATFORM=offscreen phantomjs --webdriver=4422 2>/dev/null >/dev/null &) && echo "PhantomJS started succesfully") || (echo "Failed to start PhantomJS!" ; exit 1)
+        #sudo find / -name 'libqoffscreen.so' -print
+        which phantomjs
+        echo -e "[Paths]\nPlugins=/usr/lib/x86_64-linux-gnu/qt5/plugins" >qt.conf
+        sudo mv qt.conf /usr/local/phantomjs/bin/
+        ls -la /usr/local/phantomjs/bin/
+        export QT_QPA_PLATFORM=offscreen
+        phantomjs --version
+        ((phantomjs --webdriver=8910 2>/dev/null >/dev/null &) && echo "PhantomJS started succesfully") || (echo "Failed to start PhantomJS!" ; exit 1)
         ;;
     esac
   - PERL5OPT="$PERL5OPT $HARNESS_PERL_SWITCHES" plackup -Ilib --port 5001 --server HTTP::Server::PSGI tools/starman.psgi --access_log /tmp/plackup-access.log 2> /tmp/plackup-error.log &
@@ -192,7 +199,7 @@ before_script:
   - if [ "${DOJO_BUILT}" != "" ]; then sed -i -e "s#dojo_built *= *(\d)+#dojo_built={dojo_built}#" ledgersmb.conf ; fi
   # display the available resources
   - utils/diagnostics/t/01-system-resources.t
-  # Patch Weasel for a test of S::R::D 1.23
+  # Patch Weasel for headless tests on S::R::D 1.20
   - sudo cp utils/test/*.pm /home/travis/locallib/lib/perl5/Weasel/Driver/
 
 script:
@@ -233,7 +240,7 @@ after_failure:
   - echo ===============================
   - echo === dmesg                   ===
   - echo ===============================
-  - sudo dmesg
+  - dmesg
   - echo ===============================
   - echo === /tmp/plackup-access.log ===
   - echo ===============================
