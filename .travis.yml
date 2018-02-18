@@ -32,7 +32,6 @@ matrix:
     - perl: '5.26'
       addons:
         postgresql: '9.6'
-        chrome: stable
         sauce_connect: true
         apt:
           packages:
@@ -46,13 +45,13 @@ matrix:
     - perl: '5.24'
       addons:
         postgresql: '9.5'
-        firefox: latest
         sauce_connect: true
         apt:
           packages:
             - nginx postgresql-9.5-pgtap
             - texlive-latex-recommended
             - texlive-xetex
+            - firefox
       env:
         # - TEST_SAUCE=1
         - DOJO_BUILT=0
@@ -67,19 +66,19 @@ matrix:
             - nginx postgresql-9.4-pgtap
             - texlive-latex-recommended
             - texlive-xetex
+            - phantomjs
       env:
         - COVERAGE=1
         - BROWSER=phantomjs
-        - QT_QPA_PLATFORM=offscreen
     - perl: '5.20'
       addons:
         postgresql: "9.4"
-        firefox: latest
         apt:
           packages:
             - nginx postgresql-9.4-pgtap
             - texlive-latex-recommended
             - texlive-xetex
+            - firefox
       env:
         - COA_TESTING=1
         - BROWSER=firefox
@@ -88,7 +87,6 @@ matrix:
     - perl: '5.18'
       addons:
         postgresql: "9.3"
-        chrome: stable
         apt:
           packages:
             - nginx postgresql-9.3-pgtap
@@ -101,12 +99,12 @@ matrix:
     - perl: '5.16'
       addons:
         postgresql: "9.2"
-        firefox: latest
         apt:
           packages:
             - nginx postgresql-9.2-pgtap
             - texlive-latex-recommended
             - texlive-xetex
+            - firefox
       env:
         - DB_TESTING=1
         - BROWSER=firefox
@@ -120,10 +118,10 @@ matrix:
             - nginx postgresql-9.2-pgtap
             - texlive-latex-recommended
             - texlive-xetex
+            - phantomjs
       env:
         - DB_TESTING=1
         - BROWSER=phantomjs
-        - QT_QPA_PLATFORM=offscreen
 
 before_cache:
   - mkdir -p $HOME/dojo_archive
@@ -155,6 +153,7 @@ before_install:
       sudo chmod +x /usr/bin/geckodriver ;
       rm geckodriver-v${GECKODRIVER}-linux64.tar.gz ;
     fi
+  - sudo dpkg --list | egrep "(chrom|firefox|phantom)"
 
 install:
   - cpanm --quiet --notest --installdeps --with-develop --with-feature=edi --with-feature=latex-pdf-images --with-feature=latex-pdf-ps --with-feature=openoffice  --with-feature=starman --with-feature=xls .
@@ -171,12 +170,22 @@ before_script:
   - coverage-setup 2>/dev/null
   - export DEVEL_COVER_OPTIONS=+ignore,"\.lttc\$"
   - sed -e "s#{ROOT}#$PWD#" conf/nginx-travis.conf >/tmp/nginx.conf
-
-  - if [ "${BROWSER}" == "phantomjs" ] ; then
-         phantomjs --version ;
-         ((phantomjs --webdriver=4422 2>/dev/null >/dev/null &) && echo "PhantomJS started succesfully") || (echo "Failed to start PhantomJS!" ; exit 1)
-    fi
-
+  - |
+    case "${BROWSER}" in
+      "chrome")
+        chrome --version
+        chromedriver --version
+        ;;
+      "firefox")
+        firefox --version
+        geckodriver --version
+        ;;
+      "phantomjs")
+         sudo dpkg --list | grep qt
+         QT_QPA_PLATFORM=minimal phantomjs --version ;
+         ((QT_QPA_PLATFORM=minimal phantomjs --webdriver=4422 2>/dev/null >/dev/null &) && echo "PhantomJS started succesfully") || (echo "Failed to start PhantomJS!" ; exit 1)
+        ;;
+    esac
   - PERL5OPT="$PERL5OPT $HARNESS_PERL_SWITCHES" plackup -Ilib --port 5001 --server HTTP::Server::PSGI tools/starman.psgi --access_log /tmp/plackup-access.log 2> /tmp/plackup-error.log &
   - utils/test/Is_LSMB_running.sh --early # fail early if starman is not running (can be skipped based on reponame or owner by setting an array in the script)
   - nginx -c /tmp/nginx.conf
