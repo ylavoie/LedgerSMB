@@ -158,7 +158,7 @@ sub start {
                                                 "phantomjs.page.customHeaders.Accept-Language" => "fr-CA",
                                               };
         $driver = Selenium::PhantomJS->new(%{$self->caps},
-                                           binary_port => $self->{caps}{port}
+                                           #binary_port => $self->{caps}{port}
         );
     } elsif ( $self->{caps}{browser_name} eq 'chrome' ) {
         $self->{caps}{'extra_capabilities'} = {
@@ -172,7 +172,7 @@ sub start {
         $driver = Selenium::Chrome->new(%{$self->caps},
                                         binary => '/usr/lib/chromium-browser/chromedriver',
                                         custom_args => '--no-sandbox --headless',
-                                        binary_port => $self->{caps}{port}
+                                        #binary_port => $self->{caps}{port}
         );
     } elsif ( $self->{caps}{browser_name} eq 'firefox' ) {
         require Selenium::Firefox::Profile;
@@ -189,7 +189,7 @@ sub start {
         };
         $Selenium::Remote::Driver::FORCE_WD3 = 1;
         $driver = Selenium::Firefox->new(%{$self->caps},
-                                         binary_port => $self->{caps}{port}
+                                         #binary_port => $self->{caps}{port}
         );
     }
     #See http://search.cpan.org/~teodesian/Selenium-Remote-Driver-1.23/lib/Selenium/Remote/Driver.pm
