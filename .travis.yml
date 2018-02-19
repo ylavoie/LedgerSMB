@@ -199,8 +199,7 @@ before_script:
   # display the available resources
   - utils/diagnostics/t/01-system-resources.t
   # Patch Weasel for headless tests on S::R::D 1.20
-  - ls -l /home/travis/locallib/lib/perl5/Weasel/
-  - ls -l /home/travis/locallib/lib/perl5/Weasel/Driver/
+  - chmod -c +w /home/travis/locallib/lib/perl5/Weasel/Driver/*.pm
   - cp utils/test/*.pm /home/travis/locallib/lib/perl5/Weasel/Driver/
 
 script:
