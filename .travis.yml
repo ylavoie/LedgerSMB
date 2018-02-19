@@ -66,7 +66,7 @@ matrix:
             - nginx postgresql-9.4-pgtap
             - texlive-latex-recommended
             - texlive-xetex
-            - strace phantomjs qt5-default libqt5gui5
+            - phantomjs
       env:
         - COVERAGE=1
         - BROWSER=phantomjs
@@ -118,7 +118,7 @@ matrix:
             - nginx postgresql-9.2-pgtap
             - texlive-latex-recommended
             - texlive-xetex
-            - phantomjs libqt5gui5
+            - phantomjs
       env:
         - DB_TESTING=1
         - BROWSER=phantomjs
