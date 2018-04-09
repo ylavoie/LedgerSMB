@@ -10,6 +10,19 @@ notifications:
 
 matrix:
   include:
+    #TODO: Switch to upcoming 5.28 after 2018-04-21
+    - perl: '5.26'
+      addons:
+        postgresql: '10'
+        apt:
+          packages:
+            - postgresql-10
+            - postgresql-client-10
+            - nginx postgresql-10-pgtap
+            - texlive-latex-recommended
+            - texlive-xetex
+      env:
+        - PGPORT=5433
     - perl: '5.26'
       addons:
         postgresql: '9.6'

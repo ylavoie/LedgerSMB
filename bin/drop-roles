@@ -7,7 +7,7 @@ use Getopt::Long;
 my @company_roles;
 my $role;
 my $host = 'localhost';
-my $port = '5432';
+my $port = $ENV{PGPORT} // '5432';
 my $postgres_username = 'postgres';
 my $postgres_password;
 my $postgres_db = 'postgres';
