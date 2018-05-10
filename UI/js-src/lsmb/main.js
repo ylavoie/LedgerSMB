@@ -1,7 +1,7 @@
 
 require(["dojo/parser", "dojo/query", "dojo/on", "dijit/registry",
          "dojo/_base/event", "dojo/hash", "dojo/topic", "dojo/dom-class",
-         "dojo/ready", "dojo/domReady!"],
+         "dojo/ready"],
         function(parser, query, on, registry, event, hash, topic, domClass,
                  ready) {
             parser.parse().then(function() {
