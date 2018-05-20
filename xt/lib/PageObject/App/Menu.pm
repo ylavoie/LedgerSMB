@@ -95,6 +95,7 @@ sub _verify {
               && scalar(@logged_in_login) > 0);
 };
 
+use Data::Printer;
 sub click_menu {
     my ($self, $paths) = @_;
 
@@ -110,7 +111,10 @@ sub click_menu {
 
         my $root = $self->find("//*[\@id='top_menu']"); # and \@role='presentation'
         ok($root, "Menu tree loaded");
+        warn np $root;
+        #$root->set('path', @$paths);
 
+=item
         my $item = $root;
 
         do {
@@ -119,18 +123,29 @@ sub click_menu {
                         "//div[contains(\@class, 'dijitTreeNode')" .
                           " and .//span[\@role='treeitem'" .
                                       " and text()='$path']]";
+            warn np $xpath;
             $item = $item->find($xpath);
-            ok($item,"Valid xpath");
+            ok($item,"Valid xpath " . $path);
 
             my $label = $item->get_attribute('id') . '_label';
             ok($label,"Found label $label");
+            warn np $label;
             my $submenu = $item->find("//*[\@id='$label']");
             ok($submenu,"Submenu found " . $submenu->get_text);
+            warn "Before click";
             $submenu->click;
+            $self->session->wait_for(
+                sub {
+                    warn np $submenu;
+                    my $attr = $submenu->get_attribute('class');
+                    warn np $attr;
+                    return $attr =~ 'dijitTreeIsRoot';
+                });
 
         } for @$paths;
+        warn np $self;
+=cut
     };
-
     return $self->session->page->body->maindiv->wait_for_content;
 }
 
