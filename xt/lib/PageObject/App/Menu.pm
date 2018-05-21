@@ -95,7 +95,6 @@ sub _verify {
               && scalar(@logged_in_login) > 0);
 };
 
-=x
 my $img_num = 0;
 
 sub _save_screenshot {
@@ -106,7 +105,6 @@ sub _save_screenshot {
     $self->session->screenshot($fh);
     close $fh;
 }
-=cut
 
 #use Data::Printer;
 sub click_menu {
@@ -124,6 +122,11 @@ sub click_menu {
 
         my $item = $self->find("//*[\@id='top_menu']"); # and \@role='presentation'
         ok($item, "Menu tree loaded");
+        $self->session->wait_for(
+            sub {
+                my $attr = $item->get_attribute('class');
+                return $attr =~ 'done-parsing';
+            });
 
         for my $path (@$paths) {
             my $xpath = ".//div[contains(\@class, 'dijitTreeNodeContainer')]" .
@@ -134,13 +137,16 @@ sub click_menu {
             ok($item,"Valid xpath " . $path);
 
             $item->click;
+            $self->_save_screenshot('click_menu',join('_',@$paths));
+=comment
             $self->session->wait_for(
                 sub {
-                    #$self->_save_screenshot('click_menu',join('_',@$paths));
+                    $self->_save_screenshot('click_menu',join('_',@$paths));
                     my $attr = $item->get_attribute('class');
                     return $attr =~ 'dijitTreeIsRoot'
                         || $attr !~ 'dijitTreeIsRoot' && $attr =~ 'dijitTreeNode';
                 });
+=cut
         }
     };
     return $self->session->page->body->maindiv->wait_for_content;
