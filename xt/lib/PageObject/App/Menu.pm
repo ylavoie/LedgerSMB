@@ -95,7 +95,20 @@ sub _verify {
               && scalar(@logged_in_login) > 0);
 };
 
-use Data::Printer;
+=x
+my $img_num = 0;
+
+sub _save_screenshot {
+    my ($self, $event, $phase) = @_;
+
+    my $img_name = "$event-$phase-" . ($img_num++) . '.png';
+    open my $fh, ">", 'screens' . '/' . $img_name;
+    $self->session->screenshot($fh);
+    close $fh;
+}
+=cut
+
+#use Data::Printer;
 sub click_menu {
     my ($self, $paths) = @_;
 
@@ -109,42 +122,26 @@ sub click_menu {
         ok(use_module($tgt_class),
            "$tgt_class can be 'use'-d dynamically");
 
-        my $root = $self->find("//*[\@id='top_menu']"); # and \@role='presentation'
-        ok($root, "Menu tree loaded");
-        warn np $root;
-        #$root->set('path', @$paths);
+        my $item = $self->find("//*[\@id='top_menu']"); # and \@role='presentation'
+        ok($item, "Menu tree loaded");
 
-=item
-        my $item = $root;
-
-        do {
-            my $path = $_;
+        for my $path (@$paths) {
             my $xpath = ".//div[contains(\@class, 'dijitTreeNodeContainer')]" .
                         "//div[contains(\@class, 'dijitTreeNode')" .
                           " and .//span[\@role='treeitem'" .
                                       " and text()='$path']]";
-            warn np $xpath;
             $item = $item->find($xpath);
             ok($item,"Valid xpath " . $path);
 
-            my $label = $item->get_attribute('id') . '_label';
-            ok($label,"Found label $label");
-            warn np $label;
-            my $submenu = $item->find("//*[\@id='$label']");
-            ok($submenu,"Submenu found " . $submenu->get_text);
-            warn "Before click";
-            $submenu->click;
+            $item->click;
             $self->session->wait_for(
                 sub {
-                    warn np $submenu;
-                    my $attr = $submenu->get_attribute('class');
-                    warn np $attr;
-                    return $attr =~ 'dijitTreeIsRoot';
+                    #$self->_save_screenshot('click_menu',join('_',@$paths));
+                    my $attr = $item->get_attribute('class');
+                    return $attr =~ 'dijitTreeIsRoot'
+                        || $attr !~ 'dijitTreeIsRoot' && $attr =~ 'dijitTreeNode';
                 });
-
-        } for @$paths;
-        warn np $self;
-=cut
+        }
     };
     return $self->session->page->body->maindiv->wait_for_content;
 }
