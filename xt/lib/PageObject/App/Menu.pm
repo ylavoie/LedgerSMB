@@ -20,9 +20,38 @@ __PACKAGE__->self_register(
               tag_name => 'div',
               attributes => {
                   id => 'menudiv',
-#                role => 'presentation'
               });
 
+has menu => (is => 'rw',
+                isa => 'PageObject',
+                builder => '_build_menu',
+                predicate => 'has_menu',
+                reader => '_get_menu',
+                writer => '_set_menu',
+                clearer => 'clear_menu',
+                lazy => 1);
+
+sub menu {
+    my ($self, $new_value) = @_;
+
+    #return $self->_set_menu($new_value) if $new_value;
+
+    $self->session->wait_for(
+        sub {
+            my $attr = $self->get_attribute('class');
+            return $attr =~ 'done-parsing';
+        });
+    #$self->clear_menu if $gone; # force builder
+
+    return $self->_get_menu;
+}
+
+sub _build_menu {
+    my ($self) = @_;
+
+    my @found = $self->find_all("//*[\@id='top_menu' and contains(\@class, 'done-parsing')]");
+    return shift @found;
+}
 
 my %menu_path_pageobject_map = (
     "Contacts > Add Contact" => '',
@@ -91,8 +120,8 @@ sub _verify {
         $self->find_all("//*[\@id='login_info_header' and text() = 'User']");
 
     return $self
-        unless ((scalar(@logged_in_company) > 0)
-              && scalar(@logged_in_login) > 0);
+        unless scalar(@logged_in_company) > 0
+            && scalar(@logged_in_login) > 0;
 };
 
 my $img_num = 0;
@@ -101,7 +130,7 @@ sub _save_screenshot {
     my ($self, $event, $phase) = @_;
 
     my $img_name = "$event-$phase-" . ($img_num++) . '.png';
-    open my $fh, ">", 'screens' . '/' . $img_name;
+    open my $fh, '> screens/' . $img_name;
     $self->session->screenshot($fh);
     close $fh;
 }
@@ -120,13 +149,8 @@ sub click_menu {
         ok(use_module($tgt_class),
            "$tgt_class can be 'use'-d dynamically");
 
-        my $item = $self->find("//*[\@id='top_menu']"); # and \@role='presentation'
+        my $item = $self->find("//*[\@id='top_menu']");
         ok($item, "Menu tree loaded");
-        $self->session->wait_for(
-            sub {
-                my $attr = $item->get_attribute('class');
-                return $attr =~ 'done-parsing';
-            });
 
         for my $path (@$paths) {
             my $xpath = ".//div[contains(\@class, 'dijitTreeNodeContainer')]" .
@@ -138,15 +162,6 @@ sub click_menu {
 
             $item->click;
             $self->_save_screenshot('click_menu',join('_',@$paths));
-=comment
-            $self->session->wait_for(
-                sub {
-                    $self->_save_screenshot('click_menu',join('_',@$paths));
-                    my $attr = $item->get_attribute('class');
-                    return $attr =~ 'dijitTreeIsRoot'
-                        || $attr !~ 'dijitTreeIsRoot' && $attr =~ 'dijitTreeNode';
-                });
-=cut
         }
     };
     return $self->session->page->body->maindiv->wait_for_content;
