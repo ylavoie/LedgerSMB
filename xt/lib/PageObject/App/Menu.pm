@@ -125,12 +125,13 @@ sub _verify {
 };
 
 my $img_num = 0;
+use Fatal qw(open close);
 
 sub _save_screenshot {
     my ($self, $event, $phase) = @_;
 
     my $img_name = "$event-$phase-" . ($img_num++) . '.png';
-    open my $fh, '> screens/' . $img_name;
+    open my $fh, '>', 'screens/' . $img_name;
     $self->session->screenshot($fh);
     close $fh;
 }
