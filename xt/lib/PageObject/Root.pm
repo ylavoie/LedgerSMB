@@ -42,9 +42,7 @@ sub wait_for_body {
                 $old_body = undef if $gone;
                 return 0; # Not done yet
             }
-            else {
-                return $self->find('body.done-parsing', scheme => 'css') ? 1 : 0;
-            }
+            return $self->find('body.done-parsing', scheme => 'css') ? 1 : 0;
         });
     return $self->body;
 }

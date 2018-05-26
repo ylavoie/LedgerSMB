@@ -11,8 +11,8 @@ default:
          screenshots_dir: screens
          logging_dir: screens
          screenshot_events:
-           pre-step: 0
-           post-step: 0
+           pre-step: 1
+           post-step: 1
            pre-scenario: 0
            post-scenario: 0
          sessions:
@@ -30,5 +30,7 @@ default:
                   port: 4422
                   remote_server_addr: ${REMOTE_SERVER_ADDR}
                   browser_name: ${BROWSER}
+                  #Required because of https://bugzilla.mozilla.org/show_bug.cgi?id=1414320
+                  platform: linux
       Pherkin::Extension::PageObject:
          dummy: 1

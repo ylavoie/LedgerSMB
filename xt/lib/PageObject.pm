@@ -6,6 +6,8 @@ use warnings;
 use Carp;
 use Module::Runtime qw(use_module);
 
+use Try::Tiny;
+
 use Moose;
 use namespace::autoclean;
 extends 'Weasel::Element';
@@ -53,19 +55,18 @@ sub wait_for_page {
         sub {
 
             if ($ref) {
-                local $@;
-                # if there's a reference element,
-                # wait for it to go stale (raise an exception)
-                eval {
-                    $ref->tag_name;
+                my $gone = 1;
+                try {
+                    my $tagname = $ref->tag_name;
+                    # When successfully accessing the tag
+                    #  it's not out of scope yet...
+                    $gone = 0 if defined $tagname;
                 };
-                $ref = undef if !defined $@;
-                return 0;
+                $ref = undef if $gone;
+                return 0; # Not done yet
             }
-            else {
-                $self->session->page
-                    ->find('body.done-parsing', scheme => 'css');
-            }
+            $self->session->page
+                ->find('body.done-parsing', scheme => 'css');
         });
 }
 

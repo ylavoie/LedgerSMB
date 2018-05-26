@@ -35,8 +35,28 @@ my $base_url = $selenium->{base_url} =~ /\$\{([a-zA-Z0-9_]+)\}/
 my %caps = (
           port => $selenium->{driver}->{caps}->{port},
           browser_name => $browser,
-          remote_server_addr => $remote_server_addr
+          remote_server_addr => $remote_server_addr,
+          wd_context_prefix => $browser eq 'firefox' ? '' : '/wd/hub',
+          platform => $selenium->{driver}->{caps}->{platform},
 );
+if ( $caps{browser_name} eq 'chrome' ) {
+    $caps{'extra_capabilities'} = {
+       'chromeOptions' => {
+           'args' => [
+               'no-sandbox',
+               'headless',
+           ]
+       }
+    };
+} elsif ( $caps{browser_name} eq 'firefox' ) {
+    $caps{'extra_capabilities'} = {
+        'moz:firefoxOptions' => {
+          args    => [ '--headless' ],
+        },
+    };
+    no warnings 'once';
+    $Selenium::Remote::Driver::FORCE_WD3=1;
+}
 
 my $driver = Selenium::Remote::Driver->new(%caps)
           || die "Unable to connect to remote browser";
