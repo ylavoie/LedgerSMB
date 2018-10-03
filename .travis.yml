@@ -64,6 +64,7 @@ before_cache:
   - mkdir -p $HOME/dojo_archive
 
 cache:
+  apt: true
   directories:
     - $HOME/locallib
     - $HOME/travis_phantomjs
