@@ -30,7 +30,7 @@ env:
     - LSMB_BASE_URL="http://127.0.0.1:5000"
     - PSGI_BASE_URL="http://127.0.0.1:5001"
     - HARNESS_RULESFILE="t/testrules.yml"
-    - PATH="$HOME/locallib/bin:$PATH"
+    - #PATH="$HOME/locallib/bin:$PATH"
     - PERL_LOCAL_LIB_ROOT="$HOME/locallib${PERL_LOCAL_LIB_ROOT+:}$PERL_LOCAL_LIB_ROOT"
     - PERL5LIB="$HOME/locallib/lib/perl5${PERL5LIB+:}$PERL5LIB"
     - PERL_MM_OPT="INSTALL_BASE=$HOME/locallib"
@@ -120,6 +120,7 @@ before_cache:
 cache:
   directories:
     - $HOME/locallib
+    - $HOME/travis_phantomjs
     - $HOME/dojo_archive
     - $HOME/perl5
 
@@ -140,7 +141,7 @@ install:
   # Further more is there a warning regarding redifinition of JSON::PP::Boolean
   # which is fixed in 4.03 (so, reinstall, in order to get to newest)
   - cpanm --reinstall --notest Locale::Country Locale::Codes Locale::Language JSON::PP
-  - cpanm Cpanel::JSON::XS~3.0206
+  - cpanm --quiet --notest Cpanel::JSON::XS
   - cpanm --quiet --notest --installdeps --with-develop --with-feature=edi --with-feature=latex-pdf-ps --with-feature=openoffice  --with-feature=starman --with-feature=xls .
   # Patch Weasel for headless tests on S::R::D
   - sudo ls -l `sudo find / -name Selenium2.pm`
