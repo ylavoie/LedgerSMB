@@ -135,8 +135,9 @@ sub click_menu {
 
             my $submenu = $item->find("//*[\@id='$label']");
             ok($submenu,"Submenu found " . $submenu->get_text);
-
-            $submenu->click;
+            my $expanded = $submenu->get_attribute('aria-expanded') // 'false';
+            $submenu->click
+                if $expanded ne 'true'; #Only click if menu is not expanded
         }
     };
 
