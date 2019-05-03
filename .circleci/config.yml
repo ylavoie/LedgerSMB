@@ -1,0 +1,166 @@
+version: 2.1
+
+# Define defaults
+_defaults: &defaults
+    working_directory: &working_directory ~/project
+    machine:
+      image: ubuntu-1604:201903-01
+
+    environment:
+      - RELEASE_TESTING: 1
+      - PGUSER: postgres
+      - PGPASSWORD: test
+      - LSMB_TEST_DB: 1
+      - LSMB_NEW_DB: lsmbinstalltest
+      - LSMB_BASE_URL: http://127.0.0.1:5000
+      - PSGI_BASE_URL: http://127.0.0.1:5001
+      - HARNESS_RULESFILE: t/testrules.yml
+      - PERL5OPT: -MDevel::Cover
+      - DEVEL_COVER_OPTIONS: +ignore,\"\.lttc\$\"
+      - COVERAGE: 0
+
+# Define aliases for simplification
+aliases:
+  - &prove
+      command |
+            docker-compose -f ledgersmb-dev-docker/docker-compose.yml up -d;
+            docker-compose -f ledgersmb-dev-docker/docker-compose.yml exec lsmb prove -v
+                --recurse --pgtap-option dbname=lsmbtestdb
+                --pgtap-option username=postgres
+                --feature-option tags=~@wip t/ xt/
+
+  - &step_attach_workspace
+    attach_workspace:
+      at: *working_directory
+
+  # Save and restore cache go along
+  - &save_main_cache
+    paths:
+      - .
+    key: v2-dependencies-{{ .Branch }}-{{ checksum "yarn.lock" }}
+    name: Saving LSMB built
+
+  - &restore_main_cache
+    key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+    name: Restoring LSMB built
+
+  - &docker_pull_lsmb_dev
+      docker-compose -f ledgersmb-dev-docker/docker-compose.yml
+                     up --quiet-pull -d
+
+  - &persist_to_workspace
+      root: *working_directory
+      paths:
+        - UI
+        - bin
+        - cover_db
+        - cpanfile
+        - css
+        - doc
+        - ledgersmb-dev-docker
+        - ledgersmb.conf
+        - lib
+        - locale
+        - old
+        - screens
+        - sql
+        - t
+        - templates
+        - utils
+        - xt
+
+# Define jobs
+jobs:
+  build:
+    <<: *defaults
+    steps:
+    - checkout
+    - run:
+        name: Pull related Git repositories
+        command: |
+          git submodule sync
+          git submodule update --init
+          git clone git://github.com/ledgersmb/ledgersmb-dev-docker
+    - restore_cache: *restore_main_cache
+    - run: ls; ls ~
+    - run: mkdir screens
+    - run: cp doc/conf/ledgersmb.conf.default ledgersmb.conf
+    - run: chmod -R a=rwX .
+    - run: *docker_pull_lsmb_dev
+    - save_cache: *save_main_cache
+    - persist_to_workspace: *persist_to_workspace
+
+  make_dojo:
+    <<: *defaults
+    steps:
+      - restore_cache: *restore_main_cache
+      - *step_attach_workspace
+      - run: docker-compose -f ledgersmb-dev-docker/docker-compose.yml exec lsmb make dojo
+      - persist_to_workspace: *persist_to_workspace
+
+  test_chrome:
+    <<: *defaults
+    steps:
+      - restore_cache: *restore_main_cache
+      - *step_attach_workspace
+      - run: *docker_pull_lsmb_dev
+      - run: docker-compose -f ledgersmb-dev-docker/docker-compose.yml stop selenium
+      - run: docker pull browserless/chrome
+      - run: docker run -d browserless/chrome 4422:3000
+      - run: *prove
+
+  test_firefox:
+    <<: *defaults
+    steps:
+      - restore_cache: *restore_main_cache
+      - *step_attach_workspace
+      - run: *docker_pull_lsmb_dev
+      - run: docker-compose -f ledgersmb-dev-docker/docker-compose.yml stop selenium
+      - run: docker run -d deepsweet/firefox-headless-remote 4422:2828
+      - run: *prove
+
+  test_phantomjs:
+    <<: *defaults
+    steps:
+      - restore_cache: *restore_main_cache
+      - *step_attach_workspace
+      - run: *docker_pull_lsmb_dev
+      - run: *prove
+
+  test_coverage:
+    <<: *defaults
+    environment:
+      - COVERAGE: 1
+    steps:
+      - restore_cache: *restore_main_cache
+      - attach_workspace:
+          at: *working_directory
+      - run: *docker_pull_lsmb_dev
+      - run: *prove
+
+workflows:
+  version: 2
+  tests_browsers:
+    jobs:
+      - build
+      - make_dojo:
+          requires:
+            - build
+      - test_chrome:
+          requires:
+            - make_dojo
+      - test_firefox:
+          requires:
+            - make_dojo
+      - test_phantomjs:
+          requires:
+            - make_dojo
+      - test_coverage:
+          requires:
+            - make_dojo
+  tests_nodojo:
+    jobs:
+      - build
+      - test_chrome:
+          requires:
+            - build

@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -x
+set -e
+
+#apt-get update
+#apt-get upgrade
+apt-get install -y python-pip nginx texlive-latex-recommended texlive-xetex curl cpanminus tar make gcc phantomjs libdbd-pg-perl libpq-dev python-dev ca-certificates wget gnupg2
+
+curl -L https://deb.nodesource.com/setup_6.x -o ./setup
+bash ./setup
+rm ./setup
+echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+
+apt-get update
+apt-get install -y nodejs postgresql-9.6
+
+cpanm --reinstall --notest Locale::Country Locale::Codes Locale::Language JSON::PP
+cpanm Cpanel::JSON::XS~3.0206
+
+cpanm --quiet --notest --installdeps --with-develop --with-feature=edi --with-feature=latex-pdf-ps --with-feature=openoffice  --with-feature=starman --with-feature=xls .
+
+
+pip install awscli --upgrade --user
+npm install -g uglify-js@">=2.0 <3.0"
