@@ -149,7 +149,7 @@ jobs:
 # Tests multiple browsers, coverage and dojo
 workflows:
   version: 2
-  tests_browsers:
+  workflow:
     jobs:
       - build
 
@@ -173,6 +173,6 @@ workflows:
           requires:
             - make_dojo
 
-      - tests_nodojo:
+      - test_nodojo:
           requires:
             - build
