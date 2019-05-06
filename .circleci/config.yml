@@ -87,6 +87,7 @@ jobs:
     <<: *defaults
     steps:
     - checkout
+    - run: ls -R
     - run:
         name: Pull related Git repositories
         command: |
