@@ -53,7 +53,7 @@ aliases:
   - &persist_to_workspace
       root: *working_directory
       paths:
-        - /home/circleci/project
+        - .
 
 
 # Reuseable commands
