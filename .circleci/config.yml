@@ -37,7 +37,7 @@ aliases:
   - &save_main_cache
     paths:
       - .
-    key: v2-dependencies-{{ .Branch }}-{{ checksum "yarn.lock" }}
+    key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
     name: Saving LSMB built
 
   - &restore_main_cache
@@ -69,6 +69,16 @@ aliases:
         - utils
         - xt
 
+
+# Reuseable commands
+commands:
+  docker_pull_cached_lsmb_dev:
+    description: "Pull cached LSMB"
+    steps:
+      - restore_cache: *restore_main_cache
+      - *step_attach_workspace
+      - run: *docker_pull_lsmb_dev
+
 # Define jobs
 jobs:
   build:
@@ -82,7 +92,6 @@ jobs:
           git submodule update --init
           git clone git://github.com/ledgersmb/ledgersmb-dev-docker
     - restore_cache: *restore_main_cache
-    - run: ls; ls ~
     - run: mkdir screens
     - run: cp doc/conf/ledgersmb.conf.default ledgersmb.conf
     - run: chmod -R a=rwX .
@@ -93,17 +102,14 @@ jobs:
   make_dojo:
     <<: *defaults
     steps:
-      - restore_cache: *restore_main_cache
-      - *step_attach_workspace
+      - docker_pull_cached_lsmb_dev
       - run: docker-compose -f ledgersmb-dev-docker/docker-compose.yml exec lsmb make dojo
       - persist_to_workspace: *persist_to_workspace
 
   test_chrome:
     <<: *defaults
     steps:
-      - restore_cache: *restore_main_cache
-      - *step_attach_workspace
-      - run: *docker_pull_lsmb_dev
+      - docker_pull_cached_lsmb_dev
       - run: docker-compose -f ledgersmb-dev-docker/docker-compose.yml stop selenium
       - run: docker pull browserless/chrome
       - run: docker run -d browserless/chrome 4422:3000
@@ -112,9 +118,7 @@ jobs:
   test_firefox:
     <<: *defaults
     steps:
-      - restore_cache: *restore_main_cache
-      - *step_attach_workspace
-      - run: *docker_pull_lsmb_dev
+      - docker_pull_cached_lsmb_dev
       - run: docker-compose -f ledgersmb-dev-docker/docker-compose.yml stop selenium
       - run: docker run -d deepsweet/firefox-headless-remote 4422:2828
       - run: *prove
@@ -122,9 +126,7 @@ jobs:
   test_phantomjs:
     <<: *defaults
     steps:
-      - restore_cache: *restore_main_cache
-      - *step_attach_workspace
-      - run: *docker_pull_lsmb_dev
+      - docker_pull_cached_lsmb_dev
       - run: *prove
 
   test_coverage:
@@ -132,10 +134,7 @@ jobs:
     environment:
       - COVERAGE: 1
     steps:
-      - restore_cache: *restore_main_cache
-      - attach_workspace:
-          at: *working_directory
-      - run: *docker_pull_lsmb_dev
+      - docker_pull_cached_lsmb_dev
       - run: *prove
 
 workflows:
@@ -143,24 +142,27 @@ workflows:
   tests_browsers:
     jobs:
       - build
+
       - make_dojo:
           requires:
             - build
+
       - test_chrome:
           requires:
             - make_dojo
+
       - test_firefox:
           requires:
             - make_dojo
+
       - test_phantomjs:
           requires:
             - make_dojo
+
       - test_coverage:
           requires:
             - make_dojo
-  tests_nodojo:
-    jobs:
-      - build
-      - test_chrome:
+
+      - tests_nodojo:
           requires:
             - build
