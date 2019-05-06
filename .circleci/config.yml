@@ -53,23 +53,7 @@ aliases:
   - &persist_to_workspace
       root: *working_directory
       paths:
-        - UI
-        - bin
-        - cover_db
-        - cpanfile
-        - css
-        - doc
-        - ledgersmb-dev-docker
-        - ledgersmb.conf
-        - lib
-        - locale
-        - old
-        - screens
-        - sql
-        - t
-        - templates
-        - utils
-        - xt
+        - /home/circleci/project
 
 
 # Reuseable commands
@@ -87,7 +71,7 @@ jobs:
     <<: *defaults
     steps:
     - checkout
-    - run: ls -R
+    - run: ls -a
     - run:
         name: Pull related Git repositories
         command: |
