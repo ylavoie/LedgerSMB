@@ -1,5 +1,7 @@
 version: 2.1
 
+#TODO: To enable matrix, Consider https://github.com/winksaville/circleci-matrix
+
 # Define defaults
 _defaults: &defaults
     working_directory: &working_directory ~/project
@@ -137,6 +139,14 @@ jobs:
       - docker_pull_cached_lsmb_dev
       - run: *prove
 
+  test_nodojo:
+    <<: *defaults
+    steps:
+      - docker_pull_cached_lsmb_dev
+      - run: *prove
+
+# Workflows
+# Tests multiple browsers, coverage and dojo
 workflows:
   version: 2
   tests_browsers:
