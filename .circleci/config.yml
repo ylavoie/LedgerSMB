@@ -63,7 +63,7 @@ commands:
   docker_pull_cached_lsmb_dev:
     description: "Pull cached LSMB"
     steps:
-      - restore_cache: *restore_main_cache
+      #- restore_cache: *restore_main_cache
       - *step_attach_workspace
       - run: *docker_pull_lsmb_dev
 
@@ -80,21 +80,20 @@ jobs:
           git submodule sync
           git submodule update --init
           git clone git://github.com/ledgersmb/ledgersmb-dev-docker
-    - restore_cache: *restore_main_cache
+    #- restore_cache: *restore_main_cache
     - run: mkdir screens
     - run: cp doc/conf/ledgersmb.conf.default ledgersmb.conf
     - run: chmod -R a=rwX .
     - run: *docker_pull_lsmb_dev
-    - save_cache: *save_main_cache
+    #- save_cache: *save_main_cache
     - persist_to_workspace: *persist_to_workspace
     - run: docker ps
 
   make_dojo:
     <<: *defaults
     steps:
-      - run: docker ps
       - docker_pull_cached_lsmb_dev
-      - run: docker ps
+      - run: docker-compose -f ledgersmb-dev-docker/docker-compose.yml exec lsmb ls -R /srv
       - run: docker-compose -f ledgersmb-dev-docker/docker-compose.yml exec lsmb make dojo
       - persist_to_workspace: *persist_to_workspace
 
