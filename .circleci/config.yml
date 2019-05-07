@@ -87,12 +87,14 @@ jobs:
     - run: *docker_pull_lsmb_dev
     - save_cache: *save_main_cache
     - persist_to_workspace: *persist_to_workspace
-    - run: ls -aR /home/circleci
+    - run: docker ps
 
   make_dojo:
     <<: *defaults
     steps:
+      - run: docker ps
       - docker_pull_cached_lsmb_dev
+      - run: docker ps
       - run: docker-compose -f ledgersmb-dev-docker/docker-compose.yml exec lsmb make dojo
       - persist_to_workspace: *persist_to_workspace
 
