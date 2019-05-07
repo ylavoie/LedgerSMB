@@ -36,6 +36,7 @@ aliases:
       at: *working_directory
 
   # Save and restore cache go along
+  # Cache to speed-up next runs
   - &save_main_cache
     paths:
       - .
@@ -50,6 +51,7 @@ aliases:
       docker-compose -f ledgersmb-dev-docker/docker-compose.yml
                      up --quiet-pull -d
 
+  # Keep for following jobs in this run
   - &persist_to_workspace
       root: *working_directory
       paths:
@@ -85,6 +87,7 @@ jobs:
     - run: *docker_pull_lsmb_dev
     - save_cache: *save_main_cache
     - persist_to_workspace: *persist_to_workspace
+    - run: ls -a
 
   make_dojo:
     <<: *defaults
