@@ -87,7 +87,7 @@ jobs:
     - run: *docker_pull_lsmb_dev
     - save_cache: *save_main_cache
     - persist_to_workspace: *persist_to_workspace
-    - run: ls -a
+    - run: ls -aR /home/circleci
 
   make_dojo:
     <<: *defaults
@@ -95,6 +95,12 @@ jobs:
       - docker_pull_cached_lsmb_dev
       - run: docker-compose -f ledgersmb-dev-docker/docker-compose.yml exec lsmb make dojo
       - persist_to_workspace: *persist_to_workspace
+
+  test_nodojo:
+    <<: *defaults
+    steps:
+      - docker_pull_cached_lsmb_dev
+      - run: *prove
 
   test_chrome:
     <<: *defaults
@@ -123,12 +129,6 @@ jobs:
     <<: *defaults
     environment:
       - COVERAGE: 1
-    steps:
-      - docker_pull_cached_lsmb_dev
-      - run: *prove
-
-  test_nodojo:
-    <<: *defaults
     steps:
       - docker_pull_cached_lsmb_dev
       - run: *prove
