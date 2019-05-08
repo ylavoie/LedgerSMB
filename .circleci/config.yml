@@ -52,7 +52,7 @@ aliases:
   - &persist_to_workspace
       root: ~/
       paths:
-        - project
+        - .
 
 # Reuseable commands
 commands:
@@ -112,6 +112,7 @@ jobs:
     steps:
       - run: ls -la ~
       - docker_pull_cached_lsmb_dev
+      - run: ls -la ~
       - run: docker-compose -f ledgersmb-dev-docker/docker-compose.yml stop selenium
       - run: docker pull browserless/chrome
       - run: docker run -d browserless/chrome 4422:3000
