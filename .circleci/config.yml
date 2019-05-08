@@ -50,7 +50,7 @@ aliases:
 
   # Keep for following jobs in this run
   - &persist_to_workspace
-      root: ~/
+      root: *working_directory
       paths:
         - .
 
@@ -61,7 +61,6 @@ commands:
     steps:
       #- restore_cache: *restore_main_cache
       - *step_attach_workspace
-      - run: ls -la ~; ls -la project
       - run: *docker_pull_lsmb_dev
 
 # Define jobs
@@ -86,11 +85,10 @@ jobs:
           git submodule update --init
           git clone git://github.com/ledgersmb/ledgersmb-dev-docker
     #- restore_cache: *restore_main_cache
+    - run: *docker_pull_lsmb_dev
     - run: mkdir screens;
-    - run: ls -la ~
     - run: cp doc/conf/ledgersmb.conf.default ledgersmb.conf
     - run: chmod -R a=rwX .
-    - run: *docker_pull_lsmb_dev
     - run: docker-compose -f ledgersmb-dev-docker/docker-compose.yml exec lsmb make dojo
     #- save_cache: *save_main_cache
     - persist_to_workspace: *persist_to_workspace
@@ -111,9 +109,7 @@ jobs:
   test_chrome:
     <<: *defaults
     steps:
-      - run: ls -la ~
       - docker_pull_cached_lsmb_dev
-      - run: ls -la ~
       - run: docker-compose -f ledgersmb-dev-docker/docker-compose.yml stop selenium
       - run: docker pull browserless/chrome
       - run: docker run -d browserless/chrome 4422:3000
