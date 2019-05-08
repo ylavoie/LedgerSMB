@@ -86,7 +86,7 @@ jobs:
           git submodule update --init
           git clone git://github.com/ledgersmb/ledgersmb-dev-docker
     #- restore_cache: *restore_main_cache
-    - run: mkdir screens
+    - run: mkdir screens; ls -l screens
     - run: cp doc/conf/ledgersmb.conf.default ledgersmb.conf
     - run: chmod -R a=rwX .
     - run: *docker_pull_lsmb_dev
