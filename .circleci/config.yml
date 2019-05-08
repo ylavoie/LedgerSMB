@@ -17,9 +17,6 @@ _defaults: &defaults
       - LSMB_BASE_URL: http://127.0.0.1:5000
       - PSGI_BASE_URL: http://127.0.0.1:5001
       - HARNESS_RULESFILE: t/testrules.yml
-      - PERL5OPT: -MDevel::Cover
-      - DEVEL_COVER_OPTIONS: +ignore,\"\.lttc\$\"
-      - COVERAGE: 0
 
 # Define aliases for simplification
 aliases:
@@ -136,7 +133,8 @@ jobs:
   test_coverage:
     <<: *defaults
     environment:
-      - COVERAGE: 1
+      - PERL5OPT: -MDevel::Cover
+      - DEVEL_COVER_OPTIONS: +ignore,\"\.lttc\$\"
     steps:
       - docker_pull_cached_lsmb_dev
       - run: *prove
