@@ -93,18 +93,18 @@ jobs:
     #- save_cache: *save_main_cache
     - persist_to_workspace: *persist_to_workspace
 
-#  make_dojo:
-#    <<: *defaults
-#    steps:
-#      - docker_pull_cached_lsmb_dev
-#      - run: docker-compose -f ledgersmb-dev-docker/docker-compose.yml exec lsmb make dojo
-#      - persist_to_workspace: *persist_to_workspace
+  make_dojo:
+    <<: *defaults
+    steps:
+      - docker_pull_cached_lsmb_dev
+      - run: docker-compose -f ledgersmb-dev-docker/docker-compose.yml exec lsmb make dojo
+      - persist_to_workspace: *persist_to_workspace
 
-#  test_nodojo:
-#    <<: *defaults
-#    steps:
-#      - docker_pull_cached_lsmb_dev
-#      - run: *prove
+  test_nodojo:
+    <<: *defaults
+    steps:
+      - docker_pull_cached_lsmb_dev
+      - run: *prove
 
   test_chrome:
     <<: *defaults
@@ -112,7 +112,7 @@ jobs:
       - docker_pull_cached_lsmb_dev
       - run: docker-compose -f ledgersmb-dev-docker/docker-compose.yml stop selenium
       - run: docker pull browserless/chrome
-      - run: docker run -d browserless/chrome 4422:3000
+      - run: docker run -d browserless/chrome 4422:3000 -e LANG=en_US.UTF-8
       - run: *prove
 
   test_firefox:
@@ -120,7 +120,7 @@ jobs:
     steps:
       - docker_pull_cached_lsmb_dev
       - run: docker-compose -f ledgersmb-dev-docker/docker-compose.yml stop selenium
-      - run: docker run -d deepsweet/firefox-headless-remote 4422:2828
+      - run: docker run -d deepsweet/firefox-headless-remote 4422:2828  -e LANG=en_US.UTF-8
       - run: *prove
 
   test_phantomjs:
@@ -146,26 +146,26 @@ workflows:
     jobs:
       - build
 
-#      - make_dojo:
-#          requires:
-#            - build
+      - make_dojo:
+          requires:
+            - build
 
       - test_chrome:
           requires:
-            - build
+            - make_dojo
 
       - test_firefox:
           requires:
-            - build
+            - make_dojo
 
       - test_phantomjs:
           requires:
-            - build
+            - make_dojo
 
       - test_coverage:
           requires:
-            - build
+            - make_dojo
 
-#      - test_nodojo:
-#          requires:
-#            - build
+      - test_nodojo:
+          requires:
+            - build
