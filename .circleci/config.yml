@@ -50,10 +50,9 @@ aliases:
 
   # Keep for following jobs in this run
   - &persist_to_workspace
-      root: *working_directory
+      root: ~/
       paths:
-        - .
-
+        - project
 
 # Reuseable commands
 commands:
@@ -86,7 +85,8 @@ jobs:
           git submodule update --init
           git clone git://github.com/ledgersmb/ledgersmb-dev-docker
     #- restore_cache: *restore_main_cache
-    - run: mkdir screens; ls -la
+    - run: mkdir screens;
+    - run: ls -la
     - run: cp doc/conf/ledgersmb.conf.default ledgersmb.conf
     - run: chmod -R a=rwX .
     - run: *docker_pull_lsmb_dev
@@ -110,6 +110,7 @@ jobs:
   test_chrome:
     <<: *defaults
     steps:
+      - run: ls -la
       - docker_pull_cached_lsmb_dev
       - run: docker-compose -f ledgersmb-dev-docker/docker-compose.yml stop selenium
       - run: docker pull browserless/chrome
