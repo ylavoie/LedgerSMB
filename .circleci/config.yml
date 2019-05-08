@@ -26,7 +26,7 @@ aliases:
   - &prove
       command |
             docker-compose -f ledgersmb-dev-docker/docker-compose.yml up -d;
-            docker-compose -f ledgersmb-dev-docker/docker-compose.yml exec lsmb prove -v
+            docker-compose -f ledgersmb-dev-docker/docker-compose.yml exec lsmb prove
                 --recurse --pgtap-option dbname=lsmbtestdb
                 --pgtap-option username=postgres
                 --feature-option tags=~@wip t/ xt/
