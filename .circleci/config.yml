@@ -61,6 +61,7 @@ commands:
     steps:
       #- restore_cache: *restore_main_cache
       - *step_attach_workspace
+      - run: ls -la ~; ls -la project
       - run: *docker_pull_lsmb_dev
 
 # Define jobs
