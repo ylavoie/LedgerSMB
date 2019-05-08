@@ -82,7 +82,6 @@ jobs:
           key: source-v1-{{ .Branch }}-{{ .Revision }}
           paths:
             - ".git"
-    - run: ls -a
     - run:
         name: Pull related Git repositories
         command: |
@@ -94,23 +93,22 @@ jobs:
     - run: cp doc/conf/ledgersmb.conf.default ledgersmb.conf
     - run: chmod -R a=rwX .
     - run: *docker_pull_lsmb_dev
+    - run: docker-compose -f ledgersmb-dev-docker/docker-compose.yml exec lsmb make dojo
     #- save_cache: *save_main_cache
     - persist_to_workspace: *persist_to_workspace
-    - run: docker ps
 
-  make_dojo:
-    <<: *defaults
-    steps:
-      - docker_pull_cached_lsmb_dev
-      - run: docker-compose -f ledgersmb-dev-docker/docker-compose.yml exec lsmb ls -R /srv
-      - run: docker-compose -f ledgersmb-dev-docker/docker-compose.yml exec lsmb make dojo
-      - persist_to_workspace: *persist_to_workspace
+#  make_dojo:
+#    <<: *defaults
+#    steps:
+#      - docker_pull_cached_lsmb_dev
+#      - run: docker-compose -f ledgersmb-dev-docker/docker-compose.yml exec lsmb make dojo
+#      - persist_to_workspace: *persist_to_workspace
 
-  test_nodojo:
-    <<: *defaults
-    steps:
-      - docker_pull_cached_lsmb_dev
-      - run: *prove
+#  test_nodojo:
+#    <<: *defaults
+#    steps:
+#      - docker_pull_cached_lsmb_dev
+#      - run: *prove
 
   test_chrome:
     <<: *defaults
@@ -151,26 +149,26 @@ workflows:
     jobs:
       - build
 
-      - make_dojo:
-          requires:
-            - build
+#      - make_dojo:
+#          requires:
+#            - build
 
       - test_chrome:
           requires:
-            - make_dojo
+            - build
 
       - test_firefox:
           requires:
-            - make_dojo
+            - build
 
       - test_phantomjs:
           requires:
-            - make_dojo
+            - build
 
       - test_coverage:
           requires:
-            - make_dojo
-
-      - test_nodojo:
-          requires:
             - build
+
+#      - test_nodojo:
+#          requires:
+#            - build
