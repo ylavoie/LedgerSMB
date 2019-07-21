@@ -21,26 +21,14 @@ commands:
           command: |
              if [ "x$COVERAGE" == "x1" ]
              then
-               export HARNESS_PERL_SWITCHES="$HARNESS_PERL_SWITCHES -MDevel::Cover"
-               export PERL5LIB="$HOME/locallib/lib/perl5${PERL5LIB+:}$PERL5LIB"
+               # Turn off Perl warnings
+               export PERL5OPT="$PERL5OPT -MDevel::Cover"
              fi
-             echo $PERL5OPT
-             echo $HARNESS_PERL_SWITCHES
-             echo $PERL5LIB
              prove --recurse -j 2 \
                    --pgtap-option dbname=lsmbinstalltest \
                    --pgtap-option username=postgres \
                    --pgtap-option psql=.circleci/psql-wrap \
                    --feature-option tags=~@wip t/ xt/
-      - run:
-          command: |
-            curl $PSGI_BASE_URL/stop.pl || true
-            while [ ! -e plackup-done ];
-            do
-              echo -n "."
-              sleep 1
-            done
-            echo " done"
       - run:
           command: |
             mkdir -p /tmp/artifact/logs;
@@ -97,18 +85,11 @@ commands:
           command: |
             if [ "x$COVERAGE" == "x1" ]
             then
-              # Note that this is deliberately different from the 'prove'
-              # invocation
               export PERL5OPT="$PERL5OPT -MDevel::Cover"
-              export PERL5LIB="$HOME/locallib/lib/perl5${PERL5LIB+:}$PERL5LIB"
             fi
-            echo $PERL5OPT
-            echo $PERL5LIB
             plackup -I$HOME/project/lib -I$HOME/project/old/lib \
                     --port 5001 \
                     $HOME/project/bin/ledgersmb-server.psgi
-            echo "Plackup done!"
-            touch plackup-done
           background: true
   start_proxy:
     description: "Start the proxy"
@@ -144,7 +125,7 @@ executors:
       - image: ledgersmb/ledgersmb_circleci-<< parameters.browser >>
     environment:
       COVERAGE: << parameters.coverage >>
-      DEVEL_COVER_OPTIONS: -ignore,^/|^utils/|^x?t/|\.lttc$,-blib,0
+      DEVEL_COVER_OPTIONS: -ignore,^/|^utils/|^x?t/|\.lttc$,-blib,0,-silent,1
       RELEASE_TESTING: 1
       PGHOST: localhost
       PGUSER: postgres
