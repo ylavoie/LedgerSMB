@@ -22,6 +22,7 @@ commands:
              if [ "x$COVERAGE" == "x1" ]
              then
                export HARNESS_PERL_SWITCHES="$HARNESS_PERL_SWITCHES -MDevel::Cover"
+               export PERL5LIB="$HOME/locallib/lib/perl5${PERL5LIB+:}$PERL5LIB"
              fi
              prove --recurse -j 2 \
                    --pgtap-option dbname=lsmbinstalltest \
@@ -86,6 +87,18 @@ commands:
           command: |
             mkdir -p logs screens;
             cp doc/conf/ledgersmb.conf.default ledgersmb.conf
+      - run:
+          name: Apply patches for dependencies not yet committed
+          command: |
+            perl=`perl -e 'print substr($^V, 1)'`;
+            sudo wget https://raw.githubusercontent.com/ylavoie/weasel-driver-selenium2/error_handler/lib/Weasel/Driver/Selenium2.pm \
+              -O ~/perl5/perlbrew/perls/perl-$perl/lib/site_perl/$perl/Weasel/Driver/Selenium2.pm;
+            sudo wget https://raw.githubusercontent.com/ylavoie/weasel-widgets-dojo/use_js_click/lib/Weasel/Widgets/Dojo/Option.pm \
+              -O ~/perl5/perlbrew/perls/perl-$perl/lib/site_perl/$perl/Weasel/Widgets/Dojo/Option.pm;
+            cpanm --quiet --notest Data::Printer DateTime::HiRes;
+            sudo apt update && sudo apt install -qyy less mc lynx;
+            perl=`perl -e 'print substr($^V, 1)'`;
+            sudo chmod -R +w ~/perl5/perlbrew/perls/perl-$perl/lib/site_perl/$perl;
   start_plackup:
     description: "Start plackup"
     steps:
@@ -95,7 +108,8 @@ commands:
             then
               # Note that this is deliberately different from the 'prove'
               # invocation
-               export HARNESS_PERL_SWITCHES="$HARNESS_PERL_SWITCHES -MDevel::Cover"
+              export PERL5OPT="$PERL5OPT -MDevel::Cover"
+              export PERL5LIB="$HOME/locallib/lib/perl5${PERL5LIB+:}$PERL5LIB"
             fi
             plackup -I$HOME/project/lib -I$HOME/project/old/lib \
                     --port 5001 \
