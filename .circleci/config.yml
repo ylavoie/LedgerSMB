@@ -91,7 +91,7 @@ commands:
           name: Apply patches for dependencies not yet committed
           command: |
             perl=`perl -e 'print substr($^V, 1)'`;
-            sudo wget https://raw.githubusercontent.com/ylavoie/weasel-driver-selenium2/error_handler/lib/Weasel/Driver/Selenium2.pm \
+            sudo wget https://raw.githubusercontent.com/ylavoie/weasel-driver-selenium2/error_handler2/lib/Weasel/Driver/Selenium2.pm \
               -O ~/perl5/perlbrew/perls/perl-$perl/lib/site_perl/$perl/Weasel/Driver/Selenium2.pm;
             sudo wget https://raw.githubusercontent.com/ylavoie/weasel-widgets-dojo/use_js_click/lib/Weasel/Widgets/Dojo/Option.pm \
               -O ~/perl5/perlbrew/perls/perl-$perl/lib/site_perl/$perl/Weasel/Widgets/Dojo/Option.pm;
@@ -150,6 +150,7 @@ executors:
       - image: ledgersmb/ledgersmb_circleci-postgres:<< parameters.postgres >>
       - image: ledgersmb/ledgersmb_circleci-<< parameters.browser >>
     environment:
+      BROWSER: << parameters.browser >>
       COVERAGE: << parameters.coverage >>
       DEVEL_COVER_OPTIONS: -ignore,^/|^utils/|^x?t/|\.lttc$,-blib,0,-silent,1
       RELEASE_TESTING: 1
