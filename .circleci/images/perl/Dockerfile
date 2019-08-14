@@ -28,7 +28,7 @@ RUN cd && \
 RUN perlbrew init --shell=/bin/bash && \
     source ~/perl5/perlbrew/etc/bashrc && \
     perlbrew install-patchperl && \
-    perlbrew install --notest -j 4 $perl && \
+    perlbrew install --notest -j 4 $perl -DPERL_SUB_DEPTH_WARN=1000 && \
     perlbrew use perl-$perl && \
     perlbrew install-cpanm && \
     echo "source ~/perl5/perlbrew/etc/bashrc" >> ~/.profile && \
@@ -60,7 +60,7 @@ RUN cd ~/project && \
 RUN   eval $(perl -I ~/perl5/lib/perl5/ -Mlocal::lib) && \
   source ~/perl5/perlbrew/etc/bashrc && \
   perlbrew use perl-$perl && \
-  cd /tmp && git clone git://github.com/pjlsergeant/test-bdd-cucumber-perl.git -b match-mode && \
+  cd /tmp && git clone git://github.com/pjlsergeant/test-bdd-cucumber-perl.git && \
   cd test-bdd-cucumber-perl && ( dzil authordeps --missing | cpanm --notest ) && ( dzil listdeps --missing --author | cpanm --notest ) && \
   dzil install && rm -rf ~/.cpanm && \
   cd ~/ && rm -rf /tmp/test-bdd-cucumber-perl && rm -rf project && mkdir project
