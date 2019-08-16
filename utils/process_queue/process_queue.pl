@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # TODO:  Add POD -CT
 
@@ -27,16 +27,16 @@ while (1) {    # loop infinitely
 sub on_notify {
     my $job_id = 1;
     while ($job_id){
-        ($job_id) = $dbh->selectrow_array( 
+        ($job_id) = $dbh->selectrow_array(
 		"SELECT id from pending_job
 		WHERE completed_at IS NULL
 		ORDER BY id LIMIT 1
-                FOR UPDATE" 
+                FOR UPDATE"
     	);
     	if ($job_id){
             $job_id = $dbh->quote($job_id);
             my ($job_class) = $dbh->selectrow_array(
-		"select class from batch_class where id = 
+		"select class from batch_class where id =
 			(select batch_class from pending_job where id = $job_id)"
             );
             # Right now, we assume that every pending job has a batch id.
@@ -62,7 +62,7 @@ sub on_notify {
             # use set session authorization so one must reconnect to reset
             # administrative permissions. -CT
             $dbh->disconnect;
-            $dbh = db_init(); 
+            $dbh = db_init();
         }
     }
 }
@@ -80,7 +80,7 @@ sub db_init {
     );
     $dbh->{pg_enable_utf8} = 1;
     ($cycle_delay) = $dbh->selectrow_array(
-		"SELECT value FROM defaults 
+		"SELECT value FROM defaults
 		WHERE setting_key = 'poll_frequency'"
     );
     if (!$cycle_delay){

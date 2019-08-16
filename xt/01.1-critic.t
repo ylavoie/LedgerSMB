@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 use strict;
 use warnings;
@@ -72,4 +72,3 @@ test_files(
     ),
     \@on_disk_tests
 );
-

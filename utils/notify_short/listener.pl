@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # This is the SL-Short listener.  It listens for the "parts_short" signal and
 # when the signal comes in, prepares a list of short parts to be sent to
@@ -50,4 +50,3 @@ sub on_notify {
     print MAIL $template_foot;
     close MAIL;
 }
-

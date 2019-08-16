@@ -1,16 +1,16 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 # Copyright (c) 2012, The LedgerSMB Core Team
-# All rights reserved. 
+# All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met: 
+# modification, are permitted provided that the following conditions are met:
 #
 # Redistributions of source code must retain the above copyright notice, this
-# list of conditions and the following disclaimer. 
+# list of conditions and the following disclaimer.
 #
 # Redistributions in binary form must reproduce the above copyright notice, this
 # list of conditions and the following disclaimer in the documentation and/or
-# other materials provided with the distribution. 
+# other materials provided with the distribution.
 #
 # THIS SOFTWARE IS PROVIDED BY THE LEDGERSMB CORE TEAM AND CONTRIBUTORS "AS
 # IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -25,10 +25,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 # This is the prepare-company-database.pl which serves as a command line tool
-# for creating LedgerSMB databases and also as a reference implementation to 
+# for creating LedgerSMB databases and also as a reference implementation to
 # demonstrate the usage of the LedgerSMB::Database framework.
 #
-# 
+#
 use Getopt::Long;
 use LedgerSMB::Database;
 use Cwd;
@@ -138,11 +138,11 @@ $ENV{PGHOST} = $host if $host;
 $ENV{PGPORT} = $port if $port;
 
 my $database = LedgerSMB::Database->new(
-        {dbname => $company, 
-    countrycode => $cc, 
-     chart_name => $coa, 
-   company_name => $company, 
-       username => $owner, 
+        {dbname => $company,
+    countrycode => $cc,
+     chart_name => $coa,
+   company_name => $company,
+       username => $owner,
        password => $pass}
 );
 
@@ -152,7 +152,7 @@ $database->create_and_load();
 # CREATING THE USER
 #
 # This is a little tricky because we have to actually manually create a database
-# connection.  In the future we may want to have such a database connection 
+# connection.  In the future we may want to have such a database connection
 # returned by LedgerSMB::Database, but that is not done yet.
 
 my $lsmb = LedgerSMB->new() || die 'could not create new LedgerSMB object';
@@ -168,8 +168,8 @@ my $sth = $lsmb->{dbh}->prepare(
 $sth->execute($cc);
 my ($country_id) = $sth->fetchrow_array;
 
-# This section is still untested and may be for some time.  Unlike in 1.3, we 
-# don't have to do $lsmb->merge() and then create new copies of the LedgerSMB 
+# This section is still untested and may be for some time.  Unlike in 1.3, we
+# don't have to do $lsmb->merge() and then create new copies of the LedgerSMB
 # archetype.  This leads to more direct, readable code, but there may still be
 # some bugs to work out --CT
 

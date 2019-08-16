@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl -w
 
 use strict;
 use Pod::ProjectDocs;
@@ -9,4 +9,3 @@ my $pd = Pod::ProjectDocs->new(
     title   => 'LedgerSMB Documentation',
 );
 $pd->gen();
-

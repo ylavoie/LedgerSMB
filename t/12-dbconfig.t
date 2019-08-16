@@ -1,4 +1,4 @@
-#!perl
+#!/usr/bin/env perl
 
 use File::Spec;
 use Test::More;

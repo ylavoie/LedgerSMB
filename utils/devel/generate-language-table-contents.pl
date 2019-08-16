@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 use Locale::Country;
 use Locale::Language;
@@ -18,6 +18,3 @@ foreach my $dir (@dir) {
 }
 
 closedir(DIR);
-
-
-

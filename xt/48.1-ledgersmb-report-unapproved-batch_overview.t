@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!#!/usr/bin/env perl
 
 =head1 UNIT TESTS FOR LedgerSMB::Report::Unapproved::Batch_Overview
 

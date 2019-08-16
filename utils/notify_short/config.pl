@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 use vars qw($email_to $cc_to $email_from $sendmail $database $db_user
   $db_passwd $template_head $template_foot);
@@ -31,7 +31,7 @@ $template_top = "From: $email_from
 Subject: Parts Short Notice
 
 Hi.  This is the SL-Short listener.  You are receiving this message because
-a recently issued invoice has reduced the number of onhand items to a level 
+a recently issued invoice has reduced the number of onhand items to a level
 below its re-order point (ROP).  Please see the below report for items currently
 at or below their ROP.
 
@@ -51,4 +51,3 @@ format MAIL =
 $partnumber,      $description,                         $avail,$rop
 .
 1;
-

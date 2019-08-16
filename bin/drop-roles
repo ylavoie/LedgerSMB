@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 use warnings;
 use strict;
 
@@ -94,4 +94,3 @@ for my $role (@other_roles) {
 	}
 	$dbh->do("DROP ROLE $role;");
 }
-

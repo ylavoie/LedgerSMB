@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # Note: This file assumes good dates, SL behaviour with bad dates is undefined
 #
