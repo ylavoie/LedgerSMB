@@ -19,12 +19,6 @@ commands:
     steps:
       - run:
           command: |
-             if [ "x$COVERAGE" == "x1" ]
-             then
-               perl=`perl -e 'print substr($^V, 1)'`
-               export PERL5OPT="$PERL5OPT -MDevel::Cover"
-               export PERL5LIB="PERL5LIB=$HOME/perl5/perlbrew/perls/perl-$perl/lib/site_perl/$perl:$HOME/perl5/perlbrew/perls/perl-$perl/lib/$perl:$HOME/perl5${PERL5LIB+:$PERL5LIB}"
-             fi
              prove --recurse -j 2 \
                    --pgtap-option dbname=lsmbinstalltest \
                    --pgtap-option username=postgres \
@@ -68,6 +62,11 @@ commands:
       - run:
           name: Refresh modules from CPAN
           command: |
+            # Suppress warnings in Perl 5.28 about Locale::* being moved out of 'core'
+            # Further more is there a warning regarding redifinition of JSON::PP::Boolean
+            # which is fixed in 4.03 (so, reinstall, in order to get to newest)
+            cpanm --reinstall --notest Locale::Country Locale::Codes Locale::Language JSON::PP
+            cpanm Cpanel::JSON::XS~3.0206
             cpanm --quiet --notest \
               --with-develop \
               --with-feature=starman \
@@ -80,8 +79,13 @@ commands:
             if [ "x$COVERAGE" == "x1" ]
             then
               cpanm --quiet --notest \
-                    Devel::Cover B::Debug \
+                    Devel::Cover \
                     Devel::Cover::Report::Coveralls
+              cpanm --reinstall --notest B::Debug
+              perl=`perl -e 'print substr($^V, 1)'`
+              export PERL5OPT="$PERL5OPT -MDevel::Cover"
+              export PERL5LIB="PERL5LIB=$HOME/perl5/perlbrew/perls/perl-$perl/lib/site_perl/$perl:$HOME/perl5/perlbrew/perls/perl-$perl/lib/$perl:$HOME/perl5${PERL5LIB+:$PERL5LIB}"
+              unset perl
             fi
       - run:
           name: Set up dirs and files
@@ -99,19 +103,12 @@ commands:
             cpanm --quiet --notest Data::Printer DateTime::HiRes;
             sudo apt update && sudo apt install -qyy less mc lynx;
             sudo chmod -R +w ~/perl5/perlbrew/perls/perl-$perl/lib/site_perl/$perl;
+            unset perl
   start_plackup:
     description: "Start plackup"
     steps:
       - run:
           command: |
-            if [ "x$COVERAGE" == "x1" ]
-            then
-              # Note that this is deliberately different from the 'prove'
-              # invocation
-              export PERL5OPT="$PERL5OPT -MDevel::Cover"
-              perl=`perl -e 'print substr($^V, 1)'`
-              export PERL5LIB="PERL5LIB=$HOME/perl5/perlbrew/perls/perl-$perl/lib/site_perl/$perl:$HOME/perl5/perlbrew/perls/perl-$perl/lib/$perl:$HOME/perl5${PERL5LIB+:$PERL5LIB}"
-            fi
             plackup -I$HOME/project/lib -I$HOME/project/old/lib \
                     --port 5001 \
                     $HOME/project/bin/ledgersmb-server.psgi
