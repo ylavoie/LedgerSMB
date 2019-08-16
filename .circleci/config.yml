@@ -21,12 +21,10 @@ commands:
           command: |
              if [ "x$COVERAGE" == "x1" ]
              then
-               export HARNESS_PERL_SWITCHES="$HARNESS_PERL_SWITCHES -MDevel::Cover"
-               export PERL5LIB="$HOME/locallib/lib/perl5${PERL5LIB+:}$PERL5LIB"
+               perl=`perl -e 'print substr($^V, 1)'`
+               export PERL5OPT="$PERL5OPT -MDevel::Cover"
+               export PERL5LIB="PERL5LIB=$HOME/perl5/perlbrew/perls/perl-$perl/lib/site_perl/$perl:$HOME/perl5/perlbrew/perls/perl-$perl/lib/$perl:$HOME/perl5${PERL5LIB+:$PERL5LIB}"
              fi
-             echo $PERL5OPT
-             echo $HARNESS_PERL_SWITCHES
-             echo $PERL5LIB
              prove --recurse -j 2 \
                    --pgtap-option dbname=lsmbinstalltest \
                    --pgtap-option username=postgres \
@@ -100,7 +98,6 @@ commands:
               -O ~/perl5/perlbrew/perls/perl-$perl/lib/site_perl/$perl/Weasel/Widgets/Dojo/Option.pm;
             cpanm --quiet --notest Data::Printer DateTime::HiRes;
             sudo apt update && sudo apt install -qyy less mc lynx;
-            perl=`perl -e 'print substr($^V, 1)'`;
             sudo chmod -R +w ~/perl5/perlbrew/perls/perl-$perl/lib/site_perl/$perl;
   start_plackup:
     description: "Start plackup"
@@ -112,10 +109,9 @@ commands:
               # Note that this is deliberately different from the 'prove'
               # invocation
               export PERL5OPT="$PERL5OPT -MDevel::Cover"
-              export PERL5LIB="$HOME/locallib/lib/perl5${PERL5LIB+:}$PERL5LIB"
+              perl=`perl -e 'print substr($^V, 1)'`
+              export PERL5LIB="PERL5LIB=$HOME/perl5/perlbrew/perls/perl-$perl/lib/site_perl/$perl:$HOME/perl5/perlbrew/perls/perl-$perl/lib/$perl:$HOME/perl5${PERL5LIB+:$PERL5LIB}"
             fi
-            echo $PERL5OPT
-            echo $PERL5LIB
             plackup -I$HOME/project/lib -I$HOME/project/old/lib \
                     --port 5001 \
                     $HOME/project/bin/ledgersmb-server.psgi
