@@ -80,7 +80,7 @@ commands:
             if [ "x$COVERAGE" == "x1" ]
             then
               cpanm --quiet --notest \
-                    Devel::Cover \
+                    Devel::Cover B::Debug \
                     Devel::Cover::Report::Coveralls
             fi
       - run:
