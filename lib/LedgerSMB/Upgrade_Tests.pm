@@ -835,8 +835,8 @@ Please make sure business used by vendors and constomers are defined.<br>
                             SELECT id FROM business);'],
           tooltips => {
             'Force' => marktext('This will <b>remove</b> the business references in <u>vendor</u> and <u>customer</u> tables')
-          }
-        );
+      }
+    );
 
 
 push @tests, __PACKAGE__->new(
@@ -884,6 +884,82 @@ selectable_values => { business_id => q{SELECT concat(description,' -- ',discoun
     min_version => '2.7',
     max_version => '3.0'
     );
+
+push @tests,__PACKAGE__->new(
+    test_query => q{
+            CREATE OR REPLACE FUNCTION pg_temp.payment_missing_payable()
+            RETURNS SETOF acc_trans AS $$
+            DECLARE
+                accs acc_trans;
+                chart_id_bank INTEGER;
+                chart_id_ap INTEGER;
+                d1 DATE;
+                d2 DATE;
+                in_id INTEGER;
+            BEGIN
+                SELECT id INTO chart_id_ap FROM chart c
+                WHERE c.link IN ('AP');
+
+                FOR in_id IN (
+                    SELECT ap.id
+                    FROM ap
+                    WHERE (
+                        SELECT COUNT(*) = 0
+                        FROM acc_trans ac
+                        JOIN payment p ON ap.id = p.trans_id
+                        WHERE ap.id=ac.trans_id
+                        AND ac.chart_id = chart_id_ap
+                    )
+                    AND ap.paid <> 0
+                )
+                LOOP
+                    SELECT chart_id INTO chart_id_bank FROM acc_trans ac
+                    JOIN chart c ON c.id=ac.chart_id
+                    WHERE trans_id = in_id
+                    AND c.link IN ('AR_paid:AP_paid');
+
+                    SELECT MAX(transdate) INTO d1 FROM acc_trans ac
+                    WHERE trans_id = in_id
+                    AND chart_id <> chart_id_bank;
+
+                    SELECT ac.* INTO accs
+                    FROM acc_trans ac
+                    WHERE ac.trans_id = in_id
+                    AND chart_id = chart_id_bank;
+
+                    d2 = accs.transdate;
+                    accs.chart_id = chart_id_ap;
+                    accs.transdate = d1;
+                    accs.cleared = null;
+                    accs.id = null;
+                    accs.source = null;
+                    RETURN NEXT accs;
+
+                    accs.amount = -accs.amount;
+                    accs.transdate = d2;
+                    RETURN NEXT accs;
+                END LOOP;
+            END;
+            $$ LANGUAGE plpgsql;
+            SELECT * FROM pg_temp.payment_missing_payable();
+    },
+  display_name => marktext('Missing payable entries'),
+          name => 'no_payables',
+  display_cols => ['trans_id', 'chart_id', 'amount', 'transdate', 'source', 'approved', 'fx_transaction', 'project_id', 'memo', 'id', 'cleared', 'vr_id'],
+  instructions => marktext('Expenses should equate to Payable and should then be paid against Payable.
+  This fixes the missing payable entries'),
+        columns => ['trans_id', 'chart_id', 'amount', 'transdate', 'source', 'approved', 'fx_transaction', 'project_id', 'memo', 'id', 'cleared', 'vr_id'],
+          table => 'acc_trans',
+        appname => 'sql-ledger',
+    min_version => '2.7',
+    max_version => '3.0',
+        insert => 1,
+        # They should be constrained
+        buttons => ['Save and Retry', 'Cancel'],
+      tooltips => {
+        'Force' => marktext('This will <b>insert</b> missing payables entries in AP tables')
+          }
+        );
 
 # push @tests,__PACKAGE__->new(
 #     test_query => "select accno, description, link
