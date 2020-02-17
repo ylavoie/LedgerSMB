@@ -2,7 +2,7 @@
 
 -- With help of a few conditional statements handled by the Template toolkit,
 -- this migration file handles migration from all SQL-Ledger version up to 3.0
--- to all Ledgersmb up to 1.6
+-- to all Ledgersmb up to 1.8
 
 -- When moved to an interface, these will all be specified and preprocessed.
 \set default_country '''[% default_country %]'''
@@ -482,6 +482,33 @@ WHERE NOT EXISTS (
     SELECT 1 FROM :slschema.curr c
     WHERE c.curr = xx.curr AND curr is not null
 );
+
+-- Exchangerate
+
+INSERT INTO exchangerate(curr,transdate,buy,sell)
+SELECT curr, transdate, 0 as buy, exchangerate as sell
+FROM :slschema.ap
+WHERE curr IN (SELECT curr FROM :slschema.curr
+                WHERE rn>1)
+
+UNION
+
+SELECT curr, transdate, exchangerate, 0
+FROM :slschema.ar
+WHERE curr IN (SELECT curr FROM :slschema.curr
+                WHERE rn>1)
+
+UNION
+
+SELECT gl.curr, gl.transdate,
+        case WHEN c.link LIKE '%AR\_amount%' THEN exchangerate ELSE 0 END AS buy,
+        case WHEN c.link LIKE '%AP\_amount%' THEN exchangerate ELSE 0 END AS sell
+FROM :slschema.gl
+JOIN :slschema.acc_trans ac ON ac.trans_id=gl.id
+JOIN :slschema.chart c ON c.id = ac.chart_id
+WHERE c.link LIKE 'A%\_amount%'
+  AND curr IN (SELECT curr FROM :slschema.curr
+                WHERE rn>1);
 
 --Entity Credit Account
 
@@ -1015,21 +1042,14 @@ INSERT INTO acc_trans (entry_id, trans_id, chart_id, amount_bc, amount_tc, curr,
         memo, approved, cleared, vr_id, invoice.id
    FROM :slschema.acc_trans ac
    JOIN (
-                    SELECT id,curr
-                    FROM (      SELECT id,curr FROM :slschema.ap
-                          UNION SELECT id,curr FROM :slschema.ar
-                          UNION SELECT id,curr FROM :slschema.gl) xx
+                    SELECT id,exchangerate,curr
+                    FROM (      SELECT id,exchangerate,curr FROM :slschema.ap
+                          UNION SELECT id,exchangerate,curr FROM :slschema.ar
+                          UNION SELECT id,exchangerate,curr FROM :slschema.gl) xx
    ) xx ON xx.id=ac.trans_id
    LEFT JOIN :slschema.invoice ON ac.id = invoice.id
                               AND ac.trans_id = invoice.trans_id
  LEFT JOIN :slschema.payment y ON (y.trans_id = ac.trans_id AND ac.id = y.id)
- LEFT JOIN (
-	SELECT id, exchangerate, curr FROM :slschema.AP
-	UNION
-	SELECT id, exchangerate, curr FROM :slschema.AR
-	UNION
-	SELECT id, exchangerate, curr FROM :slschema.GL
- ) xx ON xx.id = ac.trans_id
  WHERE chart_id IS NOT NULL
     AND ac.trans_id IN (SELECT id FROM transactions);
 
