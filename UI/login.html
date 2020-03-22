@@ -1,7 +1,7 @@
 [% INCLUDE 'ui-header.html'
         titlebar = "LedgerSMB $version"
         include_stylesheet = ["login.css", "ledgersmb.css"]
-        include_script = [ 'js/lsmb/login.js' ]
+        include_script = [ 'js/login.js' ]
 %]
 [%
    PROCESS elements.html -%]
@@ -107,7 +107,7 @@
       </div>
     </form>
   </center>
-<script>
+<script type="text/javascript">
   require(['dojo/dom', 'dojo/dom-style', 'dojo/ready'],
   function(dom, style, ready) {
     ready(80, function() {

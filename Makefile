@@ -52,11 +52,8 @@ FLAG := $(HOMEDIR)/building_UI_js_$(SHA)
 
 dojo:
 	rm -rf UI/js/;
-	cd UI/js-src/lsmb/ \
-		&& ../util/buildscripts/build.sh --profile lsmb.profile.js \
-		| egrep -v 'warn\(224\).*A plugin dependency was encountered but there was no build-time plugin resolver. module: (dojo/request;|dojo/request/node;|dojo/request/registry;|dijit/Fieldset;|dijit/RadioMenuItem;|dijit/Tree;|dijit/form/_RadioButtonMixin;)';
-	cd ../../..
-
+	npm install;
+	./node_modules/webpack/bin/webpack.js
 
 dojo_archive: dojo
 	#TODO: Protect for concurrent invocations
@@ -101,4 +98,3 @@ test:
 devtest:
 	prove -Ilib t/*.t
 	prove -Ilib xt/*.t
-

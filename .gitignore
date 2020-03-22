@@ -33,3 +33,7 @@ ledgersmb.conf
 
 # test output:
 /screens/*
+
+# Webpack
+/node_modules/
+package-lock.json

@@ -17,9 +17,6 @@
       "declarations"
     ],
     "order/properties-alphabetical-order": true,
-    "plugin/no-unsupported-browser-features": [true, {
-      "browsers": ["> 1%", "Last 2 versions"],
-      "ignore": ["rem"]
-    }]
+    "plugin/no-unsupported-browser-features": true
   }
 }
