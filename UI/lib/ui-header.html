@@ -43,12 +43,13 @@
             };
             var lsmbConfig = {
                 [% IF USER.dateformat %]
-                 "dateformat": '[% USER.dateformat %]'
-                 [% END %]
+                "dateformat": '[% USER.dateformat %]'
+                [% END %]
             };
        </script>
         <script type="text/javascript" src="js/dojo/dojo.js"></script>
         <script type="text/javascript" src="js/lsmb/main.js"></script>
+        <script type="text/javascript" src="js/dojo/dojo.js"></script>
         [% FOREACH s = include_script %]
             <script type="text/javascript" src="[% s %]" ></script>
         [% END %]

@@ -166,8 +166,48 @@ my @expected = split (/\n/, q{<!DOCTYPE html>
             var lsmbConfig = {
             };
        </script>
-        <script type="text/javascript" src="js/dojo/dojo.js"></script>
         <script type="text/javascript" src="js/lsmb/main.js"></script>
+        <script type="text/javascript" src="js/dojo/dojo.js"></script>
+        <meta name="robots" content="noindex,nofollow" />
+</head>
+<body class="claro">
+  <form method="POST"
+        enctype="multipart/form-data"
+        action="script.pl?action=rebuild">
+    <input type="hidden" name="action" value="rebuild_modules">
+    <input type="hidden" name="database" value="">
+    <input type="hidden" name="check_id" value="d5d3db1765287eef77d7927cc956f50a">
+<div class="description">
+  <h1>title</h1>
+  <p>
+    <p>a description</p>
+  </p>
+</div>
+</form>
+</body>};
+
+my $diff = diff \$diff1, \$diff2;
+use Data::Printer;
+warn np $diff;
+
+is join("\n", @$out), q{<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+        <title></title>
+        <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+        <link rel="stylesheet" href="js/dojo/resources/dojo.css" type="text/css" />
+        <link rel="stylesheet" href="js/dijit/themes/claro/claro.css" type="text/css" />
+            <link rel="stylesheet" href="css/ledgersmb.css" type="text/css" />
+            var dojoConfig = {
+                async: 1,
+                locale: '',
+                packages: [{"name":"lsmb","location":"../lsmb"}]
+            };
+            var lsmbConfig = {
+            };
+       </script>
+        <script type="text/javascript" src="js/lsmb/main.js"></script>
+        <script type="text/javascript" src="js/dojo/dojo.js"></script>
         <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
@@ -248,8 +288,8 @@ filter_js_src($out);
             var lsmbConfig = {
             };
        </script>
-        <script type="text/javascript" src="js/dojo/dojo.js"></script>
         <script type="text/javascript" src="js/lsmb/main.js"></script>
+        <script type="text/javascript" src="js/dojo/dojo.js"></script>
         <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
@@ -330,8 +370,8 @@ filter_js_src($out);
             var lsmbConfig = {
             };
        </script>
-        <script type="text/javascript" src="js/dojo/dojo.js"></script>
         <script type="text/javascript" src="js/lsmb/main.js"></script>
+        <script type="text/javascript" src="js/dojo/dojo.js"></script>
         <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
@@ -413,8 +453,8 @@ filter_js_src($out);
             var lsmbConfig = {
             };
        </script>
-        <script type="text/javascript" src="js/dojo/dojo.js"></script>
         <script type="text/javascript" src="js/lsmb/main.js"></script>
+        <script type="text/javascript" src="js/dojo/dojo.js"></script>
         <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
@@ -513,8 +553,8 @@ filter_js_src($out);
             var lsmbConfig = {
             };
        </script>
-        <script type="text/javascript" src="js/dojo/dojo.js"></script>
         <script type="text/javascript" src="js/lsmb/main.js"></script>
+        <script type="text/javascript" src="js/dojo/dojo.js"></script>
         <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
