@@ -44,7 +44,7 @@ function getConfig(env) {
         //},
 
         paths: {                // a map of module id fragments to file paths:
-            //js: "js",
+            js: "js",
             //theme: "theme",
             // With the webpack build, the css loader plugin is replaced by a webpack loader
             // via webpack.config.js, so the following are used only by the unpacked app.

@@ -1,4 +1,11 @@
 {
+    "settings": {
+        "import/resolver": {
+            "node": {
+                "paths": ["UI"]
+            }
+        }
+    },
     "plugins": [
         "amd",
         "sort-dojo-dependency",

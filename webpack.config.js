@@ -4,76 +4,73 @@ const ChunkRenamePlugin = require("webpack-chunk-rename-plugin");
 const { CleanWebpackPlugin } = require('clean-webpack-plugin'); // installed via npm
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const DojoWebpackPlugin = require("dojo-webpack-plugin");
-//const MergeIntoSingleFilePlugin = require('webpack-merge-and-include-globally');
+const entryPlus = require('webpack-entry-plus');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const StylelintPlugin = require('stylelint-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-//const WebpackMonitor = require('webpack-monitor');
+const WebpackMonitor = require('webpack-monitor');
 
+const glob = require('glob');
+const _ = require('lodash');
 const path = require("path");
 const webpack = require("webpack");
 
+const devMode = process.env.NODE_ENV !== 'production';
+
+// Compute the list of files we want to keep
+const excludedDirectories = glob.sync('./UI/**',{ignore: [
+            './UI/*.html',
+            './UI/lib/dynatable.html',  // no ui-header.html
+            './UI/lib/elements.html',
+            './UI/lib/report_base.html',
+            './UI/lib/utilities.html',
+            './UI/Configure/**/*',
+            './UI/Configuration/**/*',
+            './UI/Contact/**/*',
+            './UI/Reports/**/*',
+            './UI/accounts/**/*',
+            './UI/asset/**/*',
+            './UI/budgetting/**/*',
+            './UI/business_units/**/*',
+            './UI/file/**/*',
+            './UI/import_csv/**/*',
+            './UI/inventory/**/*',
+            './UI/journal/**/*',
+            './UI/orders/**/*',
+            './UI/payments/**/*',
+            './UI/payroll/**/*',
+            './UI/reconciliation/**/*',
+            './UI/setup/**/*',
+            './UI/taxform/**/*',
+            './UI/templates/**/*',
+            './UI/timecards/**/*',
+            './UI/users/**/*',
+          ]});
+
+// Remove the above list from the files below
+const includedHtml = glob.sync("./UI/**/*.html", { ignore: excludedDirectories });
+
 module.exports = env => {
-  const devMode = process.env.NODE_ENV !== 'production';
   return {
     context: path.join(__dirname, "UI"),
-    entry: {
+    //stats: 'verbose',
+    entry: Object.assign({},
+    _.reduce(includedHtml,
+      (obj, val) => {
+        const filenameRegex = /([\w\d_-]*)\.?[^\\\/]*$/i;
+        obj[val.match(filenameRegex)[1]] = val.replace('./UI/','');
+        return obj;
+      },
+    {}),{
       'lsmb': 'lsmb/main',
       'login': 'lsmb/login',
-      'lib': [
+/*      'lib': [
         'dojo/dom',
         'dojo/dom-style',
         'dojo/ready',
         'dojo/on',
-        'dijit/Dialog',                 // main.html, login
-        'dijit/Tooltip',                // elements.html, user.html, elements.html, new_user.html
-        'dijit/form/ComboBox',          // setup, Is_LSMB_running
-        'dijit/form/CurrencyTextBox',   // elements.html
-        'dijit/form/MultiSelect',       // elements.html
-        'dijit/form/NumberSpinner',     // balance_sheet, income_statement
-        'dijit/form/Textarea',          // aa, ic, io, ir, is, oe, pe
-        'dijit/layout/BorderContainer', // main.html
-        'lsmb/accounts/AccountRestStore',
-        'lsmb/accounts/AccountSelector',
-        'lsmb/DateTextBox',
-        'lsmb/FilteringSelect',
-        'lsmb/Form',
-        'lsmb/iframe',
-        'lsmb/Invoice',
-        'lsmb/InvoiceLine',
-        'lsmb/InvoiceLines',
-        'lsmb/journal/fx_checkbox',
-        'lsmb/layout/TableContainer',
-        'lsmb/MainContentPane',
-        'lsmb/MaximizeMinimize',
-        'lsmb/menus/Tree',
-        'lsmb/parts/PartDescription',
-        'lsmb/parts/PartRestStore',
-        'lsmb/parts/PartSelector',
-        'lsmb/payments/PostPrintButton',
-        'lsmb/PrintButton',
-        'lsmb/PublishCheckBox',
-        'lsmb/PublishNumberTextBox',
-        'lsmb/PublishRadioButton',
-        'lsmb/PublishSelect',
-        'lsmb/PublishToggleButton',
-        'lsmb/Reconciliation',
-        'lsmb/ReconciliationLine',
-        'lsmb/reports/ComparisonSelector',
-        'lsmb/reports/PeriodSelector',
-        'lsmb/ResizingTextarea',
-        'lsmb/SetupLoginButton',
-        'lsmb/SimpleForm',
-        'lsmb/SubscribeCheckBox',
-        'lsmb/SubscribeNumberTextBox',
-        'lsmb/SubscribeRadioButton',
-        'lsmb/SubscribeSelect',
-        'lsmb/SubscribeShowHide',
-        'lsmb/SubscribeToggleButton',
-        'lsmb/TemplateManager',
-        'lsmb/users/ChangePassword'
-      ]
-    },
+      ]*/
+    }),
 
     output: {
       path: path.join(__dirname, "UI/js"),  // js path
@@ -85,24 +82,30 @@ module.exports = env => {
 
     module: {
       rules: [{
+        enforce: 'pre',
         test: /\.js$/,
-        exclude: [/node_modules/, /dojo.js/],
+        exclude: [/node_modules/, /dojo.js/, /dojo/, /dijit/],
         loader: 'eslint-loader',
         options: {
-          configFile: '.eslintrc'
-        },
-        enforce: 'pre',
+          configFile: '.eslintrc',
+          failOnError: true
+        }
       },{
         test: /\.(png|jpe?g|gif)$/i,
         use: [{
           loader: 'url-loader',
           options: {
-            limit: 100000
+            limit: 8192
           }
         }]
       },{
+        test: /\.html$/,
+        use: [
+          { loader: 'html-loader' },
+        ]
+      },{
         test: /\.svg$/,
-        use: 'file-loader'
+        loader: 'file-loader'
       },{
         test: /\.css$/,
         use: [
@@ -114,7 +117,13 @@ module.exports = env => {
               importLoaders: 1,
               modules: true
             }
-          }
+          },{
+            loader: 'resolve-url-loader', // improves resolution of relative paths
+            options: {
+              root: './UI/'
+            }
+          },
+
         ],
       }
     ]},
@@ -167,19 +176,6 @@ module.exports = env => {
         data.request = data.request.replace(/^css!/, "!style-loader!css-loader!less-loader!")
       }),
 
-      // See https://stackoverflow.com/questions/51639588/load-internal-module-attribute-with-webpack
-      /*new MergeIntoSingleFilePlugin({
-          files: {
-            "lsmb.css": [
-                'UI/css/ledgersmb.css',
-                'UI/css/login.css',
-                'UI/css/setup.css',
-                'UI/css/scripts/*.css',
-                'UI/css/system/*.css'
-            ],
-          }
-      }),*/
-
       new ChunkRenamePlugin({
         initialChunksWithEntry: true,
       }),
@@ -189,26 +185,18 @@ module.exports = env => {
         chunkFilename: "[id].css"
       }),
 
-/*
       new WebpackMonitor({
         capture: true,
-        launch: false,
+        launch: true,
       })
-*/
     ],
 
     resolve: {
-      extensions: ['.js']/*,
-      alias: {
-        lsmb: path.resolve(__dirname, 'UI/js-src/lsmb'),
-        dojo: path.resolve(__dirname, 'UI/js-src/dojo'),
-        dijit: path.resolve(__dirname, 'UI/js-src/dijit')
-      }*/
+      extensions: ['.js']
     },
 
     resolveLoader: {
       modules: ["js-src", "node_modules"],
-      alias: { "requirejs/text": "raw-loader" }
     },
 
     mode: devMode ? 'development' : 'production',
@@ -245,9 +233,11 @@ module.exports = env => {
         }),
       ]
     },
+
     performance: { hints: /*devMode ? 'warning' :*/ false },
 
     devtool: "#source-map",
+
     devServer: {
 			open: true,
 			openPage: "login.html"
