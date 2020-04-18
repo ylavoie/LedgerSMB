@@ -164,7 +164,7 @@ script:
           --pgtap-option dbname=lsmbinstalltest
           --pgtap-option username=postgres
           --feature-option tags=~@wip
-          t/ xt/
+          --verbose t/ xt/
 
 after_script:
   # display the available resources
