@@ -1,8 +1,8 @@
 [% INCLUDE 'ui-header.html'
         titlebar = "LedgerSMB $version"
         include_stylesheet = ["login.css", "ledgersmb.css"]
-        include_script = [ 'js/login.js' ]
 %]
+<script type="text/javascript" src="js-src/lsmb/login.js"></script>
 [%
    PROCESS elements.html -%]
 <body class="login, [% dojo_theme %]"
