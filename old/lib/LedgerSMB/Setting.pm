@@ -103,7 +103,7 @@ sub increment {
 Increment processing subroutine (NOT an object method), used by only related classes.
 
 This function updates a default entry in the database, incrementing the last
-set of digits not including <?lsmb ?> tags or non-digits, and then parses the
+set of digits not including [% %] tags or non-digits, and then parses the
 returned value, doing tag substitution.  The final value is then returned by
 the function.
 
@@ -112,26 +112,26 @@ the function.
 sub increment_process{
     my ($value, $self ) = @_;
 # check for and replace
-# <?lsmb NAME 1 1 3 ?>, <?lsmb BUSINESS ?>, <?lsmb BUSINESS 10 ?>, <?lsmb CURR... ?>
-# <?lsmb DESCRIPTION 1 1 3 ?>, <?lsmb ITEM 1 1 3 ?>, <?lsmb PARTSGROUP 1 1 3 ?> only for parts
-# <?lsmb PHONE ?> for customer and vendors
+# [% NAME 1 1 3 %], [% BUSINESS %], [% BUSINESS 10 %], [% CURR... %]
+# [% DESCRIPTION 1 1 3 %], [% ITEM 1 1 3 %], [% PARTSGROUP 1 1 3 %] only for parts
+# [% PHONE %] for customer and vendors
 
     my $dbvar = $value;
     my $var   = $value;
     my $str;
     my $param;
 
-    if ($value =~ /<\?lsmb /) {
+    if ($value =~ /\[%\s*/) {
 
-        while ($value =~ /<\?lsmb /) {
+        while ($value =~ /\[%\s*/) {
 
-            $value =~ s/(<\?lsmb .*? \?>)//;
+            $value =~ s/(\[%\s*.*?\s*%\])//;
             last unless $1;
             $param = $1;
             $str   = "";
 
             if ( $param =~
-/<\?lsmb (name|business|description|item|partsgroup|phone|custom)/i
+/\[%\s*(name|business|description|item|partsgroup|phone|custom)/i
                )
             {
 
@@ -163,7 +163,7 @@ sub increment_process{
                 $var =~ s/\W//g if $fld eq 'phone';
             }
 
-            if ( $param =~ /<\?lsmb curr/i ) {
+            if ( $param =~ /\[%\s*curr/i ) {
                 $var =~ s/$param/$self->{currency}/;
             }
         }

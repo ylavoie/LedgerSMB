@@ -3069,12 +3069,12 @@ unlike the others is reflected in the UPDATE.
 
 =item *
 
-Replace <?lsmb date ?> with the date specified in $form->{transdate} formatted
+Replace [% date %] with the date specified in $form->{transdate} formatted
 as $myconfig->{dateformat}.
 
 =item *
 
-Replace <?lsmb curr ?> with the value of $form->{currency}
+Replace [% curr %] with the value of $form->{currency}
 
 =back
 
@@ -3296,4 +3296,3 @@ sub sequence_dropdown{
 
 
 =back
-
