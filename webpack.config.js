@@ -1,8 +1,10 @@
 /** @format */
 /* eslint global-require:0, no-param-reassign:0, no-unused-vars:0 */
 
+const getLogger = require('webpack-log');
+const log = getLogger({ name: 'webpack-ledgersmb' });
+
 const ChunkRenamePlugin = require("webpack-chunk-rename-plugin");
-const { CleanWebpackPlugin } = require("clean-webpack-plugin"); // installed via npm
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const DojoWebpackPlugin = require("dojo-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
@@ -12,18 +14,158 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const MultipleThemesCompile = require('webpack-multiple-themes-compile');
 const StylelintPlugin = require("stylelint-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
+const UnusedWebpackPlugin = require('unused-webpack-plugin');
 const WebpackMonitor = require("webpack-monitor");
 
+const { CleanWebpackPlugin } = require("clean-webpack-plugin"); // installed via npm
+
+const _ = require('lodash');  // To use merge and reduce, for we are not using ES6
 const glob = require("glob");
 const path = require("path");
-const webpack = require("webpack");
+const webpack = require('webpack');
 
 const devMode = process.env.NODE_ENV !== "production";
 
-// Inspired by https://github.com/webpack-contrib/style-loader/issues/269
+/////////////////////// FUNCTIONS ///////////////////////
+/////////////////////////////////////////////////////////
+// Compute the list of files we want to keep
+const excludedDirectories = glob.sync("./UI/**", {
+   ignore: [
+      "./UI/*.html",
+      "./UI/lib/dynatable.html", // no ui-header.html
+      "./UI/lib/elements.html",
+      "./UI/lib/report_base.html",
+      "./UI/lib/utilities.html",
+      "./UI/Configure/**/*",
+      "./UI/Configuration/**/*",
+      "./UI/Contact/**/*",
+      "./UI/Reports/**/*",
+      "./UI/accounts/**/*",
+      "./UI/asset/**/*",
+      "./UI/budgetting/**/*",
+      "./UI/business_units/**/*",
+      "./UI/file/**/*",
+      "./UI/import_csv/**/*",
+      "./UI/inventory/**/*",
+      "./UI/journal/**/*",
+      "./UI/orders/**/*",
+      "./UI/payments/**/*",
+      "./UI/payroll/**/*",
+      "./UI/reconciliation/**/*",
+      "./UI/setup/**/*",
+      "./UI/taxform/**/*",
+      "./UI/templates/**/*",
+      "./UI/timecards/**/*",
+      "./UI/users/**/*"
+   ]
+});
 
-// ////////////////////// PLUGINS ////////////////////////
-// ///////////////////////////////////////////////////////
+// Remove the above list from the files below
+const includedHtml = glob.sync("./UI/**/*.html", {
+   ignore: excludedDirectories
+});
+
+//////////////////////// LOADERS ////////////////////////
+/////////////////////////////////////////////////////////
+const javascript = {
+   enforce: "pre",
+   test: /\.js$/,
+   exclude: [/node_modules/, /dojo.js/, /dojo/, /dijit/],
+   use: [{
+      loader: 'babel-loader',
+      options: {
+         presets: ['@babel/preset-env']
+      }
+    },{
+      loader: "eslint-loader",
+      options: {
+         configFile: ".eslintrc",
+         failOnError: true
+      }
+   }]
+};
+
+// Used in css loader definition below and webpack-multiple-themes-compile plugin
+const cssRules = [
+   // Creates `style` nodes from JS strings
+   //'style-loader', // requires a document, thus js code. Not for css only
+   // Translates CSS into CommonJS
+   {
+      loader: 'css-loader',
+      options: {
+         modules: true,
+         sourceMap: !devMode,
+         importLoaders: 1
+      },
+   },
+   // inline images
+   {
+      loader: 'postcss-loader',
+      options: {
+         ident: 'postcss',
+         plugins: [
+           require('postcss-import')(),
+           require('postcss-url')(),
+           //require('postcss-preset-env')(),
+           // add your "plugins" here
+           // ...
+           // and if you want to compress,
+           // just use css-loader option that already use cssnano under the hood
+           require("postcss-browser-reporter")(),
+           require("postcss-reporter")()
+         ]
+       }
+   },
+   // Compiles Sass to CSS
+   {
+      loader: 'sass-loader',
+      options: {
+         sourceMap: !devMode
+       }
+   },
+];
+
+const css = {
+   test: /\.s[ac]ss$/i,
+   use: cssRules
+};
+
+const images = {
+   test: /\.(png|jpe?g|gif)$/i,
+   use: [
+      {
+         loader: "url-loader",
+         options: {
+            limit: 8192
+         }
+      }
+   ]
+};
+
+const lessRules = [
+   { loader: 'style-loader' },
+   { loader: 'css-loader' },
+   { loader: 'less-loader' }
+];
+
+const less = {
+    test: /\.less$/,
+    use: lessRules,
+};
+
+
+const html = {
+   test: /\.html$/,
+   use: "html-loader"
+};
+
+const svg = {
+   test: /\.svg$/,
+   loader: "file-loader"
+};
+
+//////////////////////// PLUGINS ////////////////////////
+/////////////////////////////////////////////////////////
 
 const CleanWebpackPluginOptions = {
    dry: false,
@@ -66,11 +208,23 @@ const DojoWebpackPluginOptions = {
    noConsole: true
 };
 
-/*
+const multipleThemesCompileOptions = {
+   cwd: path.join(__dirname, "UI"),
+   cacheDir: "js",
+   styleLoaders: cssRules,
+   preHeader: '/* stylelint-disable */',
+   outputName: "/js/dijit/themes/[name]/[name].css",
+   themesConfig: {
+     claro:  { dojo_theme: 'claro',  import: [ "../js-src/dijit/themes/claro/claro.css" ]},
+     nihilo: { dojo_theme: 'nihilo', import: [ "../js-src/dijit/themes/nihilo/nihilo.css" ]},
+     soria:  { dojo_theme: 'soria',  import: [ "../js-src/dijit/themes/soria/soria.css" ]},
+     tundra: { dojo_theme: 'tundra', import: [ "../js-src/dijit/themes/tundra/tundra.css" ]}
+   },
+   lessContent: '', // 'body{dojo_theme:@dojo_theme}'
+};
+
 const IndexHtmlOptions = {
-  template: PATHS.indexHTML,
-  filename: 'index.html',
-  excludeChunks: Object.keys(themesConfig)
+  excludeChunks: Object.keys(multipleThemesCompileOptions.themesConfig), // Exclude Dijit themes
   minify: {
     collapseWhitespace: true
   },
@@ -91,7 +245,7 @@ const IndexHtmlOptions = {
     }
   }
 };
-*/
+
 // dojo/domReady (only works if the DOM is ready when invoked)
 const NormalModuleReplacementPluginOptionsDomReady = function (data) {
    const match = /^dojo\/domReady!(.*)$/.exec(data.request);
@@ -123,9 +277,18 @@ const MiniCssExtractPluginOptions = {
    chunkFilename: "[id].css"
 };
 
-const WebpackMonitorOptions = {
+const UnusedWebpackPluginOptions = {
+   // Source directories
+   directories: ['js-src/lsmb'],
+   // Exclude patterns
+   exclude: ['*.test.js'],
+   // Root directory (optional)
+   root: path.join(__dirname, 'UI')
+ };
+
+ const WebpackMonitorOptions = {
    capture: true,
-   launch: falsee
+   launch: false
 };
 
 const devServerOptions = {
@@ -138,96 +301,31 @@ const devServerOptions = {
   openPage: ''
 };
 
-const pluginsDev = [
+const htmls = includedHtml.map(
+     function(val) {
+       const filenameRegex = /(\/UI\/)?([\w\d_\-\/]*)\.?[^\\\/]*$/i;
+       const template = val.match(filenameRegex)[2];
+       const filename = val.replace('./UI/','');
+       return new HtmlWebpackPlugin(_.merge(
+            {
+               template: filename,
+               filename: filename
+            },
+            IndexHtmlOptions
+       ));
+     });
+
+var pluginsDev = [
    new CleanWebpackPlugin(CleanWebpackPluginOptions),
    new webpack.HashedModuleIdsPlugin(webpack.HashedModuleIdsPluginOptions),
    new StylelintPlugin(StylelintPluginOptions),
    new CopyWebpackPlugin(CopyWebpackPluginOptions),
    new MergeIntoSingleFilePlugin(MergeIntoSingleFilePluginOptions),
-   new DojoWebpackPlugin(DojoWebpackPluginOptions),
+   new DojoWebpackPlugin(DojoWebpackPluginOptions)];
 
-   new HtmlWebpackPlugin({
-      template: "setup/begin_backup.html",
-      filename: "setup/begin_backup.html"
-   }),
-   new HtmlWebpackPlugin({
-      template: "setup/complete.html",
-      filename: "setup/complete.html"
-   }),
-   new HtmlWebpackPlugin({
-      template: "setup/complete_migration_revert.html",
-      filename: "setup/complete_migration_revert.html"
-   }),
-   new HtmlWebpackPlugin({
-      template: "setup/confirm_operation.html",
-      filename: "setup/confirm_operation.html"
-   }),
-   new HtmlWebpackPlugin({
-      template: "setup/credentials.html",
-      filename: "setup/credentials.html"
-   }),
-   new HtmlWebpackPlugin({
-      template: "setup/edit_user.html",
-      filename: "setup/edit_user.html"
-   }),
-   new HtmlWebpackPlugin({
-      template: "setup/list_databases.html",
-      filename: "setup/list_databases.html"
-   }),
-   new HtmlWebpackPlugin({
-      template: "setup/list_users.html",
-      filename: "setup/list_users.html"
-   }),
-   new HtmlWebpackPlugin({
-      template: "setup/migration_step.html",
-      filename: "setup/migration_step.html"
-   }),
-   new HtmlWebpackPlugin({
-      template: "setup/new_user.html",
-      filename: "setup/new_user.html"
-   }),
-   new HtmlWebpackPlugin({
-      template: "setup/select_coa.html",
-      filename: "setup/select_coa.html"
-   }),
-   new HtmlWebpackPlugin({
-      template: "setup/system_info.html",
-      filename: "setup/system_info.html"
-   }),
-   new HtmlWebpackPlugin({
-      template: "setup/template_info.html",
-      filename: "setup/template_info.html"
-   }),
-   new HtmlWebpackPlugin({
-      template: "setup/ui-db-credentials.html",
-      filename: "setup/ui-db-credentials.html"
-   }),
-   new HtmlWebpackPlugin({
-      template: "setup/upgrade/confirm.html",
-      filename: "setup/upgrade_confirm.html"
-   }),
-   new HtmlWebpackPlugin({
-      template: "setup/upgrade/describe.html",
-      filename: "setup/upgrade_describe.html"
-   }),
-   new HtmlWebpackPlugin({
-      template: "setup/upgrade/epilogue.html",
-      filename: "setup/upgrade_epilogue.html"
-   }),
-   new HtmlWebpackPlugin({
-      template: "setup/upgrade/grid.html",
-      filename: "setup/upgrade_grid.html"
-   }),
-   new HtmlWebpackPlugin({
-      template: "setup/upgrade/preamble.html",
-      filename: "setup/upgrade_preamble.html"
-   }),
-   new HtmlWebpackPlugin({
-      template: "setup/upgrade_info.html",
-      filename: "setup/upgrade_info.html"
-   }),
-
-   new webpack.NormalModuleReplacementPlugin(
+pluginsDev = pluginsDev.concat(htmls,
+   [
+      new webpack.NormalModuleReplacementPlugin(
       /^dojo\/domReady!/,
       NormalModuleReplacementPluginOptionsDomReady
    ),
@@ -242,86 +340,17 @@ const pluginsDev = [
 
    new ChunkRenamePlugin(ChunkRenamePluginOptions),
    new MiniCssExtractPlugin(MiniCssExtractPluginOptions),
+   new UnusedWebpackPlugin(UnusedWebpackPluginOptions),
    new WebpackMonitor(WebpackMonitorOptions)
-];
+   ]
+);
 
 const pluginsProd = pluginsDev; // TODO: refine...
 
 var pluginsList = devMode ? pluginsDev : pluginsProd;
 
-// ////////////////////// LOADERS ////////////////////////
-// ///////////////////////////////////////////////////////
-const javascript = {
-   enforce: "pre",
-   test: /\.js$/,
-   exclude: [/node_modules/, /dojo.js/, /dojo/, /dijit/],
-   loader: "eslint-loader",
-   options: {
-      configFile: ".eslintrc",
-      failOnError: true
-   }
-};
-
-const css = {
-   test: /\.css$/,
-   use: [
-      { loader: MiniCssExtractPlugin.loader },
-      { loader: "style-loader" },
-      {
-         loader: "css-loader",
-         options: {
-            importLoaders: 1,
-            modules: true
-         }
-      },
-      {
-         loader: "resolve-url-loader", // improves resolution of relative paths
-         options: {
-            root: "./UI/"
-         }
-      }
-   ]
-};
-
-const images = {
-   test: /\.(png|jpe?g|gif)$/i,
-   use: [
-      {
-         loader: "url-loader",
-         options: {
-            limit: 8192
-         }
-      }
-   ]
-};
-
-const less = {
-    test: /\.less$/,
-    use: [
-      { loader: 'style-loader' },
-      { loader: 'css-loader', },
-      { loader: 'less-loader',
-        options: {
-          lessOptions: {
-            strictMath: true,
-          },
-        },
-      },
-    ],
-};
-
-const html = {
-   test: /\.html$/,
-   use: "html-loader"
-};
-
-const svg = {
-   test: /\.svg$/,
-   loader: "file-loader"
-};
-
-// /////////////////// OPTIMIZATIONS /////////////////////
-// ///////////////////////////////////////////////////////
+///////////////////// OPTIMIZATIONS /////////////////////
+/////////////////////////////////////////////////////////
 const optimizationList = {
    /*
       runtimeChunk: {
@@ -364,48 +393,8 @@ const optimizationList = {
         ]
 };
 
-// ///////////////////// FUNCTIONS ///////////////////////
-// ///////////////////////////////////////////////////////
-// Compute the list of files we want to keep
-const excludedDirectories = glob.sync("./UI/**", {
-   ignore: [
-      "./UI/*.html",
-      "./UI/lib/dynatable.html", // no ui-header.html
-      "./UI/lib/elements.html",
-      "./UI/lib/report_base.html",
-      "./UI/lib/utilities.html",
-      "./UI/Configure/**/*",
-      "./UI/Configuration/**/*",
-      "./UI/Contact/**/*",
-      "./UI/Reports/**/*",
-      "./UI/accounts/**/*",
-      "./UI/asset/**/*",
-      "./UI/budgetting/**/*",
-      "./UI/business_units/**/*",
-      "./UI/file/**/*",
-      "./UI/import_csv/**/*",
-      "./UI/inventory/**/*",
-      "./UI/journal/**/*",
-      "./UI/orders/**/*",
-      "./UI/payments/**/*",
-      "./UI/payroll/**/*",
-      "./UI/reconciliation/**/*",
-      "./UI/setup/**/*",
-      "./UI/taxform/**/*",
-      "./UI/templates/**/*",
-      "./UI/timecards/**/*",
-      "./UI/users/**/*"
-   ]
-});
-
-// Remove the above list from the files below
-const includedHtml = glob.sync("./UI/**/*.html", {
-   ignore: excludedDirectories
-});
-
-
-// /////////////////// WEBPACK CONFIG /////////////////////
-// ///////////////////////////////////////////////////////
+///////////////////// WEBPACK CONFIG /////////////////////
+/////////////////////////////////////////////////////////
 const webpackConfigs = {
     context: path.join(__dirname, "UI"),
 
@@ -422,13 +411,13 @@ const webpackConfigs = {
     },
 
     module: {
-        rules: [javascript, css, images, html, svg]
+        rules: [javascript, html, css, images, svg]
     },
 
     plugins: pluginsList,
 
     resolve: {
-        extensions: [".js"]
+        extensions: [".js", ".scss"]
     },
 
     resolveLoader: {
@@ -446,21 +435,10 @@ const webpackConfigs = {
     devServer: devServerOptions
 };
 
-const multipleThemesCompileOptions = {
-    cdw: path.join(__dirname, "UI"),
-    outputName: "./dijit/themes/[name]/[name].css",
-    themesConfig: {
-      claro:  { dojo_theme: 'claro',  import: [ path.join(__dirname, "/js-src/dijit/themes/claro/claro.css" )]},
-      nihilo: { dojo_theme: 'nihilo', import: [ path.join(__dirname, "/js-src/dijit/themes/nihilo/nihilo.css" )]},
-      soria:  { dojo_theme: 'soria',  import: [ path.join(__dirname, "/js-src/dijit/themes/soria/soria.css" )]},
-      tundra: { dojo_theme: 'tundra', import: [ path.join(__dirname, "/js-src/dijit/themes/tundra/tundra.css" )]}
-    },
-    lessContent: 'body{dojo_theme:@dojo_theme}'
-};
-
 module.exports = (env) => {
    return Merge(
-    webpackConfigs,
+    //webpackConfigs,
+    {mode: devMode ? "development" : "production"},
     MultipleThemesCompile(multipleThemesCompileOptions)
   );
 };
