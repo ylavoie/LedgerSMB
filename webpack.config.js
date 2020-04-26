@@ -1,26 +1,23 @@
 /** @format */
 /* eslint global-require:0, no-param-reassign:0, no-unused-vars:0 */
 
-const getLogger = require('webpack-log');
-const log = getLogger({ name: 'webpack-ledgersmb' });
+//const getLogger = require('webpack-log');
+//const log = getLogger({ name: 'webpack-ledgersmb' });
 
 const ChunkRenamePlugin = require("webpack-chunk-rename-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
+const DashboardPlugin = require("webpack-dashboard/plugin");
 const DojoWebpackPlugin = require("dojo-webpack-plugin");
-const ExtractCssChunks = require('extract-css-chunks-webpack-plugin');
+//const ExtractCssChunks = require('extract-css-chunks-webpack-plugin');
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const Merge = require('webpack-merge');
-const MergeIntoSingleFilePlugin = require("webpack-merge-and-include-globally");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const MultipleThemesCompile = require('webpack-multiple-themes-compile');
 const StylelintPlugin = require("stylelint-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const UnusedWebpackPlugin = require('unused-webpack-plugin');
-const WebpackMonitor = require("webpack-monitor");
 
 const { CleanWebpackPlugin } = require("clean-webpack-plugin"); // installed via npm
 
-const _ = require('lodash');  // To use merge and reduce, for we are not using ES6
 const glob = require("glob");
 const path = require("path");
 const webpack = require('webpack');
@@ -33,7 +30,7 @@ const devMode = process.env.NODE_ENV !== "production";
 const excludedDirectories = glob.sync("./UI/**", {
    ignore: [
       "./UI/*.html",
-      "./UI/lib/dynatable.html", // no ui-header.html
+      "./UI/lib/dynatable.html", // No ui-header
       "./UI/lib/elements.html",
       "./UI/lib/report_base.html",
       "./UI/lib/utilities.html",
@@ -155,10 +152,9 @@ const less = {
     use: lessRules,
 };
 
-
 const html = {
    test: /\.html$/,
-   use: "html-loader"
+   loader: 'html-loader'
 };
 
 const svg = {
@@ -185,28 +181,13 @@ const CopyWebpackPluginOptions = [
    { context: "node_modules", from: "dojo/i18n/**/*", to: "." },
    { context: "node_modules", from: "dojo/nls/**/*", to: "." },
    { context: "node_modules", from: "dojo/resources/**/*", to: "." }
-   // { context: "node_modules", from: "dijit/themes/**/*", to: ".",
-   //  test: /images\/(.+)\.(png|gif|svg)$/},
 ];
-
-const MergeIntoSingleFilePluginOptions = {
-   files: {
-      "ledgersmb-common.css": [
-         "UI/css/ledgersmb-common.css",
-         "UI/css/login.css",
-         "UI/css/setup.css",
-         "UI/css/scripts/*.css",
-         "UI/css/system/*.css"
-      ]
-   }
-};
 
 const DojoWebpackPluginOptions = {
    loaderConfig: require("./UI/js-src/lsmb/webpack.loaderConfig.js"),
    environment: { dojoRoot: "js" }, // used at run time for non-packed resources (e.g. blank.gif)
    buildEnvironment: { dojoRoot: "node_modules" }, // used at build time
    locales: ["en"],
-   async: true,
    noConsole: true
 };
 
@@ -227,25 +208,25 @@ const multipleThemesCompileOptions = {
 
 const IndexHtmlOptions = {
   excludeChunks: Object.keys(multipleThemesCompileOptions.themesConfig), // Exclude Dijit themes
-  minify: {
+  minify: devMode ? false : {
     collapseWhitespace: true
   },
   hash: true,
-  inject: 'head', // <=
+   /*inject: 'head', // <=
   'files': {
-    'css': [ '[name].bundle.css' ],
-    'js': [ '[name].bundle.js'],
+    'css': [ '[name].css' ],
+    'js': [ '[name].js'],
     'chunks': {
       'head': {
         'entry': '',
-        'css': '[name].bundle.css'
+        'css': '[name].css'
       },
       'main': {
-        'entry': '[name].bundle.js',
+        'entry': '[name].js',
         'css': []
       },
     }
-  }
+  }*/
 };
 
 // dojo/domReady (only works if the DOM is ready when invoked)
@@ -288,56 +269,39 @@ const UnusedWebpackPluginOptions = {
    root: path.join(__dirname, 'UI')
  };
 
- /*
- const WebpackMonitorOptions = {
+const WebpackMonitorOptions = {
    capture: true,
    launch: false
 };
-*/
 
 const devServerOptions = {
-  contentBase: 'js',
-  compress: true,
-  port: 6969,
-  stats: 'errors-only',
-  open: true,
-  hot: true,
-  openPage: ''
+   contentBase: 'js',
+   compress: true,
+   port: 6969,
+   stats: 'errors-only',
+   open: true,
+   hot: true,
+   openPage: ''
 };
 
 const htmls = includedHtml.map(
-     function(val) {
-       const filenameRegex = /(\/UI\/)?([\w\d_\-\/]*)\.?[^\\\/]*$/i;
-       const template = val.match(filenameRegex)[2];
-       const filename = val.replace('./UI/','');
-       return new HtmlWebpackPlugin(_.merge(
-            {
-               template: filename,
-               filename: filename
-            },
-            IndexHtmlOptions
-       ));
-     });
+   function(val) {
+      const filename = val.replace('./UI/','');
+      return new HtmlWebpackPlugin({
+         ...IndexHtmlOptions,
+         template: filename,
+         filename: filename
+      });
+});
 
 var pluginsDev = [
    new CleanWebpackPlugin(CleanWebpackPluginOptions),
-   new webpack.HashedModuleIdsPlugin(webpack.HashedModuleIdsPluginOptions),
+   //new webpack.HashedModuleIdsPlugin(webpack.HashedModuleIdsPluginOptions),
    new StylelintPlugin(StylelintPluginOptions),
    new CopyWebpackPlugin(CopyWebpackPluginOptions),
-   new MergeIntoSingleFilePlugin(MergeIntoSingleFilePluginOptions),
-   /*
-   new ExtractCssChunks({
-      // Options similar to the same options in webpackOptions.output
-      // both options are optional
-      filename: '[name].css',
-      chunkFilename: '[id].css',
-    }),
-    */
-   new DojoWebpackPlugin(DojoWebpackPluginOptions)];
+   new DojoWebpackPlugin(DojoWebpackPluginOptions),
 
-pluginsDev = pluginsDev.concat(htmls,
-   [
-      new webpack.NormalModuleReplacementPlugin(
+   new webpack.NormalModuleReplacementPlugin(
       /^dojo\/domReady!/,
       NormalModuleReplacementPluginOptionsDomReady
    ),
@@ -350,17 +314,33 @@ pluginsDev = pluginsDev.concat(htmls,
       NormalModuleReplacementPluginOptionsCSS
    ),
 
-   new ChunkRenamePlugin(ChunkRenamePluginOptions),
-   new MiniCssExtractPlugin(MiniCssExtractPluginOptions),
+   ...htmls,
+
+   //new ChunkRenamePlugin(ChunkRenamePluginOptions),
+   //new MiniCssExtractPlugin(MiniCssExtractPluginOptions),
    new UnusedWebpackPlugin(UnusedWebpackPluginOptions),
-   //new WebpackMonitor(WebpackMonitorOptions)
-   ]
-);
+   new DashboardPlugin(),
+];
 
 const pluginsProd = pluginsDev; // TODO: refine...
 
 var pluginsList = devMode ? pluginsDev : pluginsProd;
 
+const themes = MultipleThemesCompile(multipleThemesCompileOptions);
+
+/*
+themes = {
+  entry: {
+    claro: '/srv/ledgersmb/UI/js/claro.js',
+    nihilo: '/srv/ledgersmb/UI/js/nihilo.js',
+    soria: '/srv/ledgersmb/UI/js/soria.js',
+    tundra: '/srv/ledgersmb/UI/js/tundra.js'
+  },
+  module: { rules: [ [Object] ] },
+  plugins: [ MiniCssExtractPlugin { options: [Object] } ],
+  optimization: { splitChunks: { cacheGroups: [Object] } }
+}
+ */
 ///////////////////// OPTIMIZATIONS /////////////////////
 /////////////////////////////////////////////////////////
 const optimizationList = {
@@ -369,8 +349,9 @@ const optimizationList = {
         name: 'runtime',
       },
       */
-   splitChunks: devMode
-      ? {}
+     namedModules: false,
+     splitChunks: devMode
+      ? false
       : {
            chunks: "all",
            maxInitialRequests: Infinity,
@@ -389,7 +370,8 @@ const optimizationList = {
                     // npm package names are URL-safe, but some servers don't like @ symbols
                     return `npm.${packageName.replace("@", "")}`;
                  }
-              }
+              },
+              //...themes.splitChunks.cacheGroups
            }
         },
    minimizer: devMode
@@ -406,51 +388,52 @@ const optimizationList = {
 };
 
 ///////////////////// WEBPACK CONFIG /////////////////////
-/////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
 const webpackConfigs = {
-    context: path.join(__dirname, "UI"),
+   context: path.join(__dirname, "UI"),
 
-    // stats: 'verbose',
+   // stats: 'verbose',
 
-    entry: { lsmb: "lsmb/main" },
+   entry: {
+      preloader: "lsmb/preloader.js",
+      lsmb: "lsmb/main",
+      claro: "css!dijit/themes/claro/claro.css"
+      //...themes.entry
+   },
 
-    output: {
+   output: {
         path: path.resolve("UI/js"), // js path
         publicPath: "js/", // images path
         pathinfo: !!devMode, // keep source references?
         filename: "[name].js",
         chunkFilename: "[name].[chunkhash].js"
-    },
+   },
 
-    module: {
-        rules: [javascript, html, css, images, svg]
-    },
+   module: {
+      rules: [ javascript, css, images, svg, html/*, ...themes.module.rules*/ ]
+   },
 
-    plugins: pluginsList,
+   plugins: [...pluginsList/*, ...themes.plugins*/],
 
-    resolve: {
-        extensions: [".js", ".scss", ".html"]
-    },
+   resolve: {
+      extensions: [".js", ".scss", ".html"]
+   },
 
-    resolveLoader: {
-        modules: ["js-src", "node_modules"]
-    },
+   resolveLoader: {
+      modules: ["node_modules"]
+   },
 
-    mode: devMode ? "development" : "production",
+   mode: devMode ? "development" : "production",
 
-    optimization: optimizationList,
+   optimization: optimizationList,
 
-    performance: { hints: /* devMode ? 'warning' : */ false },
+   performance: { hints: devMode ? 'warning' : false },
 
-    devtool: "#source-map",
+   devtool: "#source-map",
 
-    devServer: devServerOptions
+   devServer: devServerOptions
 };
 
 module.exports = (env) => {
-   return Merge(
-    webpackConfigs,
-    {mode: devMode ? "development" : "production"},
-    MultipleThemesCompile(multipleThemesCompileOptions)
-  );
+   return webpackConfigs;
 };
