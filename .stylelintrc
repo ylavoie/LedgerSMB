@@ -8,7 +8,8 @@
     "**/*.js","**/*.jsx","**/*.html",
     "UI/**/dojo/**/*.css",
     "UI/**/dijit/**/*.css",
-    "UI/**/util/**/*.css"
+    "UI/**/util/**/*.css",
+    "UI/js/**"
   ],
   "rules": {
     "indentation": 4,

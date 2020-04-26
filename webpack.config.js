@@ -7,6 +7,7 @@ const log = getLogger({ name: 'webpack-ledgersmb' });
 const ChunkRenamePlugin = require("webpack-chunk-rename-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const DojoWebpackPlugin = require("dojo-webpack-plugin");
+const ExtractCssChunks = require('extract-css-chunks-webpack-plugin');
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const Merge = require('webpack-merge');
 const MergeIntoSingleFilePlugin = require("webpack-merge-and-include-globally");
@@ -70,7 +71,6 @@ const includedHtml = glob.sync("./UI/**/*.html", {
 const javascript = {
    enforce: "pre",
    test: /\.js$/,
-   exclude: [/node_modules/, /dojo.js/, /dojo/, /dijit/],
    use: [{
       loader: 'babel-loader',
       options: {
@@ -95,7 +95,8 @@ const cssRules = [
       options: {
          modules: true,
          sourceMap: !devMode,
-         importLoaders: 1
+         importLoaders: 1,
+         url: false
       },
    },
    // inline images
@@ -103,10 +104,11 @@ const cssRules = [
       loader: 'postcss-loader',
       options: {
          ident: 'postcss',
-         plugins: [
+         plugins: (loader) => [
            require('postcss-import')(),
            require('postcss-url')(),
            //require('postcss-preset-env')(),
+           require('cssnano')(!devMode),
            // add your "plugins" here
            // ...
            // and if you want to compress,
@@ -200,25 +202,25 @@ const MergeIntoSingleFilePluginOptions = {
 };
 
 const DojoWebpackPluginOptions = {
-   loaderConfig: require("./UI/js-src/webpack/loaderConfig.js"),
+   loaderConfig: require("./UI/js-src/lsmb/webpack.loaderConfig.js"),
    environment: { dojoRoot: "js" }, // used at run time for non-packed resources (e.g. blank.gif)
-   buildEnvironment: { dojoRoot: "js-src" }, // used at build time
+   buildEnvironment: { dojoRoot: "node_modules" }, // used at build time
    locales: ["en"],
    async: true,
    noConsole: true
 };
 
 const multipleThemesCompileOptions = {
-   cwd: path.join(__dirname, "UI"),
-   cacheDir: "js",
+   cwd: "UI",
+   cacheDir: 'js',
    styleLoaders: cssRules,
    preHeader: '/* stylelint-disable */',
-   outputName: "/js/dijit/themes/[name]/[name].css",
+   outputName: "/dijit/themes/[name]/[name].css",
    themesConfig: {
-     claro:  { dojo_theme: 'claro',  import: [ "../js-src/dijit/themes/claro/claro.css" ]},
-     nihilo: { dojo_theme: 'nihilo', import: [ "../js-src/dijit/themes/nihilo/nihilo.css" ]},
-     soria:  { dojo_theme: 'soria',  import: [ "../js-src/dijit/themes/soria/soria.css" ]},
-     tundra: { dojo_theme: 'tundra', import: [ "../js-src/dijit/themes/tundra/tundra.css" ]}
+     claro:  { dojo_theme: 'claro',  import: [ "../node_modules/dijit/themes/claro/claro.css" ]},
+     nihilo: { dojo_theme: 'nihilo', import: [ "../node_modules/dijit/themes/nihilo/nihilo.css" ]},
+     soria:  { dojo_theme: 'soria',  import: [ "../node_modules/dijit/themes/soria/soria.css" ]},
+     tundra: { dojo_theme: 'tundra', import: [ "../node_modules/dijit/themes/tundra/tundra.css" ]}
    },
    lessContent: '', // 'body{dojo_theme:@dojo_theme}'
 };
@@ -286,10 +288,12 @@ const UnusedWebpackPluginOptions = {
    root: path.join(__dirname, 'UI')
  };
 
+ /*
  const WebpackMonitorOptions = {
    capture: true,
    launch: false
 };
+*/
 
 const devServerOptions = {
   contentBase: 'js',
@@ -321,6 +325,14 @@ var pluginsDev = [
    new StylelintPlugin(StylelintPluginOptions),
    new CopyWebpackPlugin(CopyWebpackPluginOptions),
    new MergeIntoSingleFilePlugin(MergeIntoSingleFilePluginOptions),
+   /*
+   new ExtractCssChunks({
+      // Options similar to the same options in webpackOptions.output
+      // both options are optional
+      filename: '[name].css',
+      chunkFilename: '[id].css',
+    }),
+    */
    new DojoWebpackPlugin(DojoWebpackPluginOptions)];
 
 pluginsDev = pluginsDev.concat(htmls,
@@ -341,7 +353,7 @@ pluginsDev = pluginsDev.concat(htmls,
    new ChunkRenamePlugin(ChunkRenamePluginOptions),
    new MiniCssExtractPlugin(MiniCssExtractPluginOptions),
    new UnusedWebpackPlugin(UnusedWebpackPluginOptions),
-   new WebpackMonitor(WebpackMonitorOptions)
+   //new WebpackMonitor(WebpackMonitorOptions)
    ]
 );
 
@@ -403,7 +415,7 @@ const webpackConfigs = {
     entry: { lsmb: "lsmb/main" },
 
     output: {
-        path: path.join(__dirname, "UI/js"), // js path
+        path: path.resolve("UI/js"), // js path
         publicPath: "js/", // images path
         pathinfo: !!devMode, // keep source references?
         filename: "[name].js",
@@ -417,7 +429,7 @@ const webpackConfigs = {
     plugins: pluginsList,
 
     resolve: {
-        extensions: [".js", ".scss"]
+        extensions: [".js", ".scss", ".html"]
     },
 
     resolveLoader: {
@@ -437,7 +449,7 @@ const webpackConfigs = {
 
 module.exports = (env) => {
    return Merge(
-    //webpackConfigs,
+    webpackConfigs,
     {mode: devMode ? "development" : "production"},
     MultipleThemesCompile(multipleThemesCompileOptions)
   );

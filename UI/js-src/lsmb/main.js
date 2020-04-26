@@ -168,6 +168,7 @@ require([
    "lsmb/Invoice",
    "lsmb/InvoiceLine",
    "lsmb/InvoiceLines",
+   "lsmb/login",
    "lsmb/MainContentPane",
    "lsmb/MaximizeMinimize",
    "lsmb/PrintButton",

@@ -29,10 +29,10 @@ function getConfig(env) {
 			},
 			{
 				name: 'lsmb',                       // the name of the package
-				location: env.dojoRoot + '/lsmb',   // the path to the directory where the package resides
+				location: './js-src/lsmb',           // the path to the directory where the package resides
                 main: 'main'                        // the module identifier implied when a module identifier
                                                     // that is equivalent to just the package name is given;
-                                                    // defaults to “main”
+                                                    // defaults to 'main'
 			}
 		],
 
