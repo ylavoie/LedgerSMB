@@ -2,9 +2,11 @@
         titlebar = "LedgerSMB $version"
         include_stylesheet = ["login.css", "ledgersmb.css"]
 %]
-<!-- '@ref(lsmb/Form)' '@ref(lsmb/layout/TableContainer)'
-     '@ref(dojo/dom)' '@ref(dojo/dom-style)' '@ref(dojo/ready)'
--->
+<script type="text/javascript">
+  require(['lsmb/html/login_html'], function(login_html) {
+    login_html.go();
+  });
+</script>
 [%
    PROCESS elements.html -%]
 <body class="login, [% dojo_theme %]"
@@ -109,13 +111,5 @@
       </div>
     </form>
   </center>
-<script type="text/javascript">
-  require(['dojo/dom', 'dojo/dom-style', 'dojo/ready'],
-  function(dom, style, ready) {
-    ready(80, function() {
-  style.set(dom.byId('loading'), 'display', 'none');
-  });
-  });
-</script>
 </body>
 </html>

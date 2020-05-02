@@ -4,7 +4,7 @@
 //const getLogger = require('webpack-log');
 //const log = getLogger({ name: 'webpack-ledgersmb' });
 
-const ChunkRenamePlugin = require("webpack-chunk-rename-plugin");
+//const ChunkRenamePlugin = require("webpack-chunk-rename-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const DashboardPlugin = require("webpack-dashboard/plugin");
 const DojoWebpackPlugin = require("dojo-webpack-plugin");
@@ -180,7 +180,8 @@ const CopyWebpackPluginOptions = [
    { context: "node_modules", from: "dijit/nls/**/*", to: "." },
    { context: "node_modules", from: "dojo/i18n/**/*", to: "." },
    { context: "node_modules", from: "dojo/nls/**/*", to: "." },
-   { context: "node_modules", from: "dojo/resources/**/*", to: "." }
+   { context: "node_modules", from: "dojo/resources/**/*", to: "." },
+   //{ context: "node_modules", from: "dijit/themes/**/*", to: "." }
 ];
 
 const DojoWebpackPluginOptions = {
@@ -298,8 +299,11 @@ var pluginsDev = [
    new CleanWebpackPlugin(CleanWebpackPluginOptions),
    //new webpack.HashedModuleIdsPlugin(webpack.HashedModuleIdsPluginOptions),
    new StylelintPlugin(StylelintPluginOptions),
-   new CopyWebpackPlugin(CopyWebpackPluginOptions),
+
+   //...htmls,
+
    new DojoWebpackPlugin(DojoWebpackPluginOptions),
+   new CopyWebpackPlugin(CopyWebpackPluginOptions),
 
    new webpack.NormalModuleReplacementPlugin(
       /^dojo\/domReady!/,
@@ -309,12 +313,10 @@ var pluginsDev = [
       /^svg!/,
       NormalModuleReplacementPluginOptionsSVG
    ),
-   new webpack.NormalModuleReplacementPlugin(
+   /*new webpack.NormalModuleReplacementPlugin(
       /^css!/,
       NormalModuleReplacementPluginOptionsCSS
-   ),
-
-   ...htmls,
+   ),*/
 
    //new ChunkRenamePlugin(ChunkRenamePluginOptions),
    //new MiniCssExtractPlugin(MiniCssExtractPluginOptions),
@@ -328,8 +330,7 @@ var pluginsList = devMode ? pluginsDev : pluginsProd;
 
 const themes = MultipleThemesCompile(multipleThemesCompileOptions);
 
-/*
-themes = {
+/* themes = {
   entry: {
     claro: '/srv/ledgersmb/UI/js/claro.js',
     nihilo: '/srv/ledgersmb/UI/js/nihilo.js',
@@ -339,8 +340,7 @@ themes = {
   module: { rules: [ [Object] ] },
   plugins: [ MiniCssExtractPlugin { options: [Object] } ],
   optimization: { splitChunks: { cacheGroups: [Object] } }
-}
- */
+} */
 ///////////////////// OPTIMIZATIONS /////////////////////
 /////////////////////////////////////////////////////////
 const optimizationList = {
@@ -371,7 +371,7 @@ const optimizationList = {
                     return `npm.${packageName.replace("@", "")}`;
                  }
               },
-              //...themes.splitChunks.cacheGroups
+              ...themes.optimization.splitChunks.cacheGroups
            }
         },
    minimizer: devMode
@@ -397,8 +397,8 @@ const webpackConfigs = {
    entry: {
       preloader: "lsmb/preloader.js",
       lsmb: "lsmb/main",
-      claro: "css!dijit/themes/claro/claro.css"
-      //...themes.entry
+      //claro: "css!dijit/themes/claro/claro.css"
+      ...themes.entry
    },
 
    output: {
@@ -410,19 +410,21 @@ const webpackConfigs = {
    },
 
    module: {
-      rules: [ javascript, css, images, svg, html/*, ...themes.module.rules*/ ]
+      rules: [ javascript, css, images, svg, html, ...themes.module.rules ]
    },
 
-   plugins: [...pluginsList/*, ...themes.plugins*/],
+   plugins: [...pluginsList, ...themes.plugins],
 
    resolve: {
-      extensions: [".js", ".scss", ".html"]
+      extensions: [".js"]
    },
 
    resolveLoader: {
       modules: ["node_modules"]
    },
 
+   //TODO: Consider https://itnext.io/using-sourcemaps-on-production-without-revealing-the-source-code-%EF%B8%8F-d41e78e20c89
+   //TODO: Same: https://css-tricks.com/should-i-use-source-maps-in-production/
    mode: devMode ? "development" : "production",
 
    optimization: optimizationList,

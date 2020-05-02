@@ -42,7 +42,7 @@ function getConfig(env) {
 
       paths: {
          // a map of module id fragments to file paths:
-         js: "js"
+         // js: "js"
          // theme: "theme",
          // With the webpack build, the css loader plugin is replaced by a webpack loader
          // via webpack.config.js, so the following are used only by the unpacked app.
@@ -56,14 +56,13 @@ function getConfig(env) {
 
       has: {
          "dojo-config-api": 1, // Ensures that the build is configurable
-         "dojo-log-api": 1 // Disables the logging code of the loader
+         "dojo-has-api": 1, // Ensures the has feature detection API is available.
          /*
             'host-browser':                   1, // Ensures the code is built to run on a browser platform
-            'dojo-has-api':                   1, // Ensures the has feature detection API is available.
             'dojo-config-require':            1, // Enables configuration via the require().
             'dojo-v1x-i18n-Api':              1, // Enables support for v1.x i18n loading (required for Dijit)
             'dojo-dom-ready-api':             1, // Ensures that the DOM ready API is available
-//            'dom':                            1, // Ensures the DOM code is available
+            'dom':                            1, // Ensures the DOM code is available
             'extend-dojo':                    1, // Ensures pre-Dojo 2.0 behavior is maintained
             'dojo-guarantee-console':         1, // Ensures that the console is available in browsers that don't have it available (e.g. IE6)
             'dojo-inject-api':                1, // Ensures the cross domain loading of modules is supported

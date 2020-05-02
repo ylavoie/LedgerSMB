@@ -1,5 +1,10 @@
 <body id="payment_2_body" class="lsmb [% dojo_theme %]"
 onLoad="maximize_minimize_on_load(event, 'div_topay_state', 'img/down.gif','img/up.gif') ">
+<script type="text/javascript">
+  require(['payments2_html'], function(payments2_html) {
+    payments2_html.go();
+  });
+</script>
   <div id="payments">
   <form data-dojo-type="lsmb/Form" name="pay_single_dues" method="post" action="payment.pl">
 
@@ -161,14 +166,8 @@ onLoad="maximize_minimize_on_load(event, 'div_topay_state', 'img/down.gif','img/
                                  id="checkbox_all"
                                  data-dojo-type="dijit/form/Button">
                                 [% column.text -%]
-                                <script type="dojo/on" data-dojo-event="click">
-                                    require(["dojo/ready"], ready(100,function(){
-                                        dojo.query('input[name^="checkbox_"]', this.domNode).forEach(function (node, index, arr) {
-                                            var n = dijit.getEnclosingWidget(node);
-                                            n.set('checked',!n.get('checked'));
-                                        });
-                                    }));
-                                </script>
+                                <!--<script type="dojo/on" data-dojo-event="click"
+                                        src="lsmb/html/payments2_html"></script>-->
                             </button>
                          [% INCLUDE tooltip element_data = {
                                 ref_id => "checkbox_all"
