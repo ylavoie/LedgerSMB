@@ -1,4 +1,4 @@
-[% INCLUDE "ui-header.html"
+[% WRAPPER "ui-header.html"
 stylesheet="ledgersmb.css"
 include_stylesheet=["setup.css"] %]
 [% PROCESS elements.html %]
@@ -192,4 +192,4 @@ INCLUDE select element_data = {
 </form>
 </div>
 </body>
-</html>
+[% END %]

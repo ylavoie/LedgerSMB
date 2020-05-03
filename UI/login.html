@@ -1,4 +1,4 @@
-[% INCLUDE 'ui-header.html'
+[% WRAPPER "ui-header.html"
         titlebar = "LedgerSMB $version"
         include_stylesheet = ["login.css", "ledgersmb.css"]
 %]
@@ -112,4 +112,4 @@
     </form>
   </center>
 </body>
-</html>
+[% END %]
