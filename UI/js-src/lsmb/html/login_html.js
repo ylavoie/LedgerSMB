@@ -1,7 +1,7 @@
 /** @format */
 /* eslint no-unused-expressions:0 */
 
-require([
+define([
    "dojo/dom",
    "dojo/dom-style",
    "dojo/ready",
