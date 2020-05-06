@@ -51,9 +51,9 @@ TEMP := $(HOMEDIR)/_UI_js_$(SHA).tar
 FLAG := $(HOMEDIR)/building_UI_js_$(SHA)
 
 dojo:
-	rm -rf UI/js/;
-	npm install;
-	./node_modules/webpack/bin/webpack.js
+	rm -rf UI/js/*;
+	npm install --save-dev;
+	./node_modules/webpack/bin/webpack.js -p
 
 dojo_archive: dojo
 	#TODO: Protect for concurrent invocations

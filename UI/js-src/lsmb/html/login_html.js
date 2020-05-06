@@ -5,6 +5,7 @@ define([
    "dojo/dom",
    "dojo/dom-style",
    "dojo/ready",
+   "lsmb/login",
    /* dojo-data-type references */
    "lsmb/Form",
    "lsmb/layout/TableContainer",

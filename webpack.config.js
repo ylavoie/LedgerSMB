@@ -1,26 +1,21 @@
 /** @format */
 /* eslint global-require:0, no-param-reassign:0, no-unused-vars:0 */
 
-//const getLogger = require('webpack-log');
-//const log = getLogger({ name: 'webpack-ledgersmb' });
+const path = require("path");
+const webpack = require('webpack');
+const glob = require("glob");
 
-//const ChunkRenamePlugin = require("webpack-chunk-rename-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const DashboardPlugin = require("webpack-dashboard/plugin");
 const DojoWebpackPlugin = require("dojo-webpack-plugin");
-//const ExtractCssChunks = require('extract-css-chunks-webpack-plugin');
+const { DuplicatesPlugin } = require("inspectpack/plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const MultipleThemesCompile = require('webpack-multiple-themes-compile');
+const MultipleThemesCompile = require("webpack-multiple-themes-compile");
 const StylelintPlugin = require("stylelint-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
-const UnusedWebpackPlugin = require('unused-webpack-plugin');
+const UnusedWebpackPlugin = require("unused-webpack-plugin");
 
 const { CleanWebpackPlugin } = require("clean-webpack-plugin"); // installed via npm
-
-const glob = require("glob");
-const path = require("path");
-const webpack = require('webpack');
 
 const devMode = process.env.NODE_ENV !== "production";
 
@@ -176,17 +171,17 @@ const StylelintPluginOptions = {
 
 // Copy non-packed resources needed by the app to the release directory
 const CopyWebpackPluginOptions = [
-   { context: "node_modules", from: "dijit/icons/**/*", to: "." },
-   { context: "node_modules", from: "dijit/nls/**/*", to: "." },
-   { context: "node_modules", from: "dojo/i18n/**/*", to: "." },
-   { context: "node_modules", from: "dojo/nls/**/*", to: "." },
-   { context: "node_modules", from: "dojo/resources/**/*", to: "." },
-   //{ context: "node_modules", from: "dijit/themes/**/*", to: "." }
+   { context: "../node_modules", from: "dijit/icons/**/*", to: "." },
+   { context: "../node_modules", from: "dijit/nls/**/*", to: "." },
+   { context: "../node_modules", from: "dojo/i18n/**/*", to: "." },
+   { context: "../node_modules", from: "dojo/nls/**/*", to: "." },
+   { context: "../node_modules", from: "dojo/resources/**/*", to: "." }
+
 ];
 
 const DojoWebpackPluginOptions = {
    loaderConfig: require("./UI/js-src/lsmb/webpack.loaderConfig.js"),
-   environment: { dojoRoot: "js" }, // used at run time for non-packed resources (e.g. blank.gif)
+   environment: { dojoRoot: "./UI/js" }, // used at run time for non-packed resources (e.g. blank.gif)
    buildEnvironment: { dojoRoot: "node_modules" }, // used at build time
    locales: ["en"],
    noConsole: true
@@ -195,16 +190,15 @@ const DojoWebpackPluginOptions = {
 const multipleThemesCompileOptions = {
    cwd: "UI",
    cacheDir: 'js',
-   styleLoaders: cssRules,
    preHeader: '/* stylelint-disable */',
    outputName: "/dijit/themes/[name]/[name].css",
    themesConfig: {
-     claro:  { dojo_theme: 'claro',  import: [ "../node_modules/dijit/themes/claro/claro.css" ]},
-     nihilo: { dojo_theme: 'nihilo', import: [ "../node_modules/dijit/themes/nihilo/nihilo.css" ]},
-     soria:  { dojo_theme: 'soria',  import: [ "../node_modules/dijit/themes/soria/soria.css" ]},
-     tundra: { dojo_theme: 'tundra', import: [ "../node_modules/dijit/themes/tundra/tundra.css" ]}
+     claro:  { dojo_theme: 'claro',  import: [ "../../node_modules/dijit/themes/claro/claro.css" ]},
+     nihilo: { dojo_theme: 'nihilo', import: [ "../../node_modules/dijit/themes/nihilo/nihilo.css" ]},
+     soria:  { dojo_theme: 'soria',  import: [ "../../node_modules/dijit/themes/soria/soria.css" ]},
+     tundra: { dojo_theme: 'tundra', import: [ "../../node_modules/dijit/themes/tundra/tundra.css" ]}
    },
-   lessContent: '', // 'body{dojo_theme:@dojo_theme}'
+   lessContent: 'body{dojo_theme:@dojo_theme}'
 };
 
 const IndexHtmlOptions = {
@@ -212,8 +206,8 @@ const IndexHtmlOptions = {
   minify: devMode ? false : {
     collapseWhitespace: true
   },
-  hash: true,
-   /*inject: 'head', // <=
+  hash: true/*,
+   inject: 'head', // <=
   'files': {
     'css': [ '[name].css' ],
     'js': [ '[name].js'],
@@ -250,15 +244,6 @@ const NormalModuleReplacementPluginOptionsCSS = function (data) {
       /^css!/,
       "!style-loader!css-loader!less-loader!"
    );
-};
-
-const ChunkRenamePluginOptions = {
-   initialChunksWithEntry: true
-};
-
-const MiniCssExtractPluginOptions = {
-   filename: "[name].css",
-   chunkFilename: "[id].css"
 };
 
 const UnusedWebpackPluginOptions = {
@@ -303,6 +288,9 @@ var pluginsDev = [
    //...htmls,
 
    new DojoWebpackPlugin(DojoWebpackPluginOptions),
+   new webpack.NormalModuleReplacementPlugin(/^dojo\/text!/, function(data) {
+      data.request = data.request.replace(/^dojo\/text!/, "!!raw-loader!");
+   }),
    new CopyWebpackPlugin(CopyWebpackPluginOptions),
 
    new webpack.NormalModuleReplacementPlugin(
@@ -313,14 +301,18 @@ var pluginsDev = [
       /^svg!/,
       NormalModuleReplacementPluginOptionsSVG
    ),
-   /*new webpack.NormalModuleReplacementPlugin(
+   new webpack.NormalModuleReplacementPlugin(
       /^css!/,
       NormalModuleReplacementPluginOptionsCSS
-   ),*/
+   ),
 
-   //new ChunkRenamePlugin(ChunkRenamePluginOptions),
-   //new MiniCssExtractPlugin(MiniCssExtractPluginOptions),
    new UnusedWebpackPlugin(UnusedWebpackPluginOptions),
+   new DuplicatesPlugin({
+      // Emit compilation warning or error? (Default: `false`)
+      emitErrors: false,
+      // Display full duplicates information? (Default: `false`)
+      verbose: false
+    }),
    new DashboardPlugin(),
 ];
 
@@ -330,17 +322,6 @@ var pluginsList = devMode ? pluginsDev : pluginsProd;
 
 const themes = MultipleThemesCompile(multipleThemesCompileOptions);
 
-/* themes = {
-  entry: {
-    claro: '/srv/ledgersmb/UI/js/claro.js',
-    nihilo: '/srv/ledgersmb/UI/js/nihilo.js',
-    soria: '/srv/ledgersmb/UI/js/soria.js',
-    tundra: '/srv/ledgersmb/UI/js/tundra.js'
-  },
-  module: { rules: [ [Object] ] },
-  plugins: [ MiniCssExtractPlugin { options: [Object] } ],
-  optimization: { splitChunks: { cacheGroups: [Object] } }
-} */
 ///////////////////// OPTIMIZATIONS /////////////////////
 /////////////////////////////////////////////////////////
 const optimizationList = {
@@ -416,11 +397,12 @@ const webpackConfigs = {
    plugins: [...pluginsList, ...themes.plugins],
 
    resolve: {
-      extensions: [".js"]
+      extensions: [".js"],
+      modules: ['node_modules']
    },
 
    resolveLoader: {
-      modules: ["node_modules"]
+      modules: ['node_modules']
    },
 
    //TODO: Consider https://itnext.io/using-sourcemaps-on-production-without-revealing-the-source-code-%EF%B8%8F-d41e78e20c89

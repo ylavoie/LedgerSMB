@@ -20,36 +20,16 @@ function getConfig(env) {
    // env is set by the 'buildEnvironment' and/or 'environment' plugin options (see webpack.config.js),
    // or by the code at the end of this file if using without webpack
    var dojoConfig = {
-      baseUrl: ".", // The base URL prepended to a module identifier when converting it to a path or URL
+      //baseUrl: "../node_modules", // The base URL prepended to a module identifier when converting it to a path or URL
       packages: [
          // An array of objects which provide the package name and location
-         {
-            name: "dojo",
-            location: env.dojoRoot + "/dojo"
-         },
-         {
-            name: "dijit",
-            location: env.dojoRoot + "/dijit"
-         },
+         'dojo',
+         'dijit',
          {
             name: "lsmb", // the name of the package
             location: "js-src/lsmb", // the path to the directory where the package resides
-            main: "main" // the module identifier implied when a module identifier
-            // that is equivalent to just the package name is given;
-            // defaults to 'main'
          }
       ],
-
-      paths: {
-         // a map of module id fragments to file paths:
-         // js: "js"
-         // theme: "theme",
-         // With the webpack build, the css loader plugin is replaced by a webpack loader
-         // via webpack.config.js, so the following are used only by the unpacked app.
-         // css: "//chuckdumont.github.io/dojo-css-plugin/1.0.0/css",
-         // lesspp is used by the css loader plugin when loading LESS modules
-         // lesspp: "//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.3/less.min",
-      },
 
       async: true, // Defines if Dojo core should be loaded asynchronously
       deps: ["lsmb/main"], // An array of resource paths which should load immediately once Dojo has loaded:

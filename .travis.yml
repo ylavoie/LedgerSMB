@@ -127,7 +127,6 @@ before_install:
   - source ~/travis-perl-helpers/init
   - build-perl 2>/dev/null
   - perl -V
-  - npm install
   #- pip3 install awscli --upgrade --user
 
 install:

@@ -1,15 +1,13 @@
 /** @format */
 /* eslint no-unused-expressions:0 */
 
-require([
+define([
    "dojo/dom",
    "dojo/dom-style",
    "dojo/ready",
    /* dojo-data-type references */
-   "lsmb/SetupLoginButton",
-   "dojo/dom",
-   "dojo/dom-style",
-   "dojo/ready"
+   "dijit/form/ComboBox",
+   "lsmb/SetupLoginButton"
 ], function (dom, domStyle, ready) {
    return {
       go: function () {
