@@ -39,6 +39,7 @@
                      name = text('Min Qty') #'
                      type = 'input_text'},
          );
+
      END;
      columns.push({col_id = 'currency',
                      name = text('Currency'),

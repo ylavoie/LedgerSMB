@@ -36,7 +36,7 @@ END;
         <row>
         [% FOREACH COL IN columns %]
         [% IF COL.type != 'hidden'; -%]
-                <cell text="[% ROW.${COL.col_id} | html %]" />      
+            <cell text="[% ROW.${COL.col_id} | html %]" />
         [% END; END %]
         </row>
         [% END;
