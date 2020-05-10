@@ -148,7 +148,8 @@ $out = html_formatter_context {
 
 filter_js_src($out);
 
-my @expected = split (/\n/, q{<!DOCTYPE html>
+my @expected = split (/\n/, q{<!-- prettier-disable -->
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
         <title></title>
@@ -160,14 +161,13 @@ my @expected = split (/\n/, q{<!DOCTYPE html>
         <script type="text/javascript">
             var dojoConfig = {
                 async: 1,
-                locale: '',
+                locale: "",
                 packages: [{"name":"lsmb","location":"../lsmb"}]
             };
             var lsmbConfig = {
             };
-       </script>
-        <script type="text/javascript" src="js/lsmb/main.js"></script>
-        <script type="text/javascript" src="js/dojo/dojo.js"></script>
+        </script>
+        <script type="text/javascript" src="js/preloader.js" charset="utf-8"></script>
         <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
@@ -184,47 +184,8 @@ my @expected = split (/\n/, q{<!DOCTYPE html>
   </p>
 </div>
 </form>
-</body>};
-
-my $diff = diff \$diff1, \$diff2;
-use Data::Printer;
-warn np $diff;
-
-is join("\n", @$out), q{<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-        <title></title>
-        <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-        <link rel="stylesheet" href="js/dojo/resources/dojo.css" type="text/css" />
-        <link rel="stylesheet" href="js/dijit/themes/claro/claro.css" type="text/css" />
-            <link rel="stylesheet" href="css/ledgersmb.css" type="text/css" />
-            var dojoConfig = {
-                async: 1,
-                locale: '',
-                packages: [{"name":"lsmb","location":"../lsmb"}]
-            };
-            var lsmbConfig = {
-            };
-       </script>
-        <script type="text/javascript" src="js/lsmb/main.js"></script>
-        <script type="text/javascript" src="js/dojo/dojo.js"></script>
-        <meta name="robots" content="noindex,nofollow" />
-</head>
-<body class="claro">
-  <form method="POST"
-        enctype="multipart/form-data"
-        action="script.pl?action=rebuild">
-    <input type="hidden" name="action" value="rebuild_modules">
-    <input type="hidden" name="database" value="">
-    <input type="hidden" name="check_id" value="d5d3db1765287eef77d7927cc956f50a">
-<div class="description">
-  <h1>title</h1>
-  <p>
-    <p>a description</p>
-  </p>
-</div>
-</form>
-</body>});
+</body>
+</html>});
 
 is @$out, @expected, 'Render the description && title',
     diff $out,\@expected,{ STYLE => 'Table', CONTEXT => 2 };
@@ -270,7 +231,8 @@ $out = html_formatter_context {
 } test_request();
 
 filter_js_src($out);
-@expected = split (/\n/, q{<!DOCTYPE html>
+@expected = split (/\n/, q{<!-- prettier-disable -->
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
         <title></title>
@@ -287,9 +249,8 @@ filter_js_src($out);
             };
             var lsmbConfig = {
             };
-       </script>
-        <script type="text/javascript" src="js/lsmb/main.js"></script>
-        <script type="text/javascript" src="js/dojo/dojo.js"></script>
+        </script>
+        <script type="text/javascript" src="js/preloader.js" charset="utf-8"></script>
         <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
@@ -306,7 +267,8 @@ filter_js_src($out);
   </p>
 </div>
 </form>
-</body>});
+</body>
+</html>});
 
 is @$out, @expected, 'Render a custom description',
     diff $out,\@expected,{ STYLE => 'Table', CONTEXT => 2 };
@@ -352,7 +314,8 @@ $out = html_formatter_context {
 } test_request();
 
 filter_js_src($out);
-@expected = split (/\n/, q{<!DOCTYPE html>
+@expected = split (/\n/, q{<!-- prettier-disable -->
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
         <title></title>
@@ -369,9 +332,8 @@ filter_js_src($out);
             };
             var lsmbConfig = {
             };
-       </script>
-        <script type="text/javascript" src="js/lsmb/main.js"></script>
-        <script type="text/javascript" src="js/dojo/dojo.js"></script>
+        </script>
+        <script type="text/javascript" src="js/preloader.js" charset="utf-8"></script>
         <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
@@ -389,7 +351,8 @@ filter_js_src($out);
    data-dojo-type="dijit/form/Button"
    >Abc</button>
 </form>
-</body>});
+</body>
+</html>});
 
 is @$out, @expected, 'Render a confirmation',
     diff $out,\@expected,{ STYLE => 'Table', CONTEXT => 2 };
@@ -435,7 +398,8 @@ $out = html_formatter_context {
 } test_request();
 
 filter_js_src($out);
-@expected = split (/\n/, q{<!DOCTYPE html>
+@expected = split (/\n/, q{<!-- prettier-disable -->
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
         <title></title>
@@ -452,9 +416,8 @@ filter_js_src($out);
             };
             var lsmbConfig = {
             };
-       </script>
-        <script type="text/javascript" src="js/lsmb/main.js"></script>
-        <script type="text/javascript" src="js/dojo/dojo.js"></script>
+        </script>
+        <script type="text/javascript" src="js/preloader.js" charset="utf-8"></script>
         <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
@@ -479,7 +442,8 @@ filter_js_src($out);
    data-dojo-type="dijit/form/Button"
    >Def</button>
 </form>
-</body>});
+</body>
+</html>});
 
 is @$out, @expected, 'Render multiple confirmations',
     diff $out,\@expected,{ STYLE => 'Table', CONTEXT => 2 };
@@ -535,7 +499,8 @@ $out = html_formatter_context {
 } test_request();
 
 filter_js_src($out);
-@expected = split (/\n/, q{<!DOCTYPE html>
+@expected = split (/\n/, q{<!-- prettier-disable -->
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
         <title></title>
@@ -552,9 +517,8 @@ filter_js_src($out);
             };
             var lsmbConfig = {
             };
-       </script>
-        <script type="text/javascript" src="js/lsmb/main.js"></script>
-        <script type="text/javascript" src="js/dojo/dojo.js"></script>
+        </script>
+        <script type="text/javascript" src="js/preloader.js" charset="utf-8"></script>
         <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
@@ -577,7 +541,8 @@ filter_js_src($out);
 </tbody><input id="rowcount-grid" type="hidden" name="rowcount_grid" value="1" />
 </table>
 </form>
-</body>});
+</body>
+</html>});
 
 is @$out, @expected, 'Render a grid (2-column p-key)',
     diff $out,\@expected,{ STYLE => 'Table', CONTEXT => 2 };
