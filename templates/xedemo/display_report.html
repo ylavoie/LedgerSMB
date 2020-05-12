@@ -1,6 +1,6 @@
 <?lsmb
 
-PROCESS "ui-header.html"
+WRAPPER "ui-header.html"
    stylesheet = USER.stylesheet;
 
 PROCESS "dynatable.html";
@@ -31,4 +31,4 @@ PROCESS "dynatable.html";
   <?lsmb PROCESS dynatable tbody = {rows = rows }
                  attributes = {class = 'report', order_url = order_url } ?>
 </body>
-</html>
+<?lsmb END ?>
