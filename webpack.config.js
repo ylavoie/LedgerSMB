@@ -181,7 +181,7 @@ const CopyWebpackPluginOptions = [
 
 const DojoWebpackPluginOptions = {
    loaderConfig: require("./UI/js-src/lsmb/webpack.loaderConfig.js"),
-   environment: { dojoRoot: "./UI/js" }, // used at run time for non-packed resources (e.g. blank.gif)
+   environment: { dojoRoot: "UI/js" }, // used at run time for non-packed resources (e.g. blank.gif)
    buildEnvironment: { dojoRoot: "node_modules" }, // used at build time
    locales: ["en"],
    noConsole: true
@@ -418,6 +418,14 @@ const webpackConfigs = {
    devServer: devServerOptions
 };
 
-module.exports = (env) => {
-   return webpackConfigs;
-};
+// For Webpack, export the config.  This is needed both at build time and on the client at runtime
+// for the packed application.
+if (typeof module !== 'undefined' && module) {
+   module.exports =  (env) => {
+      return webpackConfigs;
+   };
+} else {
+   // No webpack.  This script was loaded by page via script tag, so load Dojo from CDN
+   getConfig({dojoRoot: '//ajax.googleapis.com/ajax/libs/dojo/'
+            + JSON.stringify(require("package.json").dependencies.dojo)});
+}
