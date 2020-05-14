@@ -14,6 +14,7 @@ const MultipleThemesCompile = require("webpack-multiple-themes-compile");
 const StylelintPlugin = require("stylelint-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const UnusedWebpackPlugin = require("unused-webpack-plugin");
+const WebpackMonitor = require('webpack-monitor');
 
 const { CleanWebpackPlugin } = require("clean-webpack-plugin"); // installed via npm
 
@@ -282,6 +283,9 @@ const htmls = includedHtml.map(
 
 var pluginsDev = [
    new CleanWebpackPlugin(CleanWebpackPluginOptions),
+   new webpack.DefinePlugin({
+      VERSION: JSON.stringify(require("./package.json").version)
+    }),
    //new webpack.HashedModuleIdsPlugin(webpack.HashedModuleIdsPluginOptions),
    new StylelintPlugin(StylelintPluginOptions),
 
@@ -314,6 +318,11 @@ var pluginsDev = [
       verbose: false
     }),
    new DashboardPlugin(),
+   new WebpackMonitor({
+      capture: true, // -> default 'true'
+      launch: true, // -> default 'false'
+      excludeSourceMaps: true // default 'true'
+    })
 ];
 
 const pluginsProd = pluginsDev; // TODO: refine...

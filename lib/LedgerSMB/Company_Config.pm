@@ -51,6 +51,8 @@ sub initialize{
     my ($request) = @_;
     my $s = LedgerSMB::Setting->new(dbh => $request->{dbh});
     $settings = { map {$_ => $s->get($_) } @company_settings };
+    use Data::Printer;
+    warn np $settings;
     $settings->{curr} = [ split (/:/, $settings->{curr}) ];
     $settings->{default_currency} = $settings->{curr}->[0];
 
