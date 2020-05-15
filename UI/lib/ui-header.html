@@ -12,14 +12,14 @@
 <head>
     <title>[% title %]</title>
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-    [%+# HTML Snippet, for import only -%]
+    [%+# HTML Snippet, for import only %]
     [%+#
         # source comment only!
         #
         # don't specify a title on the stylesheets: we want them to be
         # *persistent*
         # http://www.w3.org/TR/html401/present/styles.html#h-14.3.1
-    -%]
+    %]
     <link rel="stylesheet" href="js/dojo/resources/dojo.css" type="text/css" />
     <link rel="stylesheet" href="js/dijit/themes/[% dojo_theme %]/[% dojo_theme %].css" type="text/css" />
     [% IF form.stylesheet %]
@@ -32,18 +32,18 @@
     [% END %]
     [% IF warn_expire %]
     <script type="text/javascript">
-    window.alert("[% text('Warning:  Your password will expire in [_1]', pw_expires)%]");
+        window.alert('[% text('Warning:  Your password will expire in [_1]', pw_expires)%]');
     </script>
     [% END %]
     <script type="text/javascript">
         var dojoConfig = {
             async: 1,
-            locale: "[% USER.language.lower().replace('_','-') %]",
+                locale: '[% USER.language.lower().replace('_','-') %]',
             packages: [{"name":"lsmb","location":"../lsmb"}]
         };
         var lsmbConfig = {
             [% IF USER.dateformat %]
-                "dateformat": "[% USER.dateformat %]"
+                 "dateformat": '[% USER.dateformat %]'
             [% END %]
         };
     </script>

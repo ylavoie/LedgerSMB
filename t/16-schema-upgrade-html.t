@@ -152,23 +152,23 @@ my @expected = split (/\n/, q{<!-- prettier-disable -->
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-        <title></title>
-        <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-        <link rel="stylesheet" href="js/dojo/resources/dojo.css" type="text/css" />
-        <link rel="stylesheet" href="js/dijit/themes/claro/claro.css" type="text/css" />
-            <link rel="stylesheet" href="css/ledgersmb.css" type="text/css" />
-            <link rel="stylesheet" href="css/setup.css" type="text/css" />
-        <script type="text/javascript">
-            var dojoConfig = {
-                async: 1,
-                locale: "",
-                packages: [{"name":"lsmb","location":"../lsmb"}]
-            };
-            var lsmbConfig = {
-            };
-        </script>
-        <script type="text/javascript" src="js/preloader.js" charset="utf-8"></script>
-        <meta name="robots" content="noindex,nofollow" />
+    <title></title>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="js/dojo/resources/dojo.css" type="text/css" />
+    <link rel="stylesheet" href="js/dijit/themes/claro/claro.css" type="text/css" />
+    <link rel="stylesheet" href="css/ledgersmb.css" type="text/css" />
+    <link rel="stylesheet" href="css/setup.css" type="text/css" />
+    <script type="text/javascript">
+        var dojoConfig = {
+            async: 1,
+            locale: '',
+            packages: [{"name":"lsmb","location":"../lsmb"}]
+        };
+        var lsmbConfig = {
+        };
+    </script>
+    <script type="text/javascript" src="js/preloader.js" charset="utf-8"></script>
+    <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
   <form method="POST"
@@ -235,23 +235,23 @@ filter_js_src($out);
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-        <title></title>
-        <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-        <link rel="stylesheet" href="js/dojo/resources/dojo.css" type="text/css" />
-        <link rel="stylesheet" href="js/dijit/themes/claro/claro.css" type="text/css" />
-            <link rel="stylesheet" href="css/ledgersmb.css" type="text/css" />
-            <link rel="stylesheet" href="css/setup.css" type="text/css" />
-        <script type="text/javascript">
-            var dojoConfig = {
-                async: 1,
-                locale: '',
-                packages: [{"name":"lsmb","location":"../lsmb"}]
-            };
-            var lsmbConfig = {
-            };
-        </script>
-        <script type="text/javascript" src="js/preloader.js" charset="utf-8"></script>
-        <meta name="robots" content="noindex,nofollow" />
+    <title></title>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="js/dojo/resources/dojo.css" type="text/css" />
+    <link rel="stylesheet" href="js/dijit/themes/claro/claro.css" type="text/css" />
+    <link rel="stylesheet" href="css/ledgersmb.css" type="text/css" />
+    <link rel="stylesheet" href="css/setup.css" type="text/css" />
+    <script type="text/javascript">
+        var dojoConfig = {
+            async: 1,
+            locale: '',
+            packages: [{"name":"lsmb","location":"../lsmb"}]
+        };
+        var lsmbConfig = {
+        };
+    </script>
+    <script type="text/javascript" src="js/preloader.js" charset="utf-8"></script>
+    <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
   <form method="POST"
@@ -318,23 +318,23 @@ filter_js_src($out);
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-        <title></title>
-        <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-        <link rel="stylesheet" href="js/dojo/resources/dojo.css" type="text/css" />
-        <link rel="stylesheet" href="js/dijit/themes/claro/claro.css" type="text/css" />
-            <link rel="stylesheet" href="css/ledgersmb.css" type="text/css" />
-            <link rel="stylesheet" href="css/setup.css" type="text/css" />
-        <script type="text/javascript">
-            var dojoConfig = {
-                async: 1,
-                locale: '',
-                packages: [{"name":"lsmb","location":"../lsmb"}]
-            };
-            var lsmbConfig = {
-            };
-        </script>
-        <script type="text/javascript" src="js/preloader.js" charset="utf-8"></script>
-        <meta name="robots" content="noindex,nofollow" />
+    <title></title>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="js/dojo/resources/dojo.css" type="text/css" />
+    <link rel="stylesheet" href="js/dijit/themes/claro/claro.css" type="text/css" />
+    <link rel="stylesheet" href="css/ledgersmb.css" type="text/css" />
+    <link rel="stylesheet" href="css/setup.css" type="text/css" />
+    <script type="text/javascript">
+        var dojoConfig = {
+            async: 1,
+            locale: '',
+            packages: [{"name":"lsmb","location":"../lsmb"}]
+        };
+        var lsmbConfig = {
+        };
+    </script>
+    <script type="text/javascript" src="js/preloader.js" charset="utf-8"></script>
+    <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
   <form method="POST"
@@ -402,23 +402,23 @@ filter_js_src($out);
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-        <title></title>
-        <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-        <link rel="stylesheet" href="js/dojo/resources/dojo.css" type="text/css" />
-        <link rel="stylesheet" href="js/dijit/themes/claro/claro.css" type="text/css" />
-            <link rel="stylesheet" href="css/ledgersmb.css" type="text/css" />
-            <link rel="stylesheet" href="css/setup.css" type="text/css" />
-        <script type="text/javascript">
-            var dojoConfig = {
-                async: 1,
-                locale: '',
-                packages: [{"name":"lsmb","location":"../lsmb"}]
-            };
-            var lsmbConfig = {
-            };
-        </script>
-        <script type="text/javascript" src="js/preloader.js" charset="utf-8"></script>
-        <meta name="robots" content="noindex,nofollow" />
+    <title></title>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="js/dojo/resources/dojo.css" type="text/css" />
+    <link rel="stylesheet" href="js/dijit/themes/claro/claro.css" type="text/css" />
+    <link rel="stylesheet" href="css/ledgersmb.css" type="text/css" />
+    <link rel="stylesheet" href="css/setup.css" type="text/css" />
+    <script type="text/javascript">
+        var dojoConfig = {
+            async: 1,
+            locale: '',
+            packages: [{"name":"lsmb","location":"../lsmb"}]
+        };
+        var lsmbConfig = {
+        };
+    </script>
+    <script type="text/javascript" src="js/preloader.js" charset="utf-8"></script>
+    <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
   <form method="POST"
@@ -503,23 +503,23 @@ filter_js_src($out);
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-        <title></title>
-        <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-        <link rel="stylesheet" href="js/dojo/resources/dojo.css" type="text/css" />
-        <link rel="stylesheet" href="js/dijit/themes/claro/claro.css" type="text/css" />
-            <link rel="stylesheet" href="css/ledgersmb.css" type="text/css" />
-            <link rel="stylesheet" href="css/setup.css" type="text/css" />
-        <script type="text/javascript">
-            var dojoConfig = {
-                async: 1,
-                locale: '',
-                packages: [{"name":"lsmb","location":"../lsmb"}]
-            };
-            var lsmbConfig = {
-            };
-        </script>
-        <script type="text/javascript" src="js/preloader.js" charset="utf-8"></script>
-        <meta name="robots" content="noindex,nofollow" />
+    <title></title>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="js/dojo/resources/dojo.css" type="text/css" />
+    <link rel="stylesheet" href="js/dijit/themes/claro/claro.css" type="text/css" />
+    <link rel="stylesheet" href="css/ledgersmb.css" type="text/css" />
+    <link rel="stylesheet" href="css/setup.css" type="text/css" />
+    <script type="text/javascript">
+        var dojoConfig = {
+            async: 1,
+            locale: '',
+            packages: [{"name":"lsmb","location":"../lsmb"}]
+        };
+        var lsmbConfig = {
+        };
+    </script>
+    <script type="text/javascript" src="js/preloader.js" charset="utf-8"></script>
+    <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
   <form method="POST"
