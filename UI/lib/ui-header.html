@@ -32,13 +32,13 @@
     [% END %]
     [% IF warn_expire %]
     <script type="text/javascript">
-        window.alert('[% text('Warning:  Your password will expire in [_1]', pw_expires)%]');
+        window.alert("[% text('Warning:  Your password will expire in [_1]', pw_expires)%]");
     </script>
     [% END %]
     <script type="text/javascript">
         var dojoConfig = {
             async: 1,
-                locale: '[% USER.language.lower().replace('_','-') %]',
+            locale: "[% USER.language.lower().replace('_','-') %]",
             packages: [{"name":"lsmb","location":"../lsmb"}]
         };
         var lsmbConfig = {

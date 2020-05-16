@@ -161,7 +161,7 @@ my @expected = split (/\n/, q{<!-- prettier-disable -->
     <script type="text/javascript">
         var dojoConfig = {
             async: 1,
-            locale: '',
+            locale: "",
             packages: [{"name":"lsmb","location":"../lsmb"}]
         };
         var lsmbConfig = {
@@ -244,7 +244,7 @@ filter_js_src($out);
     <script type="text/javascript">
         var dojoConfig = {
             async: 1,
-            locale: '',
+            locale: "",
             packages: [{"name":"lsmb","location":"../lsmb"}]
         };
         var lsmbConfig = {
@@ -327,7 +327,7 @@ filter_js_src($out);
     <script type="text/javascript">
         var dojoConfig = {
             async: 1,
-            locale: '',
+            locale: "",
             packages: [{"name":"lsmb","location":"../lsmb"}]
         };
         var lsmbConfig = {
@@ -411,7 +411,7 @@ filter_js_src($out);
     <script type="text/javascript">
         var dojoConfig = {
             async: 1,
-            locale: '',
+            locale: "",
             packages: [{"name":"lsmb","location":"../lsmb"}]
         };
         var lsmbConfig = {
@@ -512,7 +512,7 @@ filter_js_src($out);
     <script type="text/javascript">
         var dojoConfig = {
             async: 1,
-            locale: '',
+            locale: "",
             packages: [{"name":"lsmb","location":"../lsmb"}]
         };
         var lsmbConfig = {
