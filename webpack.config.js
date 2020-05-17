@@ -320,7 +320,7 @@ var pluginsDev = [
    new DashboardPlugin(),
    new WebpackMonitor({
       capture: true, // -> default 'true'
-      launch: false, // -> default 'false'
+      launch: true, // -> default 'false'
       excludeSourceMaps: true // default 'true'
     })
 ];
@@ -347,6 +347,7 @@ const optimizationList = {
            maxInitialRequests: Infinity,
            minSize: 0,
            cacheGroups: {
+              /*
               vendor: {
                  // That should be empty for Dojo?
                  test: /[\\/]node_modules[\\/]/,
@@ -361,6 +362,7 @@ const optimizationList = {
                     return `npm.${packageName.replace("@", "")}`;
                  }
               },
+              */
               ...themes.optimization.splitChunks.cacheGroups
            }
         },
@@ -385,8 +387,7 @@ const webpackConfigs = {
    // stats: 'verbose',
 
    entry: {
-      preloader: "lsmb/main.js", //"lsmb/preloader.js",
-      //lsmb: "lsmb/main.js",
+      preloader: "lsmb/main.js",
       ...themes.entry
    },
 
