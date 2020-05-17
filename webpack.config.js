@@ -320,7 +320,7 @@ var pluginsDev = [
    new DashboardPlugin(),
    new WebpackMonitor({
       capture: true, // -> default 'true'
-      launch: true, // -> default 'false'
+      launch: false, // -> default 'false'
       excludeSourceMaps: true // default 'true'
     })
 ];
@@ -385,9 +385,8 @@ const webpackConfigs = {
    // stats: 'verbose',
 
    entry: {
-      preloader: "lsmb/preloader.js",
-      lsmb: "lsmb/main",
-      //claro: "css!dijit/themes/claro/claro.css"
+      preloader: "lsmb/main.js", //"lsmb/preloader.js",
+      //lsmb: "lsmb/main.js",
       ...themes.entry
    },
 
