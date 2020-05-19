@@ -6,6 +6,7 @@ const webpack = require('webpack');
 const glob = require("glob");
 
 const CopyWebpackPlugin = require("copy-webpack-plugin");
+const CspHtmlWebpackPlugin = require("csp-html-webpack-plugin");
 const DashboardPlugin = require("webpack-dashboard/plugin");
 const DojoWebpackPlugin = require("dojo-webpack-plugin");
 const { DuplicatesPlugin } = require("inspectpack/plugin");
@@ -171,14 +172,18 @@ const StylelintPluginOptions = {
 };
 
 // Copy non-packed resources needed by the app to the release directory
-const CopyWebpackPluginOptions = [
-   { context: "../node_modules", from: "dijit/icons/**/*", to: "." },
-   { context: "../node_modules", from: "dijit/nls/**/*", to: "." },
-   { context: "../node_modules", from: "dojo/i18n/**/*", to: "." },
-   { context: "../node_modules", from: "dojo/nls/**/*", to: "." },
-   { context: "../node_modules", from: "dojo/resources/**/*", to: "." }
+const CopyWebpackPluginOptions = {
+   patterns: [
+      { context: "../node_modules", from: "dijit/icons/**/*", to: "." },
+      { context: "../node_modules", from: "dijit/nls/**/*", to: "." },
+      { context: "../node_modules", from: "dojo/nls/**/*", to: "." },
+      { context: "../node_modules", from: "dojo/resources/**/*", to: "." }
 
-];
+   ],
+   options: {
+     concurrency: 100,
+   }
+};
 
 const DojoWebpackPluginOptions = {
    loaderConfig: require("./UI/js-src/lsmb/webpack.loaderConfig.js"),
@@ -289,7 +294,9 @@ var pluginsDev = [
    //new webpack.HashedModuleIdsPlugin(webpack.HashedModuleIdsPluginOptions),
    new StylelintPlugin(StylelintPluginOptions),
 
-   //...htmls,
+   ...htmls,
+
+   new CspHtmlWebpackPlugin(),
 
    new DojoWebpackPlugin(DojoWebpackPluginOptions),
    new webpack.NormalModuleReplacementPlugin(/^dojo\/text!/, function(data) {

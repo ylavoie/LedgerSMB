@@ -75,7 +75,7 @@ define([
    mouse,
    ready
 ) {
-   ready(2, function () {
+   ready(1, function () {
       parser.parse().then(function () {
          // delay the option of triggering load_link() until
          // the parser has run: before then, the maindiv widget
