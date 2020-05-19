@@ -276,11 +276,32 @@ const devServerOptions = {
    openPage: ''
 };
 
+const CspHtmlWebpackPluginOptions = {
+   cspPlugin: {
+     enabled: true,
+     policy: {
+       'base-uri': "'self'",
+       'object-src': "'none'",
+       'script-src': ["'unsafe-inline'", "'self'", "'unsafe-eval'"],
+       'style-src': ["'unsafe-inline'", "'self'", "'unsafe-eval'"]
+     },
+     hashEnabled: {
+       'script-src': true,
+       'style-src': true
+     },
+     nonceEnabled: {
+       'script-src': true,
+       'style-src': true
+     }
+   }
+ };
+
 const htmls = includedHtml.map(
    function(val) {
       const filename = val.replace('./UI/','');
       return new HtmlWebpackPlugin({
          ...IndexHtmlOptions,
+         ...CspHtmlWebpackPluginOptions,
          template: filename,
          filename: filename
       });
@@ -296,7 +317,7 @@ var pluginsDev = [
 
    ...htmls,
 
-   new CspHtmlWebpackPlugin(),
+   new CspHtmlWebpackPlugin(CspHtmlWebpackPluginOptions),
 
    new DojoWebpackPlugin(DojoWebpackPluginOptions),
    new webpack.NormalModuleReplacementPlugin(/^dojo\/text!/, function(data) {
