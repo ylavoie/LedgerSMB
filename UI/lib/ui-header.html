@@ -31,11 +31,11 @@
     <link rel="stylesheet" href="css/[% s %]" type="text/css" />
     [% END %]
     [% IF warn_expire %]
-    <script type="text/javascript">
+    <script>
         window.alert("[% text('Warning:  Your password will expire in [_1]', pw_expires)%]");
     </script>
     [% END %]
-    <script type="text/javascript">
+    <script>
         var dojoConfig = {
             async: 1,
             locale: "[% USER.language.lower().replace('_','-') %]",
@@ -47,7 +47,7 @@
             [% END %]
         };
     </script>
-    <script type="text/javascript" src="js/preloader.js" charset="utf-8"></script>
+    <script src="js/preloader.js" charset="utf-8"></script>
     <meta name="robots" content="noindex,nofollow" />
 </head>
 [% BLOCK end_html %]

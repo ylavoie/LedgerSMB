@@ -2,8 +2,8 @@
 /* eslint global-require:0, no-param-reassign:0, no-unused-vars:0 */
 
 const path = require("path");
-const webpack = require('webpack');
 const glob = require("glob");
+const webpack = require('webpack');
 
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const CspHtmlWebpackPlugin = require("csp-html-webpack-plugin");
@@ -276,23 +276,27 @@ const devServerOptions = {
    openPage: ''
 };
 
-const CspHtmlWebpackPluginOptions = {
-   cspPlugin: {
-     enabled: true,
-     policy: {
-       'base-uri': "'self'",
-       'object-src': "'none'",
-       'script-src': ["'unsafe-inline'", "'self'", "'unsafe-eval'"],
-       'style-src': ["'unsafe-inline'", "'self'", "'unsafe-eval'"]
-     },
-     hashEnabled: {
-       'script-src': true,
-       'style-src': true
-     },
-     nonceEnabled: {
-       'script-src': true,
-       'style-src': true
-     }
+const cspConfigPolicy = {
+   'base-uri': "'self'",
+   'default-src': "'none'",
+   // data: is security hole, but we restrict it to images
+   'img-src': ["'unsafe-inline'", "'self'", "data:"],
+   'object-src': "'self'",
+   // DOJO requires 'unsafe-eval'
+   'script-src': ["'self'", "'unsafe-inline'",
+                  "'unsafe-eval'", "'unsafe-hashes'"],
+   'style-src': ["'unsafe-inline'", "'self'", "'unsafe-eval'"]
+};
+
+const cspPluginOptions = {
+   enabled: true,
+   hashEnabled: {
+      'script-src': true,
+      'style-src': true
+   },
+   nonceEnabled: {
+      'script-src': true,
+      'style-src': true
    }
  };
 
@@ -301,9 +305,12 @@ const htmls = includedHtml.map(
       const filename = val.replace('./UI/','');
       return new HtmlWebpackPlugin({
          ...IndexHtmlOptions,
-         ...CspHtmlWebpackPluginOptions,
          template: filename,
-         filename: filename
+         filename: filename,
+         cspPlugin: {
+            policy: cspConfigPolicy,
+            ...cspPluginOptions,
+      }
       });
 });
 
@@ -317,7 +324,7 @@ var pluginsDev = [
 
    ...htmls,
 
-   new CspHtmlWebpackPlugin(CspHtmlWebpackPluginOptions),
+   new CspHtmlWebpackPlugin(cspConfigPolicy,cspPluginOptions),
 
    new DojoWebpackPlugin(DojoWebpackPluginOptions),
    new webpack.NormalModuleReplacementPlugin(/^dojo\/text!/, function(data) {
@@ -348,7 +355,7 @@ var pluginsDev = [
    new DashboardPlugin(),
    new WebpackMonitor({
       capture: true, // -> default 'true'
-      launch: true, // -> default 'false'
+      launch: false, // -> default 'false'
       excludeSourceMaps: true // default 'true'
     })
 ];
