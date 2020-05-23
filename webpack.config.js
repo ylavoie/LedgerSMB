@@ -2,8 +2,13 @@
 /* eslint global-require:0, no-param-reassign:0, no-unused-vars:0 */
 
 const path = require("path");
+const crypto = require("crypto");
 const glob = require("glob");
 const webpack = require('webpack');
+
+const SHA256 = (str) => crypto.createHash('sha256').update( str, 'utf8').digest('base64');
+const sha256Str = SHA256( '' + Date.now() );
+//const WEBPACK_NONCE = 'dGlwYnhHNS8wa2FOVmY5NUxSTTFTQT09';
 
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const CspHtmlWebpackPlugin = require("csp-html-webpack-plugin");
@@ -178,7 +183,6 @@ const CopyWebpackPluginOptions = {
       { context: "../node_modules", from: "dijit/nls/**/*", to: "." },
       { context: "../node_modules", from: "dojo/nls/**/*", to: "." },
       { context: "../node_modules", from: "dojo/resources/**/*", to: "." }
-
    ],
    options: {
      concurrency: 100,
@@ -278,14 +282,14 @@ const devServerOptions = {
 
 const cspConfigPolicy = {
    'base-uri': "'self'",
-   'default-src': "'none'",
+   //'default-src': "'none'",
    // data: is security hole, but we restrict it to images
    'img-src': ["'unsafe-inline'", "'self'", "data:"],
    'object-src': "'self'",
    // DOJO requires 'unsafe-eval'
-   'script-src': ["'self'", "'unsafe-inline'",
-                  "'unsafe-eval'", "'unsafe-hashes'"],
-   'style-src': ["'unsafe-inline'", "'self'", "'unsafe-eval'"]
+   //'script-src': ["'self'", "'nonce'",
+   //               "'unsafe-eval'", "'unsafe-hashes'"],
+   //'style-src': ["'unsafe-inline'", "'self'", "'unsafe-eval'"]
 };
 
 const cspPluginOptions = {
@@ -300,6 +304,7 @@ const cspPluginOptions = {
    }
  };
 
+
 const htmls = includedHtml.map(
    function(val) {
       const filename = val.replace('./UI/','');
@@ -307,10 +312,10 @@ const htmls = includedHtml.map(
          ...IndexHtmlOptions,
          template: filename,
          filename: filename,
-         cspPlugin: {
-            policy: cspConfigPolicy,
-            ...cspPluginOptions,
-      }
+//         cspPlugin: {
+//            policy: cspConfigPolicy,
+//            ...cspPluginOptions,
+//         }
       });
 });
 
@@ -321,10 +326,6 @@ var pluginsDev = [
     }),
    //new webpack.HashedModuleIdsPlugin(webpack.HashedModuleIdsPluginOptions),
    new StylelintPlugin(StylelintPluginOptions),
-
-   ...htmls,
-
-   new CspHtmlWebpackPlugin(cspConfigPolicy,cspPluginOptions),
 
    new DojoWebpackPlugin(DojoWebpackPluginOptions),
    new webpack.NormalModuleReplacementPlugin(/^dojo\/text!/, function(data) {
@@ -344,6 +345,10 @@ var pluginsDev = [
       /^css!/,
       NormalModuleReplacementPluginOptionsCSS
    ),
+
+   ...htmls,
+
+   new CspHtmlWebpackPlugin(cspConfigPolicy,cspPluginOptions),
 
    new UnusedWebpackPlugin(UnusedWebpackPluginOptions),
    new DuplicatesPlugin({
@@ -422,7 +427,7 @@ const webpackConfigs = {
    // stats: 'verbose',
 
    entry: {
-      preloader: "lsmb/main.js",
+      "lsmb/main": "lsmb/main.js",
       ...themes.entry
    },
 

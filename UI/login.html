@@ -1,14 +1,8 @@
 [% INCLUDE 'ui-header.html'
         titlebar = "LedgerSMB $version"
-        include_stylesheet = ["login.css", "ledgersmb.css"]
-%]
-<script>
-  require(['lsmb/html/login_html'], function(login_html) {
-    login_html.go();
-  });
-</script>
-[%
+        include_stylesheet = ["login.css", "ledgersmb.css"];
    PROCESS elements.html -%]
+<script src='js-src/lsmb/html/login_html.js'></script>
 <body class="login, [% dojo_theme %]"
       id="app-login">
   <br /><br />

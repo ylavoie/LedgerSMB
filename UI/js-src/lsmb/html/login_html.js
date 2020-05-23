@@ -13,7 +13,7 @@ define([
    "dijit/form/Button"
 ], function (dom, domStyle, ready) {
    return {
-      go: function () {
+      startup: function () {
          ready(80, function () {
             domStyle.set(dom.byId("loading"), "display", "none");
          });

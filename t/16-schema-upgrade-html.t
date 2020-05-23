@@ -167,7 +167,7 @@ my @expected = split (/\n/, q{<!-- prettier-disable -->
         var lsmbConfig = {
         };
     </script>
-    <script type="text/javascript" src="js/preloader.js" charset="utf-8"></script>
+    <script type="text/javascript" src="js/lsmb/main.js" charset="utf-8"></script>
     <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
@@ -250,7 +250,7 @@ filter_js_src($out);
         var lsmbConfig = {
         };
     </script>
-    <script type="text/javascript" src="js/preloader.js" charset="utf-8"></script>
+    <script type="text/javascript" src="js/lsmb/main.js" charset="utf-8"></script>
     <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
@@ -333,7 +333,7 @@ filter_js_src($out);
         var lsmbConfig = {
         };
     </script>
-    <script type="text/javascript" src="js/preloader.js" charset="utf-8"></script>
+    <script type="text/javascript" src="js/lsmb/main.js" charset="utf-8"></script>
     <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
@@ -417,7 +417,7 @@ filter_js_src($out);
         var lsmbConfig = {
         };
     </script>
-    <script type="text/javascript" src="js/preloader.js" charset="utf-8"></script>
+    <script type="text/javascript" src="js/lsmb/main.js" charset="utf-8"></script>
     <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
@@ -518,7 +518,7 @@ filter_js_src($out);
         var lsmbConfig = {
         };
     </script>
-    <script type="text/javascript" src="js/preloader.js" charset="utf-8"></script>
+    <script type="text/javascript" src="js/lsmb/main.js" charset="utf-8"></script>
     <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">

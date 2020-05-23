@@ -12,9 +12,11 @@ define([
    "dojo/dom-class",
    "dojo/mouse",
    "dojo/ready",
+   /*
    "lsmb/html/credentials_html",
    "lsmb/html/login_html",
    "lsmb/html/payments2_html",
+   */
    /* Every reference */
    "dijit/Dialog",
    "dijit/form/Button",
