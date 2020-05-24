@@ -287,7 +287,7 @@ const cspConfigPolicy = {
    'img-src': ["'unsafe-inline'", "'self'", "data:"],
    'object-src': "'self'",
    // DOJO requires 'unsafe-eval'
-   //'script-src': ["'self'", "'nonce'",
+   //'src': ["'self'", "'nonce'",
    //               "'unsafe-eval'", "'unsafe-hashes'"],
    //'style-src': ["'unsafe-inline'", "'self'", "'unsafe-eval'"]
 };
