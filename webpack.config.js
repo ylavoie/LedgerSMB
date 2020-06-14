@@ -11,7 +11,7 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 const DojoWebpackPlugin = require("dojo-webpack-plugin");
 const { DuplicatesPlugin } = require("inspectpack/plugin");
 const ESLintPlugin = require('eslint-webpack-plugin');
-const ExtractCssChunks = require("extract-css-chunks-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const StylelintPlugin = require("stylelint-webpack-plugin");
@@ -79,9 +79,9 @@ glob.sync("**/*.html", {
 includedRequires = includedRequires
 .concat(
    glob.sync("lsmb/**/!(bootstrap|lsmb.profile|webpack.loaderConfig).js", {
-            cwd: "UI/js-src/"
+        cwd: "UI/js-src/"
     }).map(function(file) {
-           return file.replace(/\.js$/,'')
+        return file.replace(/\.js$/,'')
     }))
 .filter((x, i, a) => a.indexOf(x) === i)
 .sort();
@@ -106,7 +106,7 @@ const css = {
     test: /\.css$/i,
     use: [
         {
-            loader: ExtractCssChunks.loader,
+            loader: MiniCssExtractPlugin.loader,
             options: {
                 hmr: !prodMode
             }
@@ -179,8 +179,8 @@ const CopyWebpackPluginOptions = {
 
 const DojoWebpackPluginOptions = {
     loaderConfig: require("./UI/js-src/lsmb/webpack.loaderConfig.js"),
-    environment: { dojoRoot: "UI/js" }, // used at run time for non-packed resources (e.g. blank.gif)
-    buildEnvironment: { dojoRoot: "node_modules" }, // used at build time
+    environment: { dojoRoot: "js" }, // used at run time for non-packed resources (e.g. blank.gif)
+    buildEnvironment: { dojoRoot: "../node_modules" }, // used at build time
     locales: ["en"],
     noConsole: true
 };
@@ -205,8 +205,6 @@ const NormalModuleReplacementPluginOptionsSVG = function (data) {
 const UnusedWebpackPluginOptions = {
     // Source directories
     directories: ["js-src/lsmb"],
-    // Exclude patterns
-    exclude: ["*.test.js"],
     // Root directory (optional)
     root: path.join(__dirname, "UI")
 };
@@ -218,14 +216,22 @@ const mapFilenamesToEntries = (pattern) =>
         return { ...entries, [name]: filename };
     }, {});
 
-const _dijitThemes = "+(claro|nihilo|soria|tundra)";
 const lsmbCSS = {
     ...mapFilenamesToEntries(path.resolve("UI/css/*.css")),
-    ...mapFilenamesToEntries(
+};
+const mapThemesToEntries = (pattern) =>
+    glob.sync(pattern).reduce((entries, filename) => {
+        const [, name] = filename.match(/([^/]+)\.css$/);
+        return { ...entries, [name+'/'+name]: filename };
+    }, {});
+
+const _dijitThemes = "(claro|nihilo|soria|tundra)";
+const dijitThemes = {
+    ...mapThemesToEntries(
         path.resolve(
-            "node_modules/dijit/themes/" +
+            "node_modules/dijit/themes/+" +
                 _dijitThemes +
-                "/" +
+                "/+" +
                 _dijitThemes +
                 ".css"
         )
@@ -277,11 +283,14 @@ var pluginsProd = [
         NormalModuleReplacementPluginOptionsSVG
     ),
 
-    new ExtractCssChunks({
-        filename: prodMode ? "css/[name].[contenthash].css" : "css/[name].css",
-        chunkFilename: "css/[id].css",
-        moduleFilename: ({ name }) => `${name.replace("js/", "js/css/")}.css`
-        // publicPath: "js"
+    new MiniCssExtractPlugin({
+        chunkFilename: ({ chunk }) => {
+            const dijitThemesRegex = new RegExp(_dijitThemes);
+            const path = chunk.name.match(dijitThemesRegex)
+                       ? 'dijit/themes'
+                       : 'css';
+            return `${path}/[name].css`;
+        }
     }),
 
     new HtmlWebpackPlugin({
@@ -289,7 +298,7 @@ var pluginsProd = [
         minify: false, // Adjust t/16-schema-upgrade-html.t if prodMode is used,
         filename: "ui-header.html",
         mode: (prodMode ? "production" : "development"),
-        excludeChunks: [...Object.keys(lsmbCSS)],
+        excludeChunks: [...Object.keys(lsmbCSS), ...Object.keys(dijitThemes)],
         template: "lib/ui-header.html"
     })
 ];
@@ -327,10 +336,6 @@ const optimizationList = {
     splitChunks: !prodMode
         ? false
         : {
-              chunks(chunk) {
-                  // exclude dijit themes
-                  return !chunk.name.match(/(claro|nihilo|soria|tundra)/);
-              },
               maxInitialRequests: Infinity,
               cacheGroups: {
                   node_modules: {
@@ -383,7 +388,8 @@ const webpackConfigs = {
     entry: {
         polyfill: "js-src/polyfills.js",
         bootstrap: "js-src/lsmb/bootstrap.js",  // Virtual file
-        ...lsmbCSS
+        ...lsmbCSS,
+        ...dijitThemes
     },
 
     output: {

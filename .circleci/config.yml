@@ -182,6 +182,93 @@ commands:
             /usr/local/bin/<< parameters.proxy >>.sh
           background: true
 
+  env-info:
+    description: |
+      Save information about the job enviroment, to be stored as artifacts and inspected later
+    parameters:
+      data-dir:
+        default: ~/.ccidiag/env-info
+        description: |
+          Directory in which to output job environment information (will be created if necessary)
+        type: string
+    steps:
+    - run:
+        command: |
+          echo "----------------------------------------------------------------------------------------------------"
+          echo "This will run through a set of commands, dumping their output as a file to be uploaded as an artifact"
+          echo "If the command doesn't exist the file will be empty, and CircleCI will ignore it during the upload"
+          echo "Can be used to discover enviromental information and installed packages"
+          echo "----------------------------------------------------------------------------------------------------"
+          echo "Working directory is: $(pwd)"
+          echo "Output will be stored in: <<parameters.data-dir>> (creating it if it does not exist...)"
+          echo "----------------------------------------------------------------------------------------------------"
+          mkdir -p <<parameters.data-dir>>
+          cat /proc/cpuinfo > <<parameters.data-dir>>/proc_cpuinfo.log || true
+          dpkg -l > <<parameters.data-dir>>/dpkg.log || true
+          yarn list > <<parameters.data-dir>>/yarn.log || true
+          brew list --versions > <<parameters.data-dir>>/brew.log || true
+          yarn global list > <<parameters.data-dir>>/yarn-global.log || true
+          gem query --local > <<parameters.data-dir>>/gem.log || true
+          npm --version > <<parameters.data-dir>>/npm-version.log || true
+          npm ls --global > <<parameters.data-dir>>/npm-global.log || true
+          npm ls > <<parameters.data-dir>>/npm.log || true
+          echo "----------------------------------------------------------------------------------------------------"
+          echo "Env diagnostic data has been stored in <<parameters.data-dir>>"
+        name: CircleCI diagnostic report (env-info)
+        when: always
+
+  memory:
+    description: |
+      Save memory usage information, to be stored as artifacts and inspected later
+    parameters:
+      data-dir:
+        default: ~/.ccidiag/memory
+        description: |
+          Directory in which to output memory usage information (will be created if necessary)
+        type: string
+    steps:
+    - run:
+        background: true
+        command: |
+          echo "This command will copy memory usage information to a file, for debugging"
+          echo "----------------------------------------------------------------------------------------------------"
+          echo "Working directory is: $(pwd)"
+          echo "Output will be stored in: <<parameters.data-dir>> (creating it if it does not exist...)"
+          echo "----------------------------------------------------------------------------------------------------"
+          mkdir -p <<parameters.data-dir>>
+          cp $HOME/project/.circleci/.toprc ~
+          top -b -c \>> <<parameters.data-dir>>/top.txt || true
+          echo "----------------------------------------------------------------------------------------------------"
+          echo "Memory usage information has been stored in <<parameters.data-dir>>"
+        name: CircleCI diagnostic report (memory)
+        when: always
+
+  store-report:
+    description: |
+      Store diagnostic data as artifacts. Use after running the other diagnostic commands.
+    parameters:
+      data-dir:
+        default: ~/.ccidiag
+        description: |
+          Directory to store as artifacts (should conform with the value passed to this parameter in the other diagnostic commands)
+        type: string
+    steps:
+    - store_artifacts:
+        path: <<parameters.data-dir>>
+
+  webpack-reports:
+    description: |
+      Generates inspectpack reports and stores as artifacts.
+    steps:
+    - run:
+        command: |
+          mkdir -p ~/.inspectpacks
+          inspectpack -s UI/js/stats.json -a duplicates -f text > ~/.inspectpacks/duplicates.txt
+          inspectpack -s UI/js/stats.json -a versions -f text > ~/.inspectpacks/versions.txt
+          inspectpack -s UI/js/stats.json -a sizes -f text > ~/.inspectpacks/sizes.txt
+    - store_artifacts:
+        path: ~/.inspectpacks
+
 # Define executors
 executors:
   test:
@@ -219,6 +306,8 @@ executors:
       PGPASSWORD: test
       LSMB_TEST_DB: 1
       LSMB_NEW_DB: lsmbinstalltest
+      LSMB_BASE_URL: http://127.0.0.1:5000
+      PSGI_BASE_URL: http://127.0.0.1:5762
       HARNESS_RULESFILE: t/testrules.yml
 
 # Define jobs
@@ -288,6 +377,12 @@ workflows:
     jobs:
       - test_webpack_chrome:
           filters: *job_filters
+          pre-steps:
+            - env-info
+          post-steps:
+            - memory
+            - store-report
+            - webpack-reports
 
       - test_webpack_firefox:
           filters: *job_filters

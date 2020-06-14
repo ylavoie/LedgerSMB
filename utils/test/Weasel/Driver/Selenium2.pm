@@ -163,51 +163,6 @@ sub start {
         }
     } for (qw/browser_name remote_server_addr platform version/);
 
-=x
-    #$self->{caps}{'version'} = 'ANY';
-    #$Selenium::Remote::Driver::FORCE_WD3 = 1;
-    #$Selenium::Remote::Driver::FORCE_WD2 = 1;
-    #$self->{caps}{'wd_context_prefix'} = '/wd/hub';
-
-    if ( $self->{caps}{browser_name} eq 'chrome' ) {
-        $self->{caps}{'extra_capabilities'} = {
-           'goog:chromeOptions' => {
-               'args' => [
-                   'verbose',
-                   #'log-level=1'
-                   #'no-sandbox',
-                   'headless'
-               ],
-#               'prefs' => {
-#                   'enableNetwork' => 1,
-#                   'enablePage' => 1,
-#                   'traceCategories' => 'browser,devtools.timeline,devtools',
-#               }
-            },
-            'goog:loggingPrefs' => {
-               'performance' => 'ALL',
-               'browser' => 'ALL'
-           }
-        };
-    } elsif ( $self->{caps}{browser_name} eq 'firefox' ) {
-        $self->{caps}{'extra_capabilities'} = {
-            'moz:firefoxOptions'     => {
-              args    => [ '-headless' ],
-              log     => { level => 'trace' }
-              #log     => { level => $self->{caps}{trace} ? 'trace' : 'info' }
-            }
-        };
-    } elsif ( $self->{caps}{browser_name} eq 'opera' ) {
-        $self->{caps}{'extra_capabilities'} = {
-           'operaOptions' => {
-               'args' => [
-                   'verbose',
-                   'headless'
-               ],
-           }
-        };
-    }
-=cut
 
 #See http://search.cpan.org/~teodesian/Selenium-Remote-Driver-1.23/lib/Selenium/Remote/Driver.pm
 #Connect to an already running selenium server

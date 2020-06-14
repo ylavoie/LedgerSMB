@@ -160,6 +160,7 @@ sub render_string {
                     value => 'screen'
                 } )
           ],
+          DOJO_BUILT => LedgerSMB::Sysconfig::dojo_built(),
           text => sub {
               if ($locale) {
                   return $locale->maketext(@_);

@@ -16,45 +16,54 @@
 <head>
     <title>[% title %]</title>
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-    [%+# HTML Snippet, for import only %]
-    [%+#
+    [%-#
         # source comment only!
         #
         # don't specify a title on the stylesheets: we want them to be
         # *persistent*
         # http://www.w3.org/TR/html401/present/styles.html#h-14.3.1
-    %]
-    <%= htmlWebpackPlugin.tags.headTags %>
-    <link href="js/dojo/resources/dojo.css" rel="stylesheet">
-    <link href="js/css/[% dojo_theme %].css" rel="stylesheet">
-    [% IF form.stylesheet %]
-    <link href="js/css/[% form.stylesheet %]" rel="stylesheet">
-    [% ELSIF stylesheet %]
-    <link href="js/css/[% stylesheet %]" rel="stylesheet">
-    [% END %]
-    [% FOREACH s = include_stylesheet %]
-    <link href="js/css/[% s %]" rel="stylesheet">
-    [% END %]
-    [% IF warn_expire %]
+    -%]
+    [%- # Keep this server side for performance purposes. If would have been
+        # nicer to only depend on webpack.loaderConfig
+        IF DOJO_BUILT;
+          SET DOJO = "js"
+              CSS = "js/css";
+        ELSE;
+          SET DOJO = "../node_modules"
+              CSS = "css";
+        END;
+    -%]
+    [%- IF DOJO_BUILT %]
+        <%= htmlWebpackPlugin.tags.headTags %>
+    [%- END %]
+    <link href="[% DOJO %]/dojo/resources/dojo.css" rel="stylesheet">
+    <link href="[% DOJO %]/dijit/themes/[% dojo_theme %]/[% dojo_theme %].css" rel="stylesheet">
+    [%- IF form.stylesheet %]
+    <link href="[% CSS %]/[% form.stylesheet %]" rel="stylesheet">
+    [%- ELSIF stylesheet %]
+    <link href="[% CSS %]/[% stylesheet %]" rel="stylesheet">
+    [%- END %]
+    [%- FOREACH s = include_stylesheet %]
+    <link href="[% CSS %]/[% s %]" rel="stylesheet">
+    [%- END %]
+    [%- IF warn_expire %]
+    window.alert("[% text('Warning:  Your password will expire in [_1]', pw_expires)%]");
+    [%- END %]
+    <script src="js-src/lsmb/webpack.loaderConfig.js"></script>
     <script>
-        window.alert("[% text('Warning:  Your password will expire in [_1]', pw_expires)%]");
-    </script>
-    [% END %]
-    <script>
-        var dojoConfig = {
-            async: 1,
-            parseOnLoad: true,
-            locale: "[% USER.language.lower().replace('_','-') %]",
-            packages: [{"name":"lsmb","location":"../lsmb"}],
-            mode: "<%= htmlWebpackPlugin.options.mode %>"
-        };
+        var dojoConfig = getConfig({ dojoRoot: "[% DOJO %]"});
         var lsmbConfig = {
-            [% IF USER.dateformat %]
+            [%- IF USER.dateformat %]
             "dateformat": '[% USER.dateformat %]'
-            [% END %]
+            [%- END %]
         };
+        var loadingGif = "[% DOJO %]/dijit/icons/images/loadingAnimation.gif";
     </script>
-    ${htmlWebpackPlugin.tags.bodyTags}
+    [%- IF DOJO_BUILT %]
+        ${htmlWebpackPlugin.tags.bodyTags}
+    [%- ELSE %]
+        <script src="../node_modules/dojo/dojo.js"></script>
+    [%- END %]
     <meta name="robots" content="noindex,nofollow" />
 </head>
 [% BLOCK end_html %]

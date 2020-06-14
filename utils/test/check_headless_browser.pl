@@ -25,50 +25,7 @@ my %caps = (
           accept_ssl_certs => 1,
           version => 'ANY'
 );
-if ( $caps{browser_name} eq 'chrome' ) {
-    $caps{'extra_capabilities'} = {
-       'goog:chromeOptions' => {
-           'args' => [
-               #'lang=fr-CA',
-               'no-sandbox',
-               'headless',
-               'verbose'
-           ]
-       }
-    };
-    $Selenium::Remote::Driver::FORCE_WD2 = 1;
-} elsif ( $caps{browser_name} eq 'firefox' ) {
-    require Selenium::Firefox::Profile;
-    my $profile = Selenium::Firefox::Profile->new;
-    $profile->set_preference(
-        'intl.accept_languages' => 'fr-CA',
-    );
-    $self->{caps}{'firefox_profile'} = $profile;
-    $caps{'extra_capabilities'} = {
-        'moz:firefoxOptions' => {
-            args    => [ '-headless' ],
-            log     => { level => "trace"}
-        }
-    };
-    no warnings 'once';
-    $Selenium::Remote::Driver::FORCE_WD2=1;
-} elsif ( $caps{browser_name} eq 'opera' ) {
-    $caps{'extra_capabilities'} = {
-       'operaOptions' => {
-           'args' => [
-               #'lang=fr-CA',
-               'no-sandbox',
-               'headless',
-               'verbose'
-           ]
-       }
-    };
-    #$Selenium::Remote::Driver::FORCE_WD2 = 1;
-} elsif ( $caps{browser_name} eq 'phantomjs' ) {
-    $caps{'extra_capabilities'} = {
-        "phantomjs.page.customHeaders.Accept-Language" => "fr-CA"
-    };
-}
+
 #See http://search.cpan.org/~teodesian/Selenium-Remote-Driver-1.23/lib/Selenium/Remote/Driver.pm
 #Connect to an already running selenium server
 my $driver = Selenium::Remote::Driver->new(%caps)
