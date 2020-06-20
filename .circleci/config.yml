@@ -63,10 +63,18 @@ commands:
     description: "Prepare environment"
     steps:
       - checkout
+      - restore_cache:
+          keys:
+          - v1_dependencies-{{ checksum "package.json" }}
+          - v1_dependencies-
       - run:
           name: Make Dojo
           command: |
             make dojo
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1_dependencies-{{ checksum "package.json" }}
       # Freshen up CPAN
       - run:
           name: Refresh modules from CPAN
