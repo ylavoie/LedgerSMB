@@ -1,5 +1,5 @@
 /** @format */
-/* eslint global-require:0, no-param-reassign:0, no-unused-vars:0 */
+/* eslint global-require:0, no-param-reassign:0, no-unused-vars:0, no-console: 0, class-methods-use-this:0 */
 /* global getConfig */
 
 const fs = require("fs");
@@ -12,13 +12,43 @@ const DojoWebpackPlugin = require("dojo-webpack-plugin");
 const { DuplicatesPlugin } = require("inspectpack/plugin");
 const ExtractCssChunks = require("extract-css-chunks-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const ManifestPlugin = require("webpack-manifest-plugin");
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+const StatsPlugin = require("stats-webpack-plugin");
 const StylelintPlugin = require("stylelint-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const UnusedWebpackPlugin = require("unused-webpack-plugin");
 const VirtualModulePlugin = require('virtual-module-webpack-plugin');
 
 const { CleanWebpackPlugin } = require("clean-webpack-plugin"); // installed via npm
+
+// Segment the application in features. Files in those directories have most
+// chances to be used together or at the same period.
+// If only we could make them lazyloading instead of pulling all in ui-header
+const lsmbFeatures = [
+    "accounts",
+    "asset",
+    "budgetting",
+    "business_units",
+    "Configuration",
+    "Contact",
+    "file",
+    "import_csv",
+    "inventory",
+    "journal",
+    "js-src",
+    "lib",
+    "orders",
+    "payments",
+    "payroll",
+    "reconciliation",
+    "Reports",
+    "setup",
+    "taxform",
+    "templates",
+    "timecards",
+    "users"
+];
 
 const argv = require("yargs").argv;
 const prodMode =
@@ -30,6 +60,7 @@ const prodMode =
 process.env.NODE_ENV = prodMode ? "production" : "development";
 
 /* FUNCTIONS */
+// Compute the list of files we want to keep
 
 var includedRequires = [
     "dojo/has!webpack?dojo-webpack-plugin/amd/dojoES6Promise",
@@ -64,12 +95,32 @@ function findDataDojoTypes(fileName) {
 }
 
 // Compute used data-dojo-type
-glob.sync("**/*.html", {
+const includedHtml = glob.sync("**/*.html", {
     ignore: ["lib/ui-header.html", "js/**"],
     cwd: "UI"
-}).map(function (filename) {
+});
+
+const htmls = includedHtml.map(function (filename) {
     const requires = findDataDojoTypes("UI/" + filename);
     includedRequires.push(...requires);
+    return new HtmlWebpackPlugin({
+        inject: false, // Tags are injected manually in the content below
+        minify: prodMode // Adjust t/16-schema-upgrade-html.t if prodMode is used,
+            ? {
+                  collapseWhitespace: true,
+                  ignoreCustomFragments: [/\[%[\s\S]*?%\]/],
+                  removeComments: true,
+                  removeRedundantAttributes: true,
+                  removeScriptTypeAttributes: true,
+                  removeStyleLinkTypeAttributes: true,
+                  useShortDoctype: true
+              }
+            : false,
+        excludeChunks: [...Object.keys(lsmbCSS)],
+        template: filename,
+        filename: filename.replace(/(js-src\/)?/, ""),
+        chunks: requires
+    });
 });
 
 // Pull UI/js-src/lsmb
@@ -132,7 +183,12 @@ const images = {
 };
 
 const html = {
-    test: /\.html$/,
+    test: /.+(?<!ui-header)\.html$/,
+    loader: "raw-loader"
+};
+
+const ejs = {
+    test: /ui-header\.html$/,
     use: [
         {
             loader: "ejs-loader",
@@ -207,23 +263,21 @@ const UnusedWebpackPluginOptions = {
 };
 
 // Generate entries from file pattern
-const mapFilenamesToEntries = (pattern) =>
-    glob.sync(pattern).reduce((entries, filename) => {
+const mapFilenamesToEntries = (cwd, pattern) =>
+    glob.sync(pattern, {cwd: cwd}).reduce((entries, filename) => {
         const [, name] = filename.match(/([^/]+)\.css$/);
         return { ...entries, [name]: filename };
     }, {});
 
 const _dijitThemes = "+(claro|nihilo|soria|tundra)";
 const lsmbCSS = {
-    ...mapFilenamesToEntries(path.resolve("UI/css/*.css")),
-    ...mapFilenamesToEntries(
-        path.resolve(
-            "node_modules/dijit/themes/" +
-                _dijitThemes +
-                "/" +
-                _dijitThemes +
-                ".css"
-        )
+    ...mapFilenamesToEntries("UI","css/!(ledgersmb-common).css"),
+    ...mapFilenamesToEntries(".",
+        "node_modules/dijit/themes/" +
+            _dijitThemes +
+            "/" +
+            _dijitThemes +
+            ".css"
     )
 };
 
@@ -241,12 +295,68 @@ const VirtualModulePluginOptions = {
         });`
 };
 
-// console.log(VirtualModulePluginOptions.contents);
+var includedRequires = [];
+
+const htmls = includedHtml.map(function (filename) {
+    const requires = findDataDojoTypes("UI/" + filename);
+    includedRequires.push(...requires);
+    return new HtmlWebpackPlugin({
+        inject: false, // Tags are injected manually in the content below
+        minify: prodMode // Adjust t/16-schema-upgrade-html.t if prodMode is used,
+            ? {
+                  collapseWhitespace: true,
+                  ignoreCustomFragments: [/\[%[\s\S]*?%\]/],
+                  removeComments: true,
+                  removeRedundantAttributes: true,
+                  removeScriptTypeAttributes: true,
+                  removeStyleLinkTypeAttributes: true,
+                  useShortDoctype: true
+              }
+            : false,
+        excludeChunks: [...Object.keys(lsmbCSS)],
+        template: filename,
+        filename: filename.replace(/(js-src\/)?/, ""),
+        chunks: requires
+    });
+});
+
+includedRequires = includedRequires.concat(
+   glob.sync("lsmb/**/*.js", {
+            cwd: "UI/js-src/",
+            exclude: "lsmb/bootstrap.js"
+    }).map(function(file) {
+	return file.replace(/\.js$/,'')
+    })
+);
+
+// console.log(includedRequires.filter((x, i, a) => a.indexOf(x) === i).sort());
+
+const includedRequiresContent = `
+/* eslint-disable */
+define(["dojo/parser","dojo/ready","`
++ includedRequires.filter((x, i, a) => a.indexOf(x) === i)
+                  .join('","')
++ `"], function(parser, ready) {
+    ready(function() {
+            parser.parse();
+    });
+    return {};
+});
+`;
 
 var pluginsProd = [
     new CleanWebpackPlugin(CleanWebpackPluginOptions),
 
+    new ManifestPlugin(),
+
     new webpack.HashedModuleIdsPlugin(), // so that file hashes don't change unexpectedly
+
+    new StatsPlugin("stats.json", {
+        chunkModules: true,
+        exclude: [/node_modules[\\/]dijit[\\/]themes/]
+    }),
+
+    ...htmls,
 
     new VirtualModulePlugin(VirtualModulePluginOptions),
 
@@ -254,6 +364,8 @@ var pluginsProd = [
 
     new DojoWebpackPlugin(DojoWebpackPluginOptions),
 
+    // For plugins registered after the dojo-webpack-plugin, data.request has been normalized and
+    // resolved to an absMid and loader-config maps and aliases have been applied
     new webpack.NormalModuleReplacementPlugin(/^dojo\/text!/, function (data) {
         /* eslint-disable-next-line no-param-reassign */
         data.request = data.request.replace(/^dojo\/text!/, "!!raw-loader!");
@@ -282,7 +394,7 @@ var pluginsProd = [
         inject: false, // Tags are injected manually in the content below
         minify: false, // Adjust t/16-schema-upgrade-html.t if prodMode is used,
         filename: "ui-header.html",
-        mode: (prodMode ? "production" : "development"),
+        mode: prodMode ? "production" : "development",
         excludeChunks: [...Object.keys(lsmbCSS)],
         template: "lib/ui-header.html"
     })
@@ -305,16 +417,10 @@ var pluginsList = prodMode ? pluginsProd : pluginsDev;
 
 /* OPTIMIZATIONS */
 
-const groupsOptions = {
-    chunks: "all",
-    reuseExistingChunk: true,
-    enforce: true
-};
-
 const optimizationList = {
     moduleIds: "hashed",
     runtimeChunk: {
-        name: "manifest" // runtimeChunk: "multiple", // Fails
+        name: "manifest"
     },
     namedChunks: true, // Keep names to load only 1 theme
     noEmitOnErrors: true,
@@ -323,14 +429,17 @@ const optimizationList = {
         : {
               chunks(chunk) {
                   // exclude dijit themes
-                  return !chunk.name.match(/(claro|nihilo|soria|tundra)/);
+                  return (
+                      chunk.name &&
+                      !chunk.name.match(/(claro|nihilo|soria|tundra)/)
+                  );
               },
-              maxInitialRequests: Infinity,
+              // maxInitialRequests: Infinity,
               cacheGroups: {
-                  main: {
-                      test: /lsmb[\\/]main.+\.js/,
-                      name: "main",
-                      ...groupsOptions
+                  lsmb: {
+                      test: /[\\/]lsmb[\\/]/,
+                      chunks: "all",
+                      minSize: 0,
                   },
                   node_modules: {
                       test(module, chunks) {
@@ -349,9 +458,7 @@ const optimizationList = {
                               /[\\/]node_modules[\\/](.*?)([\\/]|$)/
                           )[1];
                           return `npm.${packageName.replace("@", "")}`;
-                      },
-                      priority: 2,
-                      ...groupsOptions
+                      }
                   }
               }
           },
@@ -375,13 +482,35 @@ const optimizationList = {
 };
 
 /* WEBPACK CONFIG */
+function _glob(pattern) {
+    return [...glob.sync(pattern, { cwd: "UI" })];
+}
 
 const webpackConfigs = {
     context: path.join(__dirname, "UI"),
 
     entry: {
-        main: "lsmb/main.js",
         bootstrap: "js-src/lsmb/bootstrap.js",  // Virtual file
+        // Pull all HTMLs by feature
+        ... lsmbFeatures.reduce((result, feature) => {
+            return {
+                ...result,
+                [feature + '_html']: _glob(feature + "/**/*.html")
+            };
+        },[]),
+        // Pull residual HTMLs
+        am_html: _glob("am-*.html"),
+        login_html: "login.html",
+        logout_html: "logout.html",
+        main_html: "main.html",
+        utils_html: [
+            "create_batch.html",
+            "form-confirmation.html",
+            "io-email.html",
+            "oe-save_warn.html",
+            "welcome.html"
+        ],
+        // CSS
         ...lsmbCSS
     },
 
@@ -394,7 +523,7 @@ const webpackConfigs = {
     },
 
     module: {
-        rules: [javascript, css, images, svg, html]
+        rules: [javascript, css, images, svg, html, ejs]
     },
 
     plugins: pluginsList,
@@ -414,6 +543,8 @@ const webpackConfigs = {
 
     performance: { hints: prodMode ? false : "warning" }
 };
+
+// console.log(webpackConfigs.entry);
 
 /* eslint-disable-next-line no-unused-vars */
 module.exports = (env) => {
