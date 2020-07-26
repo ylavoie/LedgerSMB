@@ -60,7 +60,25 @@ const prodMode =
 process.env.NODE_ENV = prodMode ? "production" : "development";
 
 /* FUNCTIONS */
-// Compute the list of files we want to keep
+
+// Generate entries from file pattern
+const mapFilenamesToEntries = (cwd, pattern) =>
+    glob.sync(pattern, {cwd: cwd}).reduce((entries, filename) => {
+        const [, name] = filename.match(/([^/]+)\.css$/);
+        return { ...entries, [name]: filename };
+    }, {});
+
+const _dijitThemes = "+(claro|nihilo|soria|tundra)";
+const lsmbCSS = {
+    ...mapFilenamesToEntries("UI","css/!(ledgersmb-common).css"),
+    ...mapFilenamesToEntries(".",
+        "node_modules/dijit/themes/" +
+            _dijitThemes +
+            "/" +
+            _dijitThemes +
+            ".css"
+    )
+};
 
 var includedRequires = [
     "dojo/has!webpack?dojo-webpack-plugin/amd/dojoES6Promise",
@@ -262,25 +280,6 @@ const UnusedWebpackPluginOptions = {
     root: path.join(__dirname, "UI")
 };
 
-// Generate entries from file pattern
-const mapFilenamesToEntries = (cwd, pattern) =>
-    glob.sync(pattern, {cwd: cwd}).reduce((entries, filename) => {
-        const [, name] = filename.match(/([^/]+)\.css$/);
-        return { ...entries, [name]: filename };
-    }, {});
-
-const _dijitThemes = "+(claro|nihilo|soria|tundra)";
-const lsmbCSS = {
-    ...mapFilenamesToEntries("UI","css/!(ledgersmb-common).css"),
-    ...mapFilenamesToEntries(".",
-        "node_modules/dijit/themes/" +
-            _dijitThemes +
-            "/" +
-            _dijitThemes +
-            ".css"
-    )
-};
-
 // Compile bootstrap module as a virtual one
 const VirtualModulePluginOptions = {
     moduleName: "js-src/lsmb/bootstrap.js",
@@ -294,40 +293,6 @@ const VirtualModulePluginOptions = {
             return {};
         });`
 };
-
-var includedRequires = [];
-
-const htmls = includedHtml.map(function (filename) {
-    const requires = findDataDojoTypes("UI/" + filename);
-    includedRequires.push(...requires);
-    return new HtmlWebpackPlugin({
-        inject: false, // Tags are injected manually in the content below
-        minify: prodMode // Adjust t/16-schema-upgrade-html.t if prodMode is used,
-            ? {
-                  collapseWhitespace: true,
-                  ignoreCustomFragments: [/\[%[\s\S]*?%\]/],
-                  removeComments: true,
-                  removeRedundantAttributes: true,
-                  removeScriptTypeAttributes: true,
-                  removeStyleLinkTypeAttributes: true,
-                  useShortDoctype: true
-              }
-            : false,
-        excludeChunks: [...Object.keys(lsmbCSS)],
-        template: filename,
-        filename: filename.replace(/(js-src\/)?/, ""),
-        chunks: requires
-    });
-});
-
-includedRequires = includedRequires.concat(
-   glob.sync("lsmb/**/*.js", {
-            cwd: "UI/js-src/",
-            exclude: "lsmb/bootstrap.js"
-    }).map(function(file) {
-	return file.replace(/\.js$/,'')
-    })
-);
 
 // console.log(includedRequires.filter((x, i, a) => a.indexOf(x) === i).sort());
 
@@ -490,6 +455,7 @@ const webpackConfigs = {
     context: path.join(__dirname, "UI"),
 
     entry: {
+        main: "lsmb/main.js",
         bootstrap: "js-src/lsmb/bootstrap.js",  // Virtual file
         // Pull all HTMLs by feature
         ... lsmbFeatures.reduce((result, feature) => {

@@ -39,8 +39,11 @@ sub filter_js_src {
     # installations are ignored.
     # Also make sure that we don't abort on whitespace differences
     my $lines = shift;
+    use Data::Printer;
+    warn np $lines;
     my $line = join("\n",@{$lines});
     $line =~ s|</script><script|</script>\n<script|g;
+    $line =~ s|>\s*<(?!/)|>\n<|g;
     $line =~ s|"js-src/|"js/|g;
     $line =~ s|\s*\n+\s*|\n|g;
     # Filter out chunks hashes
@@ -185,18 +188,44 @@ my $check = qq{<!-- prettier-disable -->
     ($mode eq "production"
         ? q{<script src="js/_scripts/npm.dojo.js"></script>
             <script src="js/_scripts/npm.dijit.js"></script>
-            <script src="js/_scripts/npm.dojo-webpack-plugin.js"></script>
-            <script src="js/_scripts/bootstrap~gnome~gnome2~ledgersmb~ledgersmb-blue~ledgersmb-brown~ledgersmb-common~ledgersmb-purple~le.js"></script>}
-        : ''
+            <script src="js/_scripts/main.js"></script>
+            <script src="js/_scripts/bootstrap.js"></script>
+            <script src="js/_scripts/Configuration_html~Contact_html~Reports_html~accounts_html~am_html~asset_html~budgetting_html~busine.js"></script>
+            <script src="js/_scripts/accounts_html.js"></script>
+            <script src="js/_scripts/asset_html.js"></script>
+            <script src="js/_scripts/budgetting_html.js"></script>
+            <script src="js/_scripts/business_units_html.js"></script>
+            <script src="js/_scripts/Configuration_html.js"></script>
+            <script src="js/_scripts/Contact_html.js"></script>
+            <script src="js/_scripts/file_html.js"></script>
+            <script src="js/_scripts/import_csv_html.js"></script>
+            <script src="js/_scripts/inventory_html.js"></script>
+            <script src="js/_scripts/journal_html.js"></script>
+            <script src="js/_scripts/lsmb~js-src_html.js"></script>
+            <script src="js/_scripts/js-src_html.js"></script>
+            <script src="js/_scripts/lib_html.js"></script>
+            <script src="js/_scripts/orders_html.js"></script>
+            <script src="js/_scripts/payments_html.js"></script>
+            <script src="js/_scripts/payroll_html.js"></script>
+            <script src="js/_scripts/reconciliation_html.js"></script>
+            <script src="js/_scripts/Reports_html.js"></script>
+            <script src="js/_scripts/setup_html.js"></script>
+            <script src="js/_scripts/taxform_html.js"></script>
+            <script src="js/_scripts/templates_html.js"></script>
+            <script src="js/_scripts/timecards_html.js"></script>
+            <script src="js/_scripts/users_html.js"></script>
+            <script src="js/_scripts/am_html.js"></script>
+            <script src="js/_scripts/login_html.js"></script>
+            <script src="js/_scripts/logout_html.js"></script>
+            <script src="js/_scripts/main_html.js"></script>
+            <script src="js/_scripts/utils_html.js"></script>}
+        : q{<script src="js/_scripts/main.js"></script>
+            <script src="js/_scripts/bootstrap.js"></script>}
     ) . qq{
-    <script src="js/_scripts/main.js"></script>
-    <script src="js/_scripts/bootstrap.js"></script>
     <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
-  <form method="POST"
-        enctype="multipart/form-data"
-        action="script.pl?action=rebuild">
+  <form method="POST" enctype="multipart/form-data" action="script.pl?action=rebuild">
     <input type="hidden" name="action" value="rebuild_modules">
     <input type="hidden" name="database" value="">
     <input type="hidden" name="check_id" value="d5d3db1765287eef77d7927cc956f50a">
@@ -206,8 +235,7 @@ my $check = qq{<!-- prettier-disable -->
     <p>a description</p>
   </p>
 </div>
-</form>
-</body>
+</form></body>
 </html>};
 
 $check =~ s|\n+\s*|\n|g;
@@ -282,18 +310,44 @@ $check = qq{<!-- prettier-disable -->
     ($mode eq "production"
         ? q{<script src="js/_scripts/npm.dojo.js"></script>
             <script src="js/_scripts/npm.dijit.js"></script>
-            <script src="js/_scripts/npm.dojo-webpack-plugin.js"></script>
-            <script src="js/_scripts/bootstrap~gnome~gnome2~ledgersmb~ledgersmb-blue~ledgersmb-brown~ledgersmb-common~ledgersmb-purple~le.js"></script>}
-        : ''
+            <script src="js/_scripts/main.js"></script>
+            <script src="js/_scripts/bootstrap.js"></script>
+            <script src="js/_scripts/Configuration_html~Contact_html~Reports_html~accounts_html~am_html~asset_html~budgetting_html~busine.js"></script>
+            <script src="js/_scripts/accounts_html.js"></script>
+            <script src="js/_scripts/asset_html.js"></script>
+            <script src="js/_scripts/budgetting_html.js"></script>
+            <script src="js/_scripts/business_units_html.js"></script>
+            <script src="js/_scripts/Configuration_html.js"></script>
+            <script src="js/_scripts/Contact_html.js"></script>
+            <script src="js/_scripts/file_html.js"></script>
+            <script src="js/_scripts/import_csv_html.js"></script>
+            <script src="js/_scripts/inventory_html.js"></script>
+            <script src="js/_scripts/journal_html.js"></script>
+            <script src="js/_scripts/lsmb~js-src_html.js"></script>
+            <script src="js/_scripts/js-src_html.js"></script>
+            <script src="js/_scripts/lib_html.js"></script>
+            <script src="js/_scripts/orders_html.js"></script>
+            <script src="js/_scripts/payments_html.js"></script>
+            <script src="js/_scripts/payroll_html.js"></script>
+            <script src="js/_scripts/reconciliation_html.js"></script>
+            <script src="js/_scripts/Reports_html.js"></script>
+            <script src="js/_scripts/setup_html.js"></script>
+            <script src="js/_scripts/taxform_html.js"></script>
+            <script src="js/_scripts/templates_html.js"></script>
+            <script src="js/_scripts/timecards_html.js"></script>
+            <script src="js/_scripts/users_html.js"></script>
+            <script src="js/_scripts/am_html.js"></script>
+            <script src="js/_scripts/login_html.js"></script>
+            <script src="js/_scripts/logout_html.js"></script>
+            <script src="js/_scripts/main_html.js"></script>
+            <script src="js/_scripts/utils_html.js"></script>}
+        : q{<script src="js/_scripts/main.js"></script>
+            <script src="js/_scripts/bootstrap.js"></script>}
     ) . qq{
-    <script src="js/_scripts/main.js"></script>
-    <script src="js/_scripts/bootstrap.js"></script>
     <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
-  <form method="POST"
-        enctype="multipart/form-data"
-        action="script.pl?action=rebuild">
+  <form method="POST" enctype="multipart/form-data" action="script.pl?action=rebuild">
     <input type="hidden" name="action" value="rebuild_modules">
     <input type="hidden" name="database" value="">
     <input type="hidden" name="check_id" value="d5d3db1765287eef77d7927cc956f50a">
@@ -379,18 +433,44 @@ $check = qq{<!-- prettier-disable -->
     ($mode eq "production"
         ? q{<script src="js/_scripts/npm.dojo.js"></script>
             <script src="js/_scripts/npm.dijit.js"></script>
-            <script src="js/_scripts/npm.dojo-webpack-plugin.js"></script>
-            <script src="js/_scripts/bootstrap~gnome~gnome2~ledgersmb~ledgersmb-blue~ledgersmb-brown~ledgersmb-common~ledgersmb-purple~le.js"></script>}
-        : ''
+            <script src="js/_scripts/main.js"></script>
+            <script src="js/_scripts/bootstrap.js"></script>
+            <script src="js/_scripts/Configuration_html~Contact_html~Reports_html~accounts_html~am_html~asset_html~budgetting_html~busine.js"></script>
+            <script src="js/_scripts/accounts_html.js"></script>
+            <script src="js/_scripts/asset_html.js"></script>
+            <script src="js/_scripts/budgetting_html.js"></script>
+            <script src="js/_scripts/business_units_html.js"></script>
+            <script src="js/_scripts/Configuration_html.js"></script>
+            <script src="js/_scripts/Contact_html.js"></script>
+            <script src="js/_scripts/file_html.js"></script>
+            <script src="js/_scripts/import_csv_html.js"></script>
+            <script src="js/_scripts/inventory_html.js"></script>
+            <script src="js/_scripts/journal_html.js"></script>
+            <script src="js/_scripts/lsmb~js-src_html.js"></script>
+            <script src="js/_scripts/js-src_html.js"></script>
+            <script src="js/_scripts/lib_html.js"></script>
+            <script src="js/_scripts/orders_html.js"></script>
+            <script src="js/_scripts/payments_html.js"></script>
+            <script src="js/_scripts/payroll_html.js"></script>
+            <script src="js/_scripts/reconciliation_html.js"></script>
+            <script src="js/_scripts/Reports_html.js"></script>
+            <script src="js/_scripts/setup_html.js"></script>
+            <script src="js/_scripts/taxform_html.js"></script>
+            <script src="js/_scripts/templates_html.js"></script>
+            <script src="js/_scripts/timecards_html.js"></script>
+            <script src="js/_scripts/users_html.js"></script>
+            <script src="js/_scripts/am_html.js"></script>
+            <script src="js/_scripts/login_html.js"></script>
+            <script src="js/_scripts/logout_html.js"></script>
+            <script src="js/_scripts/main_html.js"></script>
+            <script src="js/_scripts/utils_html.js"></script>}
+        : q{<script src="js/_scripts/main.js"></script>
+            <script src="js/_scripts/bootstrap.js"></script>}
     ) . qq{
-    <script src="js/_scripts/main.js"></script>
-    <script src="js/_scripts/bootstrap.js"></script>
     <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
-  <form method="POST"
-        enctype="multipart/form-data"
-        action="script.pl?action=rebuild">
+  <form method="POST" enctype="multipart/form-data" action="script.pl?action=rebuild">
     <input type="hidden" name="action" value="rebuild_modules">
     <input type="hidden" name="database" value="">
     <input type="hidden" name="check_id" value="d5d3db1765287eef77d7927cc956f50a">
@@ -477,35 +557,49 @@ $check = qq{<!-- prettier-disable -->
     ($mode eq "production"
         ? q{<script src="js/_scripts/npm.dojo.js"></script>
             <script src="js/_scripts/npm.dijit.js"></script>
-            <script src="js/_scripts/npm.dojo-webpack-plugin.js"></script>
-            <script src="js/_scripts/bootstrap~gnome~gnome2~ledgersmb~ledgersmb-blue~ledgersmb-brown~ledgersmb-common~ledgersmb-purple~le.js"></script>}
-        : ''
+            <script src="js/_scripts/main.js"></script>
+            <script src="js/_scripts/bootstrap.js"></script>
+            <script src="js/_scripts/Configuration_html~Contact_html~Reports_html~accounts_html~am_html~asset_html~budgetting_html~busine.js"></script>
+            <script src="js/_scripts/accounts_html.js"></script>
+            <script src="js/_scripts/asset_html.js"></script>
+            <script src="js/_scripts/budgetting_html.js"></script>
+            <script src="js/_scripts/business_units_html.js"></script>
+            <script src="js/_scripts/Configuration_html.js"></script>
+            <script src="js/_scripts/Contact_html.js"></script>
+            <script src="js/_scripts/file_html.js"></script>
+            <script src="js/_scripts/import_csv_html.js"></script>
+            <script src="js/_scripts/inventory_html.js"></script>
+            <script src="js/_scripts/journal_html.js"></script>
+            <script src="js/_scripts/lsmb~js-src_html.js"></script>
+            <script src="js/_scripts/js-src_html.js"></script>
+            <script src="js/_scripts/lib_html.js"></script>
+            <script src="js/_scripts/orders_html.js"></script>
+            <script src="js/_scripts/payments_html.js"></script>
+            <script src="js/_scripts/payroll_html.js"></script>
+            <script src="js/_scripts/reconciliation_html.js"></script>
+            <script src="js/_scripts/Reports_html.js"></script>
+            <script src="js/_scripts/setup_html.js"></script>
+            <script src="js/_scripts/taxform_html.js"></script>
+            <script src="js/_scripts/templates_html.js"></script>
+            <script src="js/_scripts/timecards_html.js"></script>
+            <script src="js/_scripts/users_html.js"></script>
+            <script src="js/_scripts/am_html.js"></script>
+            <script src="js/_scripts/login_html.js"></script>
+            <script src="js/_scripts/logout_html.js"></script>
+            <script src="js/_scripts/main_html.js"></script>
+            <script src="js/_scripts/utils_html.js"></script>}
+        : q{<script src="js/_scripts/main.js"></script>
+            <script src="js/_scripts/bootstrap.js"></script>}
     ) . qq{
-    <script src="js/_scripts/main.js"></script>
-    <script src="js/_scripts/bootstrap.js"></script>
     <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
-  <form method="POST"
-        enctype="multipart/form-data"
-        action="script.pl?action=rebuild">
+  <form method="POST" enctype="multipart/form-data" action="script.pl?action=rebuild">
     <input type="hidden" name="action" value="rebuild_modules">
     <input type="hidden" name="database" value="">
     <input type="hidden" name="check_id" value="d5d3db1765287eef77d7927cc956f50a">
-<button
-   type="submit"
-   id="confirm-0"
-   name="confirm"
-   value="abc"
-   data-dojo-type="dijit/form/Button"
-   >Abc</button>
-<button
-   type="submit"
-   id="confirm-1"
-   name="confirm"
-   value="def"
-   data-dojo-type="dijit/form/Button"
-   >Def</button>
+<button type="submit" id="confirm-0" name="confirm" value="abc" data-dojo-type="dijit/form/Button">Abc</button>
+<button type="submit" id="confirm-1" name="confirm" value="def" data-dojo-type="dijit/form/Button">Def</button>
 </form>
 </body>
 </html>};
@@ -592,18 +686,44 @@ $check = qq{<!-- prettier-disable -->
     ($mode eq "production"
         ? q{<script src="js/_scripts/npm.dojo.js"></script>
             <script src="js/_scripts/npm.dijit.js"></script>
-            <script src="js/_scripts/npm.dojo-webpack-plugin.js"></script>
-            <script src="js/_scripts/bootstrap~gnome~gnome2~ledgersmb~ledgersmb-blue~ledgersmb-brown~ledgersmb-common~ledgersmb-purple~le.js"></script>}
-        : ''
+            <script src="js/_scripts/main.js"></script>
+            <script src="js/_scripts/bootstrap.js"></script>
+            <script src="js/_scripts/Configuration_html~Contact_html~Reports_html~accounts_html~am_html~asset_html~budgetting_html~busine.js"></script>
+            <script src="js/_scripts/accounts_html.js"></script>
+            <script src="js/_scripts/asset_html.js"></script>
+            <script src="js/_scripts/budgetting_html.js"></script>
+            <script src="js/_scripts/business_units_html.js"></script>
+            <script src="js/_scripts/Configuration_html.js"></script>
+            <script src="js/_scripts/Contact_html.js"></script>
+            <script src="js/_scripts/file_html.js"></script>
+            <script src="js/_scripts/import_csv_html.js"></script>
+            <script src="js/_scripts/inventory_html.js"></script>
+            <script src="js/_scripts/journal_html.js"></script>
+            <script src="js/_scripts/lsmb~js-src_html.js"></script>
+            <script src="js/_scripts/js-src_html.js"></script>
+            <script src="js/_scripts/lib_html.js"></script>
+            <script src="js/_scripts/orders_html.js"></script>
+            <script src="js/_scripts/payments_html.js"></script>
+            <script src="js/_scripts/payroll_html.js"></script>
+            <script src="js/_scripts/reconciliation_html.js"></script>
+            <script src="js/_scripts/Reports_html.js"></script>
+            <script src="js/_scripts/setup_html.js"></script>
+            <script src="js/_scripts/taxform_html.js"></script>
+            <script src="js/_scripts/templates_html.js"></script>
+            <script src="js/_scripts/timecards_html.js"></script>
+            <script src="js/_scripts/users_html.js"></script>
+            <script src="js/_scripts/am_html.js"></script>
+            <script src="js/_scripts/login_html.js"></script>
+            <script src="js/_scripts/logout_html.js"></script>
+            <script src="js/_scripts/main_html.js"></script>
+            <script src="js/_scripts/utils_html.js"></script>}
+        : q{<script src="js/_scripts/main.js"></script>
+            <script src="js/_scripts/bootstrap.js"></script>}
     ) . qq{
-    <script src="js/_scripts/main.js"></script>
-    <script src="js/_scripts/bootstrap.js"></script>
     <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="claro">
-  <form method="POST"
-        enctype="multipart/form-data"
-        action="script.pl?action=rebuild">
+  <form method="POST" enctype="multipart/form-data" action="script.pl?action=rebuild">
     <input type="hidden" name="action" value="rebuild_modules">
     <input type="hidden" name="database" value="">
     <input type="hidden" name="check_id" value="d5d3db1765287eef77d7927cc956f50a">
