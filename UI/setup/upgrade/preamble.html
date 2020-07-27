@@ -1,11 +1,5 @@
 [% INCLUDE "ui-header.html"
 stylesheet="ledgersmb.css"
 include_stylesheet=["setup.css"] %]
-<body class="[% dojo_theme %]">
-  <form method="POST"
-        enctype="multipart/form-data"
-        action="[% action_url %]">
-    <input type="hidden" name="action" value="[% resubmit_action %]">
-    <input type="hidden" name="database" value="[% database %]">
-    <input type="hidden" name="check_id" value="[% check_id %]">
+<body class="[% dojo_theme %]"><form method="POST" enctype="multipart/form-data" action="[% action_url %]"><input type="hidden" name="action" value="[% resubmit_action %]"><input type="hidden" name="database" value="[% database %]"><input type="hidden" name="check_id" value="[% check_id %]">
 

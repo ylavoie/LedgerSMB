@@ -114,7 +114,7 @@ function findDataDojoTypes(fileName) {
 
 // Compute used data-dojo-type
 const includedHtml = glob.sync("**/*.html", {
-    ignore: ["lib/ui-header.html", "js/**"],
+    ignore: ["lib/ui-header.html", "js/**", "setup/upgrade/*"],
     cwd: "UI"
 });
 
@@ -239,7 +239,8 @@ const CopyWebpackPluginOptions = {
         { context: "../node_modules", from: "dijit/icons/**/*", to: "." },
         { context: "../node_modules", from: "dijit/nls/**/*", to: "." },
         { context: "../node_modules", from: "dojo/nls/**/*", to: "." },
-        { context: "../node_modules", from: "dojo/resources/**/*", to: "." }
+        { context: "../node_modules", from: "dojo/resources/**/*", to: "." },
+        { context: ".", from: "setup/upgrade/*", to: "." } // html fragments
     ],
     options: {
         concurrency: 100

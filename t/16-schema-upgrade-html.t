@@ -39,8 +39,6 @@ sub filter_js_src {
     # installations are ignored.
     # Also make sure that we don't abort on whitespace differences
     my $lines = shift;
-    use Data::Printer;
-    warn np $lines;
     my $line = join("\n",@{$lines});
     $line =~ s|</script><script|</script>\n<script|g;
     $line =~ s|>\s*<(?!/)|>\n<|g;
@@ -233,10 +231,8 @@ my $check = qq{<!-- prettier-disable -->
   <h1>title</h1>
   <p>
     <p>a description</p>
-  </p>
-</div>
-</form></body>
-</html>};
+  </p></div>
+</form></body></html>};
 
 $check =~ s|\n+\s*|\n|g;
 my @expected = split (/\n/, $check);
@@ -355,11 +351,8 @@ $check = qq{<!-- prettier-disable -->
   <h1>title</h1>
   <p>
     <p>another description</p>
-  </p>
-</div>
-</form>
-</body>
-</html>};
+  </p></div>
+</form></body></html>};
 
 $check =~ s|\n+\s*|\n|g;
 @expected = split (/\n/, $check);
@@ -474,16 +467,8 @@ $check = qq{<!-- prettier-disable -->
     <input type="hidden" name="action" value="rebuild_modules">
     <input type="hidden" name="database" value="">
     <input type="hidden" name="check_id" value="d5d3db1765287eef77d7927cc956f50a">
-<button
-   type="submit"
-   id="confirm-0"
-   name="confirm"
-   value="abc"
-   data-dojo-type="dijit/form/Button"
-   >Abc</button>
-</form>
-</body>
-</html>};
+<button type="submit" id="confirm-0" name="confirm" value="abc" data-dojo-type="dijit/form/Button">Abc</button>
+</form></body></html>};
 
 $check =~ s|\n+\s*|\n|g;
 @expected = split (/\n/, $check);
@@ -600,9 +585,7 @@ $check = qq{<!-- prettier-disable -->
     <input type="hidden" name="check_id" value="d5d3db1765287eef77d7927cc956f50a">
 <button type="submit" id="confirm-0" name="confirm" value="abc" data-dojo-type="dijit/form/Button">Abc</button>
 <button type="submit" id="confirm-1" name="confirm" value="def" data-dojo-type="dijit/form/Button">Def</button>
-</form>
-</body>
-</html>};
+</form></body></html>};
 
 $check =~ s|\s*\n+\s*|\n|g;
 @expected = split (/\n/, $check);
@@ -729,19 +712,28 @@ $check = qq{<!-- prettier-disable -->
     <input type="hidden" name="check_id" value="d5d3db1765287eef77d7927cc956f50a">
 <table id="grid"
        class="dynatable "
-       width=""><thead>
-   <tr>   <th class="a  text">a
-   </th>   <th class="b  text">b
-   </th>   <th class="c  input_text">c
+       width="">
+<thead>
+    <tr>
+      <th class="a  text">a
+    </th>
+    <th class="b  text">b
+    </th>
+    <th class="c  input_text">c
    </th>   </tr>
-</thead><tbody>   <tr class=" 0">
+</thead>
+<tbody>
+   <tr class=" 0">
       <input id="grid-row-1" type="hidden" name="grid_row_1" value="0" />
-      <input id="grid---pk-0" type="hidden" name="grid_--pk_0" value="Y29sMQ== Y29sMg==" />      <td class="a  text">            col1      </td>      <td class="b  text">            col2      </td>      <td class="c  input_text">          <input id="grid_c-1" type="text" name="grid_c_0" size="60" value="col3" data-dojo-type="dijit/form/ValidationTextBox" maxlength="255" />      </td>   </tr>
-</tbody><input id="rowcount-grid" type="hidden" name="rowcount_grid" value="1" />
+      <input id="grid---pk-0" type="hidden" name="grid_--pk_0" value="Y29sMQ== Y29sMg==" />
+      <td class="a  text">            col1      </td>
+      <td class="b  text">            col2      </td>
+      <td class="c  input_text">
+      <input id="grid_c-1" type="text" name="grid_c_0" size="60" value="col3" data-dojo-type="dijit/form/ValidationTextBox" maxlength="255" />      </td>   </tr>
+</tbody>
+<input id="rowcount-grid" type="hidden" name="rowcount_grid" value="1" />
 </table>
-</form>
-</body>
-</html>};
+</form></body></html>};
 
 $check =~ s|\n+\s*|\n|g;
 @expected = split (/\n/, $check);
