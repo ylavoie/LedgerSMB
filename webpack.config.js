@@ -81,25 +81,7 @@ const lsmbCSS = {
 };
 
 var includedRequires = [
-    "dojo/has!webpack?dojo-webpack-plugin/amd/dojoES6Promise",
-    "dijit/Dialog",
-    "dijit/form/Button",
-    "dijit/form/CheckBox",
-    "dijit/form/ComboBox",
-    "dijit/form/CurrencyTextBox",
-    "dijit/form/MultiSelect",
-    "dijit/form/NumberSpinner",
-    "dijit/form/NumberTextBox",
-    "dijit/form/RadioButton",
-    "dijit/form/Select",
-    "dijit/form/Textarea",
-    "dijit/form/TextBox",
-    "dijit/form/ToggleButton",
-    "dijit/form/ValidationTextBox",
-    "dijit/layout/BorderContainer",
-    "dijit/layout/ContentPane",
-    "dijit/layout/TabContainer",
-    "dijit/Tooltip"
+    "dojo/has!webpack?dojo-webpack-plugin/amd/dojoES6Promise"
 ];
 
 function findDataDojoTypes(fileName) {
