@@ -121,7 +121,6 @@
     "webpack-cli": "^3.3.12",
     "webpack-entry-plus": "^1.0.18",
     "webpack-hasjs-plugin": "^1.0.3",
-    "webpack-i18n-extractor-plugin": "^2.0.7",
     "webpack-log": "^3.0.1",
     "webpack-manifest-plugin": "2.2.0"
   },

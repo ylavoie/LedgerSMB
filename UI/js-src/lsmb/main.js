@@ -12,6 +12,7 @@ define([
     "dojo/dom-class",
     "dojo/dom-style",
     "dojo/mouse",
+    // "dojo/i18n",
     "dojo/ready"
 ], function (
     parser,
@@ -24,6 +25,7 @@ define([
     domClass,
     domStyle,
     mouse,
+    // i18n,
     ready
 ) {
     window.addEventListener("load", function () {

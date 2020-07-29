@@ -36,10 +36,11 @@ function getConfig(env) {
         deps: ["lsmb/main"], // An array of resource paths which should load immediately once Dojo has loaded:
 
         has: {
+            "config-useDeferredInstrumentation": 1, // Whether the deferred instrumentation should be used
             "dojo-config-api": 1, // Ensures that the build is configurable
-            "dojo-has-api": 1, // Ensures the has feature detection API is available.
             "dojo-debug-messages": 1, // Disables some diagnostic information
-            "config-useDeferredInstrumentation": 1 // Whether the deferred instrumentation should be used
+            "dojo-has-api": 1, // Ensures the has feature detection API is available.
+            "dojo-v1x-i18n-Api": 1 // Enables support for v1.x i18n loading (required for Dijit)
             /*
             "host-browser":                   1, // Ensures the code is built to run on a browser platform
             "dojo-config-require":            1, // Enables configuration via the require().

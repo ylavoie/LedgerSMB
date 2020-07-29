@@ -18,7 +18,7 @@ const StatsPlugin = require("stats-webpack-plugin");
 const StylelintPlugin = require("stylelint-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const UnusedWebpackPlugin = require("unused-webpack-plugin");
-const VirtualModulePlugin = require('virtual-module-webpack-plugin');
+const VirtualModulePlugin = require("virtual-module-webpack-plugin");
 
 const { CleanWebpackPlugin } = require("clean-webpack-plugin"); // installed via npm
 
@@ -63,15 +63,16 @@ process.env.NODE_ENV = prodMode ? "production" : "development";
 
 // Generate entries from file pattern
 const mapFilenamesToEntries = (cwd, pattern) =>
-    glob.sync(pattern, {cwd: cwd}).reduce((entries, filename) => {
+    glob.sync(pattern, { cwd: cwd }).reduce((entries, filename) => {
         const [, name] = filename.match(/([^/]+)\.css$/);
         return { ...entries, [name]: filename };
     }, {});
 
 const _dijitThemes = "+(claro|nihilo|soria|tundra)";
 const lsmbCSS = {
-    ...mapFilenamesToEntries("UI","css/!(ledgersmb-common).css"),
-    ...mapFilenamesToEntries(".",
+    ...mapFilenamesToEntries("UI", "css/!(ledgersmb-common).css"),
+    ...mapFilenamesToEntries(
+        ".",
         "node_modules/dijit/themes/" +
             _dijitThemes +
             "/" +
@@ -88,9 +89,8 @@ function findDataDojoTypes(fileName) {
     var content = "" + fs.readFileSync(fileName);
     // Return unique data-dojo-type refereces
     return (
-        content.match(
-            /(?<=['"]?data-dojo-type['"]?\s*=\s*")([^"]+)(?=")/gi
-        ) || []
+        content.match(/(?<=['"]?data-dojo-type['"]?\s*=\s*")([^"]+)(?=")/gi) ||
+        []
     ).filter((x, i, a) => a.indexOf(x) === i);
 }
 
@@ -125,14 +125,20 @@ const htmls = includedHtml.map(function (filename) {
 
 // Pull UI/js-src/lsmb
 includedRequires = includedRequires
-.concat(
-   glob.sync("lsmb/**/!(main|bootstrap|lsmb.profile|webpack.loaderConfig).js", {
-            cwd: "UI/js-src/"
-    }).map(function(file) {
-	    return file.replace(/\.js$/,'')
-    }))
-.filter((x, i, a) => a.indexOf(x) === i)
-.sort();
+    .concat(
+        glob
+            .sync(
+                "lsmb/**/!(main|bootstrap|lsmb.profile|webpack.loaderConfig).js",
+                {
+                    cwd: "UI/js-src/"
+                }
+            )
+            .map(function (file) {
+                return file.replace(/\.js$/, "");
+            })
+    )
+    .filter((x, i, a) => a.indexOf(x) === i)
+    .sort();
 
 /* LOADERS */
 
@@ -218,9 +224,9 @@ const StylelintPluginOptions = {
 // Copy non-packed resources needed by the app to the release directory
 const CopyWebpackPluginOptions = {
     patterns: [
-        { context: "../node_modules", from: "dijit/icons/**/*", to: "." },
-        { context: "../node_modules", from: "dijit/nls/**/*", to: "." },
-        { context: "../node_modules", from: "dojo/nls/**/*", to: "." },
+        //        { context: "../node_modules", from: "dijit/icons/**/*", to: "." },
+        //        { context: "../node_modules", from: "dijit/nls/**/*", to: "." },
+        //        { context: "../node_modules", from: "dojo/nls/**/*", to: "." },
         { context: "../node_modules", from: "dojo/resources/**/*", to: "." },
         { context: ".", from: "setup/upgrade/*", to: "." } // html fragments
     ],
@@ -233,7 +239,32 @@ const DojoWebpackPluginOptions = {
     loaderConfig: require("./UI/js-src/lsmb/webpack.loaderConfig.js"),
     environment: { dojoRoot: "UI/js" }, // used at run time for non-packed resources (e.g. blank.gif)
     buildEnvironment: { dojoRoot: "node_modules" }, // used at build time
-    locales: ["en"],
+    locales: [
+        "ar",
+        "bg",
+        "ca",
+        "cs",
+        "da",
+        "de",
+        "el",
+        "en",
+        "es",
+        "fi",
+        "fr",
+        "hu",
+        "id",
+        "it",
+        "nb",
+        "nl",
+        "pl",
+        "pt",
+        "ru",
+        "sv",
+        "tr",
+        "uk",
+        "zh",
+        "zh-tw"
+    ],
     noConsole: true
 };
 
@@ -267,10 +298,10 @@ const UnusedWebpackPluginOptions = {
 const VirtualModulePluginOptions = {
     moduleName: "js-src/lsmb/bootstrap.js",
     contents:
-       `/* eslint-disable */
-        define(["dojo/parser","dojo/ready","`
-        + includedRequires.join('","')
-        + `"], function(parser, ready) {
+        `/* eslint-disable */
+        define(["dojo/parser","dojo/ready","` +
+        includedRequires.join('","') +
+        `"], function(parser, ready) {
             ready(function() {
             });
             return {};
@@ -279,12 +310,12 @@ const VirtualModulePluginOptions = {
 
 // console.log(includedRequires.filter((x, i, a) => a.indexOf(x) === i).sort());
 
-const includedRequiresContent = `
+const includedRequiresContent =
+    `
 /* eslint-disable */
-define(["dojo/parser","dojo/ready","`
-+ includedRequires.filter((x, i, a) => a.indexOf(x) === i)
-                  .join('","')
-+ `"], function(parser, ready) {
+define(["dojo/parser","dojo/ready","` +
+    includedRequires.filter((x, i, a) => a.indexOf(x) === i).join('","') +
+    `"], function(parser, ready) {
     ready(function() {
             parser.parse();
     });
@@ -387,7 +418,7 @@ const optimizationList = {
                   lsmb: {
                       test: /[\\/]lsmb[\\/]/,
                       chunks: "all",
-                      minSize: 0,
+                      minSize: 0
                   },
                   node_modules: {
                       test(module, chunks) {
@@ -439,14 +470,14 @@ const webpackConfigs = {
 
     entry: {
         main: "lsmb/main.js",
-        bootstrap: "js-src/lsmb/bootstrap.js",  // Virtual file
+        bootstrap: "js-src/lsmb/bootstrap.js", // Virtual file
         // Pull all HTMLs by feature
-        ... lsmbFeatures.reduce((result, feature) => {
+        ...lsmbFeatures.reduce((result, feature) => {
             return {
                 ...result,
-                [feature + '_html']: _glob(feature + "/**/*.html")
+                [feature + "_html"]: _glob(feature + "/**/*.html")
             };
-        },[]),
+        }, []),
         // Pull residual HTMLs
         am_html: _glob("am-*.html"),
         login_html: "login.html",
