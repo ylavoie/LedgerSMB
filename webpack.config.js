@@ -71,7 +71,7 @@ const _dijitThemes = "+(claro|nihilo|soria|tundra)";
 const lsmbCSS = {
     ...mapFilenamesToEntries("UI", "css/!(ledgersmb-common).css"),
     ...mapFilenamesToEntries(
-        ".",
+        "..",
         "node_modules/dijit/themes/" +
             _dijitThemes +
             "/" +
@@ -483,7 +483,7 @@ const webpackConfigs = {
             "oe-save_warn.html",
             "welcome.html"
         ],
-        // Pull all HTMLs by feature
+        // Pull all HTMLs by feature. Why can't they lazy load?
         ...lsmbFeatures.reduce((result, feature) => {
             return {
                 ...result,
