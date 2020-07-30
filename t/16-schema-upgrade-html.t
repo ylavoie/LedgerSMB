@@ -160,10 +160,7 @@ $out = html_formatter_context {
 
 filter_js_src($out);
 my $mode = find_application_mode($out);
-
-my $check = qq{<!-- prettier-disable -->
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+my $head = qq{
 <head>
     <title></title>
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
@@ -184,44 +181,52 @@ my $check = qq{<!-- prettier-disable -->
     <script src="js/_scripts/manifest.js"></script>
     } .
     ($mode eq "production"
-        ? q{<script src="js/_scripts/npm.dojo.js"></script>
-            <script src="js/_scripts/npm.dijit.js"></script>
-            <script src="js/_scripts/main.js"></script>
-            <script src="js/_scripts/bootstrap.js"></script>
-            <script src="js/_scripts/Configuration_html~Contact_html~Reports_html~accounts_html~am_html~asset_html~budgetting_html~busine.js"></script>
-            <script src="js/_scripts/accounts_html.js"></script>
-            <script src="js/_scripts/asset_html.js"></script>
-            <script src="js/_scripts/budgetting_html.js"></script>
-            <script src="js/_scripts/business_units_html.js"></script>
-            <script src="js/_scripts/Configuration_html.js"></script>
-            <script src="js/_scripts/Contact_html.js"></script>
-            <script src="js/_scripts/file_html.js"></script>
-            <script src="js/_scripts/import_csv_html.js"></script>
-            <script src="js/_scripts/inventory_html.js"></script>
-            <script src="js/_scripts/journal_html.js"></script>
-            <script src="js/_scripts/lsmb~js-src_html.js"></script>
-            <script src="js/_scripts/js-src_html.js"></script>
-            <script src="js/_scripts/lib_html.js"></script>
-            <script src="js/_scripts/orders_html.js"></script>
-            <script src="js/_scripts/payments_html.js"></script>
-            <script src="js/_scripts/payroll_html.js"></script>
-            <script src="js/_scripts/reconciliation_html.js"></script>
-            <script src="js/_scripts/Reports_html.js"></script>
-            <script src="js/_scripts/setup_html.js"></script>
-            <script src="js/_scripts/taxform_html.js"></script>
-            <script src="js/_scripts/templates_html.js"></script>
-            <script src="js/_scripts/timecards_html.js"></script>
-            <script src="js/_scripts/users_html.js"></script>
-            <script src="js/_scripts/am_html.js"></script>
-            <script src="js/_scripts/login_html.js"></script>
-            <script src="js/_scripts/logout_html.js"></script>
-            <script src="js/_scripts/main_html.js"></script>
-            <script src="js/_scripts/utils_html.js"></script>}
-        : q{<script src="js/_scripts/main.js"></script>
-            <script src="js/_scripts/bootstrap.js"></script>}
+        ? q{
+        <script src="js/_scripts/npm.dojo.js"></script>
+		<script src="js/_scripts/npm.dijit.js"></script>
+		<script src="js/_scripts/main.js"></script>
+		<script src="js/_scripts/bootstrap.js"></script>
+		<script src="js/_scripts/lsmb~js-src_html.js"></script>
+		<script src="js/_scripts/Configuration_html~Contact_html~Reports_html~accounts_html~am_html~asset_html~budgetting_html~busine.js"></script>}
+        : q{
+        <script src="js/_scripts/main.js"></script>
+		<script src="js/_scripts/bootstrap.js"></script>}
     ) . qq{
+    <script src="js/_scripts/js-src_html.js"></script>
+    <script src="js/_scripts/am_html.js"></script>
+    <script src="js/_scripts/login_html.js"></script>
+    <script src="js/_scripts/logout_html.js"></script>
+    <script src="js/_scripts/main_html.js"></script>
+    <script src="js/_scripts/utils_html.js"></script>
+    <script src="js/_scripts/accounts_html.js"></script>
+    <script src="js/_scripts/asset_html.js"></script>
+    <script src="js/_scripts/budgetting_html.js"></script>
+    <script src="js/_scripts/business_units_html.js"></script>
+    <script src="js/_scripts/Configuration_html.js"></script>
+    <script src="js/_scripts/Contact_html.js"></script>
+    <script src="js/_scripts/file_html.js"></script>
+    <script src="js/_scripts/import_csv_html.js"></script>
+    <script src="js/_scripts/inventory_html.js"></script>
+    <script src="js/_scripts/journal_html.js"></script>
+    <script src="js/_scripts/lib_html.js"></script>
+    <script src="js/_scripts/orders_html.js"></script>
+    <script src="js/_scripts/payments_html.js"></script>
+    <script src="js/_scripts/payroll_html.js"></script>
+    <script src="js/_scripts/reconciliation_html.js"></script>
+    <script src="js/_scripts/Reports_html.js"></script>
+    <script src="js/_scripts/setup_html.js"></script>
+    <script src="js/_scripts/taxform_html.js"></script>
+    <script src="js/_scripts/templates_html.js"></script>
+    <script src="js/_scripts/timecards_html.js"></script>
+    <script src="js/_scripts/users_html.js"></script>
     <meta name="robots" content="noindex,nofollow" />
 </head>
+};
+
+my $check = qq{<!-- prettier-disable -->
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+$head
 <body class="claro">
   <form method="POST" enctype="multipart/form-data" action="script.pl?action=rebuild">
     <input type="hidden" name="action" value="rebuild_modules">
@@ -284,64 +289,7 @@ filter_js_src($out);
 $check = qq{<!-- prettier-disable -->
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <title></title>
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-    <link href="js/dojo/resources/dojo.css" rel="stylesheet">
-    <link href="js/css/claro.css" rel="stylesheet">
-    <link href="js/css/ledgersmb.css" rel="stylesheet">
-    <link href="js/css/setup.css" rel="stylesheet">
-    <script>
-        var dojoConfig = {
-            async: 1,
-            locale: "",
-            packages: [{"name":"lsmb","location":"../lsmb"}],
-            mode: "$mode"
-        };
-        var lsmbConfig = {
-        };
-    </script>
-    <script src="js/_scripts/manifest.js"></script>
-    } .
-    ($mode eq "production"
-        ? q{<script src="js/_scripts/npm.dojo.js"></script>
-            <script src="js/_scripts/npm.dijit.js"></script>
-            <script src="js/_scripts/main.js"></script>
-            <script src="js/_scripts/bootstrap.js"></script>
-            <script src="js/_scripts/Configuration_html~Contact_html~Reports_html~accounts_html~am_html~asset_html~budgetting_html~busine.js"></script>
-            <script src="js/_scripts/accounts_html.js"></script>
-            <script src="js/_scripts/asset_html.js"></script>
-            <script src="js/_scripts/budgetting_html.js"></script>
-            <script src="js/_scripts/business_units_html.js"></script>
-            <script src="js/_scripts/Configuration_html.js"></script>
-            <script src="js/_scripts/Contact_html.js"></script>
-            <script src="js/_scripts/file_html.js"></script>
-            <script src="js/_scripts/import_csv_html.js"></script>
-            <script src="js/_scripts/inventory_html.js"></script>
-            <script src="js/_scripts/journal_html.js"></script>
-            <script src="js/_scripts/lsmb~js-src_html.js"></script>
-            <script src="js/_scripts/js-src_html.js"></script>
-            <script src="js/_scripts/lib_html.js"></script>
-            <script src="js/_scripts/orders_html.js"></script>
-            <script src="js/_scripts/payments_html.js"></script>
-            <script src="js/_scripts/payroll_html.js"></script>
-            <script src="js/_scripts/reconciliation_html.js"></script>
-            <script src="js/_scripts/Reports_html.js"></script>
-            <script src="js/_scripts/setup_html.js"></script>
-            <script src="js/_scripts/taxform_html.js"></script>
-            <script src="js/_scripts/templates_html.js"></script>
-            <script src="js/_scripts/timecards_html.js"></script>
-            <script src="js/_scripts/users_html.js"></script>
-            <script src="js/_scripts/am_html.js"></script>
-            <script src="js/_scripts/login_html.js"></script>
-            <script src="js/_scripts/logout_html.js"></script>
-            <script src="js/_scripts/main_html.js"></script>
-            <script src="js/_scripts/utils_html.js"></script>}
-        : q{<script src="js/_scripts/main.js"></script>
-            <script src="js/_scripts/bootstrap.js"></script>}
-    ) . qq{
-    <meta name="robots" content="noindex,nofollow" />
-</head>
+$head
 <body class="claro">
   <form method="POST" enctype="multipart/form-data" action="script.pl?action=rebuild">
     <input type="hidden" name="action" value="rebuild_modules">
@@ -404,64 +352,7 @@ filter_js_src($out);
 $check = qq{<!-- prettier-disable -->
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <title></title>
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-    <link href="js/dojo/resources/dojo.css" rel="stylesheet">
-    <link href="js/css/claro.css" rel="stylesheet">
-    <link href="js/css/ledgersmb.css" rel="stylesheet">
-    <link href="js/css/setup.css" rel="stylesheet">
-    <script>
-        var dojoConfig = {
-            async: 1,
-            locale: "",
-            packages: [{"name":"lsmb","location":"../lsmb"}],
-            mode: "$mode"
-        };
-        var lsmbConfig = {
-        };
-    </script>
-    <script src="js/_scripts/manifest.js"></script>
-    } .
-    ($mode eq "production"
-        ? q{<script src="js/_scripts/npm.dojo.js"></script>
-            <script src="js/_scripts/npm.dijit.js"></script>
-            <script src="js/_scripts/main.js"></script>
-            <script src="js/_scripts/bootstrap.js"></script>
-            <script src="js/_scripts/Configuration_html~Contact_html~Reports_html~accounts_html~am_html~asset_html~budgetting_html~busine.js"></script>
-            <script src="js/_scripts/accounts_html.js"></script>
-            <script src="js/_scripts/asset_html.js"></script>
-            <script src="js/_scripts/budgetting_html.js"></script>
-            <script src="js/_scripts/business_units_html.js"></script>
-            <script src="js/_scripts/Configuration_html.js"></script>
-            <script src="js/_scripts/Contact_html.js"></script>
-            <script src="js/_scripts/file_html.js"></script>
-            <script src="js/_scripts/import_csv_html.js"></script>
-            <script src="js/_scripts/inventory_html.js"></script>
-            <script src="js/_scripts/journal_html.js"></script>
-            <script src="js/_scripts/lsmb~js-src_html.js"></script>
-            <script src="js/_scripts/js-src_html.js"></script>
-            <script src="js/_scripts/lib_html.js"></script>
-            <script src="js/_scripts/orders_html.js"></script>
-            <script src="js/_scripts/payments_html.js"></script>
-            <script src="js/_scripts/payroll_html.js"></script>
-            <script src="js/_scripts/reconciliation_html.js"></script>
-            <script src="js/_scripts/Reports_html.js"></script>
-            <script src="js/_scripts/setup_html.js"></script>
-            <script src="js/_scripts/taxform_html.js"></script>
-            <script src="js/_scripts/templates_html.js"></script>
-            <script src="js/_scripts/timecards_html.js"></script>
-            <script src="js/_scripts/users_html.js"></script>
-            <script src="js/_scripts/am_html.js"></script>
-            <script src="js/_scripts/login_html.js"></script>
-            <script src="js/_scripts/logout_html.js"></script>
-            <script src="js/_scripts/main_html.js"></script>
-            <script src="js/_scripts/utils_html.js"></script>}
-        : q{<script src="js/_scripts/main.js"></script>
-            <script src="js/_scripts/bootstrap.js"></script>}
-    ) . qq{
-    <meta name="robots" content="noindex,nofollow" />
-</head>
+$head
 <body class="claro">
   <form method="POST" enctype="multipart/form-data" action="script.pl?action=rebuild">
     <input type="hidden" name="action" value="rebuild_modules">
@@ -520,64 +411,7 @@ filter_js_src($out);
 $check = qq{<!-- prettier-disable -->
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <title></title>
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-    <link href="js/dojo/resources/dojo.css" rel="stylesheet">
-    <link href="js/css/claro.css" rel="stylesheet">
-    <link href="js/css/ledgersmb.css" rel="stylesheet">
-    <link href="js/css/setup.css" rel="stylesheet">
-    <script>
-        var dojoConfig = {
-            async: 1,
-            locale: "",
-            packages: [{"name":"lsmb","location":"../lsmb"}],
-            mode: "$mode"
-        };
-        var lsmbConfig = {
-        };
-    </script>
-    <script src="js/_scripts/manifest.js"></script>
-    } .
-    ($mode eq "production"
-        ? q{<script src="js/_scripts/npm.dojo.js"></script>
-            <script src="js/_scripts/npm.dijit.js"></script>
-            <script src="js/_scripts/main.js"></script>
-            <script src="js/_scripts/bootstrap.js"></script>
-            <script src="js/_scripts/Configuration_html~Contact_html~Reports_html~accounts_html~am_html~asset_html~budgetting_html~busine.js"></script>
-            <script src="js/_scripts/accounts_html.js"></script>
-            <script src="js/_scripts/asset_html.js"></script>
-            <script src="js/_scripts/budgetting_html.js"></script>
-            <script src="js/_scripts/business_units_html.js"></script>
-            <script src="js/_scripts/Configuration_html.js"></script>
-            <script src="js/_scripts/Contact_html.js"></script>
-            <script src="js/_scripts/file_html.js"></script>
-            <script src="js/_scripts/import_csv_html.js"></script>
-            <script src="js/_scripts/inventory_html.js"></script>
-            <script src="js/_scripts/journal_html.js"></script>
-            <script src="js/_scripts/lsmb~js-src_html.js"></script>
-            <script src="js/_scripts/js-src_html.js"></script>
-            <script src="js/_scripts/lib_html.js"></script>
-            <script src="js/_scripts/orders_html.js"></script>
-            <script src="js/_scripts/payments_html.js"></script>
-            <script src="js/_scripts/payroll_html.js"></script>
-            <script src="js/_scripts/reconciliation_html.js"></script>
-            <script src="js/_scripts/Reports_html.js"></script>
-            <script src="js/_scripts/setup_html.js"></script>
-            <script src="js/_scripts/taxform_html.js"></script>
-            <script src="js/_scripts/templates_html.js"></script>
-            <script src="js/_scripts/timecards_html.js"></script>
-            <script src="js/_scripts/users_html.js"></script>
-            <script src="js/_scripts/am_html.js"></script>
-            <script src="js/_scripts/login_html.js"></script>
-            <script src="js/_scripts/logout_html.js"></script>
-            <script src="js/_scripts/main_html.js"></script>
-            <script src="js/_scripts/utils_html.js"></script>}
-        : q{<script src="js/_scripts/main.js"></script>
-            <script src="js/_scripts/bootstrap.js"></script>}
-    ) . qq{
-    <meta name="robots" content="noindex,nofollow" />
-</head>
+$head
 <body class="claro">
   <form method="POST" enctype="multipart/form-data" action="script.pl?action=rebuild">
     <input type="hidden" name="action" value="rebuild_modules">
@@ -647,64 +481,7 @@ filter_js_src($out);
 $check = qq{<!-- prettier-disable -->
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <title></title>
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-    <link href="js/dojo/resources/dojo.css" rel="stylesheet">
-    <link href="js/css/claro.css" rel="stylesheet">
-    <link href="js/css/ledgersmb.css" rel="stylesheet">
-    <link href="js/css/setup.css" rel="stylesheet">
-    <script>
-        var dojoConfig = {
-            async: 1,
-            locale: "",
-            packages: [{"name":"lsmb","location":"../lsmb"}],
-            mode: "$mode"
-        };
-        var lsmbConfig = {
-        };
-    </script>
-    <script src="js/_scripts/manifest.js"></script>
-    } .
-    ($mode eq "production"
-        ? q{<script src="js/_scripts/npm.dojo.js"></script>
-            <script src="js/_scripts/npm.dijit.js"></script>
-            <script src="js/_scripts/main.js"></script>
-            <script src="js/_scripts/bootstrap.js"></script>
-            <script src="js/_scripts/Configuration_html~Contact_html~Reports_html~accounts_html~am_html~asset_html~budgetting_html~busine.js"></script>
-            <script src="js/_scripts/accounts_html.js"></script>
-            <script src="js/_scripts/asset_html.js"></script>
-            <script src="js/_scripts/budgetting_html.js"></script>
-            <script src="js/_scripts/business_units_html.js"></script>
-            <script src="js/_scripts/Configuration_html.js"></script>
-            <script src="js/_scripts/Contact_html.js"></script>
-            <script src="js/_scripts/file_html.js"></script>
-            <script src="js/_scripts/import_csv_html.js"></script>
-            <script src="js/_scripts/inventory_html.js"></script>
-            <script src="js/_scripts/journal_html.js"></script>
-            <script src="js/_scripts/lsmb~js-src_html.js"></script>
-            <script src="js/_scripts/js-src_html.js"></script>
-            <script src="js/_scripts/lib_html.js"></script>
-            <script src="js/_scripts/orders_html.js"></script>
-            <script src="js/_scripts/payments_html.js"></script>
-            <script src="js/_scripts/payroll_html.js"></script>
-            <script src="js/_scripts/reconciliation_html.js"></script>
-            <script src="js/_scripts/Reports_html.js"></script>
-            <script src="js/_scripts/setup_html.js"></script>
-            <script src="js/_scripts/taxform_html.js"></script>
-            <script src="js/_scripts/templates_html.js"></script>
-            <script src="js/_scripts/timecards_html.js"></script>
-            <script src="js/_scripts/users_html.js"></script>
-            <script src="js/_scripts/am_html.js"></script>
-            <script src="js/_scripts/login_html.js"></script>
-            <script src="js/_scripts/logout_html.js"></script>
-            <script src="js/_scripts/main_html.js"></script>
-            <script src="js/_scripts/utils_html.js"></script>}
-        : q{<script src="js/_scripts/main.js"></script>
-            <script src="js/_scripts/bootstrap.js"></script>}
-    ) . qq{
-    <meta name="robots" content="noindex,nofollow" />
-</head>
+$head
 <body class="claro">
   <form method="POST" enctype="multipart/form-data" action="script.pl?action=rebuild">
     <input type="hidden" name="action" value="rebuild_modules">

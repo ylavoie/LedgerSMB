@@ -36,7 +36,6 @@ const lsmbFeatures = [
     "import_csv",
     "inventory",
     "journal",
-    "js-src",
     "lib",
     "orders",
     "payments",
@@ -471,13 +470,7 @@ const webpackConfigs = {
     entry: {
         main: "lsmb/main.js",
         bootstrap: "js-src/lsmb/bootstrap.js", // Virtual file
-        // Pull all HTMLs by feature
-        ...lsmbFeatures.reduce((result, feature) => {
-            return {
-                ...result,
-                [feature + "_html"]: _glob(feature + "/**/*.html")
-            };
-        }, []),
+        "js-src_html":  _glob("js-src/**/*.html"),
         // Pull residual HTMLs
         am_html: _glob("am-*.html"),
         login_html: "login.html",
@@ -490,6 +483,13 @@ const webpackConfigs = {
             "oe-save_warn.html",
             "welcome.html"
         ],
+        // Pull all HTMLs by feature
+        ...lsmbFeatures.reduce((result, feature) => {
+            return {
+                ...result,
+                [feature + "_html"]: _glob(feature + "/**/*.html")
+            };
+        }, []),
         // CSS
         ...lsmbCSS
     },
