@@ -45,7 +45,7 @@
             async: 1,
             locale: "[% USER.language.lower().replace('_','-') %]",
             packages: [{"name":"lsmb","location":"../lsmb"}],
-            mode: "<%= htmlWebpackPlugin.options.mode %>",
+            mode: "<%= htmlWebpackPlugin.options.mode %>"
         };
         var lsmbConfig = {
             [% IF USER.dateformat %]
