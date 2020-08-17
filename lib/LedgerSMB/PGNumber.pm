@@ -151,7 +151,7 @@ Constructor to prevent BigFloat downgrades to BigInt
 
 sub new {
     my $class = shift;
-    local $Math::BigFloat::downgrade = undef;
+    local $Math::BigFloat::downgrade = 'Math::BigInt::Lite';
     return $class->SUPER::new(@_);
 }
 

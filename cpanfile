@@ -30,6 +30,7 @@ requires 'Locale::Maketext::Lexicon', '0.62';
 requires 'Log::Log4perl';
 requires 'Log::Log4perl::Layout::PatternLayout';
 requires 'LWP::Simple';
+requires 'Math::BigInt::Lite';
 requires 'MIME::Types';
 requires 'Module::Runtime';
 requires 'Moo';                           # for Email::Sender::Transport::SMTP workaround
