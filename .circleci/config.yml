@@ -137,6 +137,7 @@ commands:
             PERL5OPT="$PERL5OPT -MDevel::Cover=-ignore,^/|^utils/|^x?t/|\.lttc$,-blib,0" \
                     plackup -I$HOME/project/lib -I$HOME/project/old/lib \
                     -s Gazelle --port 5762 --workers=2 --max-reqs-per-child=50000 \
+                    --Reload lib,old,xt/lib,$HOME/perl5 \
                     $HOME/project/bin/ledgersmb-server.psgi
             echo "Plackup done!"
             touch plackup-done
