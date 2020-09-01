@@ -23,8 +23,16 @@ function getConfig(env) {
     var dojoConfig = {
         packages: [
             // An array of objects which provide the package name and location
-            "dojo",
-            "dijit",
+            {
+                name: "dojo",
+                location: env.dojoRoot + "/dojo",
+                lib: "."
+            },
+            {
+                name: "dijit",
+                location: env.dojoRoot + "/dijit",
+                lib: "."
+            },
             {
                 name: "lsmb", // the name of the package
                 location: "js-src/lsmb" // the path to the directory where the package resides
@@ -68,6 +76,17 @@ function getConfig(env) {
             'dojo-trace-api':                 1, // Disables the tracing of module loading.
             'dojo-undef-api':                 0, // Removes support for module unloading
 */
+        },
+
+        fixupUrl: function (url) {
+            // Load the uncompressed versions of dojo/dijit/dojox javascript files when using the dojo loader.
+            // When using a webpack build, the dojo loader is not used for loading javascript files so this
+            // property has no effect.  This is only needed when we're loading Dojo from a CDN.
+            // In a normal development environment, Dojo would be installed locally and this wouldn't
+            // be needed.
+            return /\/(dojo|dijit|dojox)\/.*\.js$/.test(url)
+                ? url + ".uncompressed.js"
+                : url;
         }
     };
     return dojoConfig;
@@ -78,5 +97,6 @@ if (typeof module !== "undefined") {
     module.exports = getConfig;
 } else {
     // No webpack.  This script was loaded by page via script tag, so load Dojo from CDN
-    getConfig({ dojoRoot: "//ajax.googleapis.com/ajax/libs/dojo/1.16.0" });
+    //    getConfig({ dojoRoot: "//download.dojotoolkit.org/release-1.16.3/dojo-release-1.16.3" });
+    getConfig({ dojoRoot: "../node_modules" });
 }

@@ -53,7 +53,13 @@
             [% END %]
         };
     </script>
-    ${htmlWebpackPlugin.tags.bodyTags}
+    [%IF nopack %]
+        <script src="js-src/lsmb/webpack.loaderConfig.js"></script>
+        <script src="../node_modules/dojo/dojo.js"></script>
+        <script src="js-src/lsmb/main.js"></script>
+    [% ELSE %]
+        ${htmlWebpackPlugin.tags.bodyTags}
+    [% END %]
     <meta name="robots" content="noindex,nofollow" />
 </head>
 [% BLOCK end_html %]

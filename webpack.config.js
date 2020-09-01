@@ -176,7 +176,7 @@ const CopyWebpackPluginOptions = {
 const DojoWebpackPluginOptions = {
     loaderConfig: require("./UI/js-src/lsmb/webpack.loaderConfig.js"),
     environment: { dojoRoot: "UI/js" }, // used at run time for non-packed resources (e.g. blank.gif)
-    buildEnvironment: { dojoRoot: "node_modules" }, // used at build time
+    buildEnvironment: { dojoRoot: "../node_modules" }, // used at build time
     locales: ["en"],
     noConsole: true
 };

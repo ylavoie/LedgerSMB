@@ -79,6 +79,7 @@ storage available through C<$env->{'lsmb.session'}>.
 
 =cut
 
+use Data::Printer;
 sub _connect {
     my ($self, $env, $login, $password, $company) = @_;
 
@@ -95,6 +96,7 @@ sub _connect {
         return (undef, LedgerSMB::PSGI::Util::unauthorized());
     }
 
+warn np %creds;
     my $dbh = $env->{'lsmb.db'} =
         LedgerSMB::Database->new(schema => $self->schema, %creds)->connect;
 
