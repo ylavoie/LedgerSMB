@@ -156,7 +156,6 @@ script:
   - prove --jobs $(test-jobs) --recurse --time
           --pgtap-option dbname=lsmbinstalltest
           --pgtap-option username=postgres
-          --pgtap-option host=${TRAVIS_APP_HOST}
           --feature-option tags=~@wip
           t/ xt/
 
