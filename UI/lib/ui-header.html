@@ -24,17 +24,31 @@
         # *persistent*
         # http://www.w3.org/TR/html401/present/styles.html#h-14.3.1
     %]
-    <%= htmlWebpackPlugin.tags.headTags %>
-    <link href="js/dojo/resources/dojo.css" rel="stylesheet">
-    <link href="js/css/[% dojo_theme %].css" rel="stylesheet">
-    [% IF form.stylesheet %]
-    <link href="js/css/[% form.stylesheet %]" rel="stylesheet">
-    [% ELSIF stylesheet %]
-    <link href="js/css/[% stylesheet %]" rel="stylesheet">
-    [% END %]
-    [% FOREACH s = include_stylesheet %]
-    <link href="js/css/[% s %]" rel="stylesheet">
-    [% END %]
+    [%IF nopack %]
+        <script src="js-src/lsmb/webpack.loaderConfig.js"></script>
+        <link href="//download.dojotoolkit.org/release-1.16.3/dojo-release-1.16.3/dojo/resources/dojo.css" rel="stylesheet">
+        <link href="//download.dojotoolkit.org/release-1.16.3/dojo-release-1.16.3/dijit/themes/[% dojo_theme %]/[% dojo_theme %].css" rel="stylesheet">
+        [% IF form.stylesheet %]
+        <link href="css/[% form.stylesheet %]" rel="stylesheet">
+        [% ELSIF stylesheet %]
+        <link href="css/[% stylesheet %]" rel="stylesheet">
+        [% END %]
+        [% FOREACH s = include_stylesheet %]
+        <link href="css/[% s %]" rel="stylesheet">
+        [% END %]
+    [% ELSE %]
+        <%= htmlWebpackPlugin.tags.headTags %>
+        <link href="js/dojo/resources/dojo.css" rel="stylesheet">
+        <link href="js/css/[% dojo_theme %].css" rel="stylesheet">
+        [% IF form.stylesheet %]
+        <link href="js/css/[% form.stylesheet %]" rel="stylesheet">
+        [% ELSIF stylesheet %]
+        <link href="js/css/[% stylesheet %]" rel="stylesheet">
+        [% END %]
+        [% FOREACH s = include_stylesheet %]
+        <link href="js/css/[% s %]" rel="stylesheet">
+        [% END %]
+        [% END %]
     [% IF warn_expire %]
     <script>
         window.alert("[% text('Warning:  Your password will expire in [_1]', pw_expires)%]");
@@ -42,9 +56,8 @@
     [% END %]
     <script>
         var dojoConfig = {
-            async: 1,
+            ...getConfig(),
             locale: "[% USER.language.lower().replace('_','-') %]",
-            packages: [{"name":"lsmb","location":"../lsmb"}],
             mode: "<%= htmlWebpackPlugin.options.mode %>"
         };
         var lsmbConfig = {
@@ -54,9 +67,8 @@
         };
     </script>
     [%IF nopack %]
-        <script src="js-src/lsmb/webpack.loaderConfig.js"></script>
-        <script src="../node_modules/dojo/dojo.js"></script>
-        <script src="js-src/lsmb/main.js"></script>
+        <script src="//download.dojotoolkit.org/release-1.16.3/dojo-release-1.16.3/dojo/dojo.js"
+                data-dojo-config="parseOnLoad: true, isDebug: true"></script>
     [% ELSE %]
         ${htmlWebpackPlugin.tags.bodyTags}
     [% END %]
