@@ -82,11 +82,11 @@ commands:
       - restore_cache:
           keys:
             # Get latest cache for the current specs
-            - v1-cpanminus-{{ .Branch }}-{{ checksum ".circleci/config.yml" }}
+            - v2-cpanminus-{{ .Branch }}-{{ checksum ".circleci/config.yml" }}
             # Fall back to the latest for the current branch
-            - v1-cpanminus-{{ .Branch }}-
+            - v2-cpanminus-{{ .Branch }}-
             # Fall back to the latest for master
-            - v1-cpanminus-master-
+            - v2-cpanminus-master-
             # Don't fall back any further
       - run:
           name: Refresh modules from CPAN
@@ -107,7 +107,7 @@ commands:
                   Devel::Cover::Report::Coveralls
             fi
       - save_cache:
-           key: v1-cpanminus-{{ .Branch }}-{{ checksum ".circleci/config.yml" }}
+           key: v2-cpanminus-{{ .Branch }}-{{ checksum ".circleci/config.yml" }}
            paths:
              - ~/perl5
       - run:
