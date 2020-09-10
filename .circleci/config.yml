@@ -192,12 +192,12 @@ jobs:
     <<: *defaults
     executor:
       name: test
-      perl: '5.30'
+      perl: '5.32'
       postgres: '11'
       browser: phantomjs
     steps:
       - prep_env:
-          perl: '5.30'
+          perl: '5.32'
       - start_plackup
       - start_proxy
       - prove
