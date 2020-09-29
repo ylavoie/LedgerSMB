@@ -100,7 +100,7 @@
                             <th align="right"><label for="stylesheet">[% text('Stylesheet') %]</label></th>
                             <td>[% PROCESS select element_data={
                                   name = 'stylesheet'
-                                  options = user.cssfiles
+                                  options = user.cssfiles.sort('file')
                                   default_values = [ user.prefs.stylesheet ]
                                   text_attr = 'file'
                                   value_attr = 'file',
