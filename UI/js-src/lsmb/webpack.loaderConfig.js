@@ -42,7 +42,29 @@ function getConfig(env) {
             ...(env.paths || {})
         },
         async: true, // Defines if Dojo core should be loaded asynchronously
-        deps: ["dojo/parser"],
+        deps: [
+            "dojo/parser",
+            // _WidgetsInTemplateMixin doesn't support autoloading,
+            // thus the list below for dojo_built=0
+            // deps is ignored by the dojo-webpack-plugin
+            "lsmb/DateTextBox",
+            "lsmb/Form",
+            "lsmb/Invoice",
+            "lsmb/InvoiceLine",
+            "lsmb/InvoiceLines",
+            "lsmb/MainContentPane",
+            "lsmb/MaximizeMinimize",
+            "lsmb/PrintButton",
+            "lsmb/PublishCheckBox",
+            "lsmb/PublishNumberTextBox",
+            "lsmb/PublishRadioButton",
+            "lsmb/PublishSelect",
+            "lsmb/SetupLoginButton",
+            "lsmb/SubscribeCheckBox",
+            "lsmb/SubscribeNumberTextBox",
+            "lsmb/SubscribeSelect",
+            "lsmb/SubscribeShowHide"
+        ],
         parseOnLoad: true,
         // blankGif: env.dojoRoot + "/dojo/resources/blank.gif",
         has: {
