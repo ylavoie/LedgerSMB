@@ -169,7 +169,8 @@ const CopyWebpackPluginOptions = {
         { context: "../node_modules", from: "dijit/icons/**/*", to: "." },
         { context: "../node_modules", from: "dijit/nls/**/*", to: "." },
         { context: "../node_modules", from: "dojo/nls/**/*", to: "." },
-        { context: "../node_modules", from: "dojo/resources/**/*", to: "." }
+        { context: "../node_modules", from: "dojo/resources/**/*", to: "." },
+        { context: ".",               from: "setup/upgrade/**/*", to: "." }
     ],
     options: {
         concurrency: 100
