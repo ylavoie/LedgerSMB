@@ -75,7 +75,7 @@ sub field_value {
                       \@name="$field_map{$label}_${id}"]});
     die "Invoice line column $field_map{$label}_${id} not found"
         if not defined $field;
-    my $rv = $field->value;
+    my $rv = $field->get_attribute('value');
 
     $rv = ''
         if ($field->tag_name eq 'input'

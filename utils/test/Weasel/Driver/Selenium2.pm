@@ -161,9 +161,10 @@ sub start {
               $self->{caps}{$capability_name} = $ENV{$1};
             }
         }
-    } for (qw/browser_name remote_server_addr version platform/);
+    } for (qw/browser_name remote_server_addr platform version/);
 
-    #$self->{caps}{'browserVersion'} = 'ANY';
+=x
+    #$self->{caps}{'version'} = 'ANY';
     #$Selenium::Remote::Driver::FORCE_WD3 = 1;
     #$Selenium::Remote::Driver::FORCE_WD2 = 1;
     #$self->{caps}{'wd_context_prefix'} = '/wd/hub';
@@ -206,6 +207,7 @@ sub start {
            }
         };
     }
+=cut
 
 #See http://search.cpan.org/~teodesian/Selenium-Remote-Driver-1.23/lib/Selenium/Remote/Driver.pm
 #Connect to an already running selenium server

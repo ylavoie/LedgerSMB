@@ -279,7 +279,7 @@ When qr/I select (part|service) "(.+)" on (the empty line|empty line (\d+))/,
         my $invoice = S->{ext_wsl}->page->body->maindiv->content;
         my @lines = grep { $_->is_empty } @{$invoice->lines};
         my $empty = $lines[$empty_line_no - 1];
-        my $part_selector = $empty->get_property('partnumber');
+        my $part_selector = $empty->get_attribute('partnumber');
         $part_selector->click;
         $part_selector->clear;
         $part_selector->send_keys($partname);
