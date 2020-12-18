@@ -11,8 +11,9 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 const DojoWebpackPlugin = require("dojo-webpack-plugin");
 const { DuplicatesPlugin } = require("inspectpack/plugin");
 const ESLintPlugin = require('eslint-webpack-plugin');
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const ExtractCssChunks = require("extract-css-chunks-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const StylelintPlugin = require("stylelint-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
@@ -102,16 +103,21 @@ const javascript = {
     exclude: /node_modules/
 };
 
+const _dijitThemes = "claro|nihilo|soria|tundra";
 const css = {
-    test: /\.css$/i,
-    use: [
+    test: /\.css/i,
+    oneOf: [
         {
-            loader: MiniCssExtractPlugin.loader,
-            options: {
-                hmr: !prodMode
-            }
+            include: (path) => {
+                var i = path.match(new RegExp(`/dijit|claro|nihilo|soria|tundra/`,'i'))
+                console.log('include: '+path+' = '+i);
+                return i != null;
+            },
+            use: [ { loader: MiniCssExtractPlugin.loader }, "css-loader" ]
         },
-        "css-loader"
+        {
+            use: [ { loader: ExtractCssChunks.loader }, "css-loader" ]
+        }
     ]
 };
 
@@ -225,15 +231,10 @@ const mapThemesToEntries = (pattern) =>
         return { ...entries, [name+'/'+name]: filename };
     }, {});
 
-const _dijitThemes = "(claro|nihilo|soria|tundra)";
 const dijitThemes = {
     ...mapThemesToEntries(
         path.resolve(
-            "node_modules/dijit/themes/+" +
-                _dijitThemes +
-                "/+" +
-                _dijitThemes +
-                ".css"
+            `node_modules/dijit/themes/+(${_dijitThemes})/+(${_dijitThemes}).css`
         )
     )
 };
@@ -284,13 +285,13 @@ var pluginsProd = [
     ),
 
     new MiniCssExtractPlugin({
-        chunkFilename: ({ chunk }) => {
-            const dijitThemesRegex = new RegExp(_dijitThemes);
-            const path = chunk.name.match(dijitThemesRegex)
-                       ? 'dijit/themes'
-                       : 'css';
-            return `${path}/[name].css`;
-        }
+        filename: "dijit/themes/[name]." + (prodMode ? "[contenthash]." : "") + "css",
+        chunkFilename: "dijit/themes/[id].css",
+    }),
+
+    new ExtractCssChunks({
+        filename: "css/[name]." + (prodMode ? "[contenthash].css" : "css"),
+        chunkFilename: "css/[id].css",
     }),
 
     new HtmlWebpackPlugin({
@@ -417,7 +418,7 @@ const webpackConfigs = {
 
     mode: process.env.NODE_ENV,
 
-    optimization: optimizationList,
+    //optimization: optimizationList,
 
     performance: { hints: prodMode ? false : "warning" }
 };

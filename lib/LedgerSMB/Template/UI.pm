@@ -132,8 +132,6 @@ sub render_string {
     my $locale;
     $vars //= {};
 
-    $template = 'js/' . $template;
-
     for my $cb (@pre_render_cbs) {
         $cb->($request, $template, $vars, $cvars);
     }
