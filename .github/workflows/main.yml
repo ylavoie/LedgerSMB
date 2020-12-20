@@ -25,16 +25,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - perl: "5.32.0"
+          - perl: "5.32"
             BROWSER: "chrome"
             SELENIUM: "selenium/standalone-chrome:3.141.59"
-          - perl: "5.28.1"
+          - perl: "5.28"
             BROWSER: "firefox"
             SELENIUM: "selenium/standalone-firefox:3.141.59"
-          - perl: "5.30.1"
+          - perl: "5.30"
             BROWSER: "operablink"
             SELENIUM: "selenium/standalone-opera:3.141.59"
-          - perl: "5.24.1"
+          - perl: "5.24"
             BROWSER: "phantomjs"
             SELENIUM: "ylavoie/standalone-phantomjs:latest"
     services:
