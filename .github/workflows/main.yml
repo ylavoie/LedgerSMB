@@ -131,7 +131,7 @@ jobs:
       - name: Starting ${{ matrix.BROWSER }}
         run: |
           echo "$(ip addr show docker0 | grep -Po 'inet \K[\d.]+') host.docker.internal" | sudo tee -a /etc/hosts
-          docker run --shm-size=1g -p 4422:4444 -e GRID_DEBUG=true --add-host=host.docker.internal:$(ip addr show docker0 | grep -Po 'inet \K[\d.]+') ${{ matrix.SELENIUM }} &
+          docker run -v /dev/shm:/dev/shm -p 4422:4444 -e GRID_DEBUG=true --add-host=host.docker.internal:$(ip addr show docker0 | grep -Po 'inet \K[\d.]+') ${{ matrix.SELENIUM }} &
 
       # Uncomment to debug
       #- name: Setup tmate session
@@ -140,7 +140,7 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Run Perl tests
-        run: prove --failures --jobs 2 --time --recurse --pgtap-option dbname=lsmbinstalltest --pgtap-option username=postgres --feature-option tags=~@wip t/ xt/
+        run: prove --verbose --jobs 2 --time --recurse --pgtap-option dbname=lsmbinstalltest --pgtap-option username=postgres --feature-option tags=~@wip t/ xt/
         env:
           PGHOST: localhost
           PGPORT: 5432
