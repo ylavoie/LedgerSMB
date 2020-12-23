@@ -251,21 +251,6 @@ jobs:
       - start_plackup
       - start_proxy
       - prove
-  test_webpack_opera:
-    <<: *defaults
-    executor:
-      name: test
-      perl: '5.30'
-      postgres: '11'
-      browser: operablink
-      selenium: selenium/standalone-opera:3.141.59
-    steps:
-      - prep_env:
-          perl: '5.30'
-      - start_plackup
-      - start_proxy
-      - prove
-
   test_webpack_phantomjs:
     <<: *defaults
     executor:
@@ -290,9 +275,6 @@ workflows:
           filters: *job_filters
 
       - test_webpack_firefox:
-          filters: *job_filters
-
-      - test_webpack_opera:
           filters: *job_filters
 
       - test_webpack_phantomjs:
