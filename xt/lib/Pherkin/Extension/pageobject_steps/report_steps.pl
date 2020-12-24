@@ -23,7 +23,7 @@ When qr/^I select the rows? where "(.*)" is "(.*)"$/, sub {
             my $checkbox = $row->{_element}->find(
                 './td/div/input[@type="checkbox"]'
             );
-            my $checked = $checkbox->get_attribute('checked');
+            my $checked = $checkbox->get_property('checked');
             $checked && $checked eq 'true' or $checkbox->click;
         }
     }
@@ -54,7 +54,7 @@ Then qr/I expect the report to contain (\d+) rows?$/, sub {
 
     # Discount final row if it contains totals
     my $final_element = pop @rows;
-    if($final_element && $final_element->get_attribute('class') =~ m/listtotal/) {
+    if($final_element && $final_element->get_property('class') =~ m/listtotal/) {
         $row_count --;
     }
 

@@ -43,7 +43,7 @@ sub parse_payment_row {
     my $rv = {
         'Name' => $row->find('./td[@class="entity_name"]')->get_text,
         'Invoice Total' => $row->find('./td[@class="invoice"]')->get_text,
-        'Source' => $row->find('//input[@title="Source"]')->get_attribute('value'),
+        'Source' => $row->find('//input[@title="Source"]')->get_property('value'),
     };
 
     return $rv;
@@ -138,7 +138,7 @@ sub parse_invoice_detail_row {
         'Net Due' => $row->find('./td[@class="net_due_list"]')->get_text,
         'To Pay' => $row->find(
             './td[@class="to_pay_list"]/div/div/input[contains(@name, "payment_")]'
-        )->get_attribute('value'),
+        )->get_property('value'),
     };
 
     return $rv;

@@ -50,7 +50,7 @@ my %field_map = (
 sub field {
     my ($self, $label) = @_;
 
-    my $id = $self->get_attribute('id');
+    my $id = $self->get_property('id');
     $id =~ s/^line-//;
     return $self->find(qq{.//*[\@id="$field_map{$label}_${id}"]});
 }
@@ -58,7 +58,7 @@ sub field {
 sub field_value {
     my ($self, $label, $new_value) = @_;
 
-    my $id = $self->get_attribute('id');
+    my $id = $self->get_property('id');
     $id =~ s/^line-//;
 
     if ($label eq 'OH' || $label eq 'Extended') {
@@ -79,7 +79,7 @@ sub field_value {
 
     $rv = ''
         if ($field->tag_name eq 'input'
-            && $field->get_attribute('type') eq 'checkbox'
+            && $field->get_property('type') eq 'checkbox'
             && ! $field->selected);
 
     if (defined $new_value) {

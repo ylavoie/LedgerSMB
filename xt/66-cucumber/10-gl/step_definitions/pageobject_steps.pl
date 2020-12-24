@@ -38,7 +38,7 @@ When qr/^I (select|deselect) every checkbox in "(.*)"$/, sub {
     ) or die "failed to find checkboxes";
 
     foreach my $checkbox (@checkboxes) {
-        my $checked = $checkbox->get_attribute('checked');
+        my $checked = $checkbox->get_property('checked');
         my $checked_status = $checked && $checked eq 'true';
         if ($checked_status xor $wanted_state) {
             $checkbox->click();

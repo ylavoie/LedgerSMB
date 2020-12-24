@@ -490,9 +490,9 @@ When qr/^I (select|deselect) checkbox "(.*)"$/, sub {
 
     ok($element, "found element with label '$label'");
     is($element->tag_name, 'input', 'element is an <input>');
-    is($element->get_attribute('type'), 'checkbox', 'element is an checkbox');
+    is($element->get_property('type'), 'checkbox', 'element is an checkbox');
 
-    my $checked = $element->get_attribute('checked');
+    my $checked = $element->get_property('checked');
 
     if($checked xor $wanted_status) {
         $element->click;
@@ -508,9 +508,9 @@ Then qr/^I expect the "(.*)" checkbox to be (selected|not selected)/, sub {
 
     ok($element, "found element with label '$label'");
     is($element->tag_name, 'input', 'element is an <input>');
-    is($element->get_attribute('type'), 'checkbox', 'element is an checkbox');
+    is($element->get_property('type'), 'checkbox', 'element is an checkbox');
 
-    my $checked = $element->get_attribute('checked');
+    my $checked = $element->get_property('checked');
 
     if($wanted_status eq 'selected') {
         ok($checked, 'checkbox is selected');

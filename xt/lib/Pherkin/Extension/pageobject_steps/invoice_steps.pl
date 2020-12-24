@@ -343,7 +343,7 @@ Then qr/I expect to see an invoice with these document properties/, sub {
     my %expects = map { $_->{property} => $_->{value} } @{C->data};
     my %actuals = map {
         my $id = $invoice_property_map{$_};
-        my $value = $invoice->find(".//*[\@id='$id']")->get_attribute('value');
+        my $value = $invoice->find(".//*[\@id='$id']")->get_property('value');
         $_ => $value;
     } keys %expects;
     is_deeply(\%actuals, \%expects, 'Invoice properties match expectations');

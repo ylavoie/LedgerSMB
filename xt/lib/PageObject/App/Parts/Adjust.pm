@@ -27,7 +27,7 @@ sub _verify {
 sub rowcount {
     my $self = shift;
 
-    return $self->find('.//input[@id="rowcount"]')->get_attribute('value');
+    return $self->find('.//input[@id="rowcount"]')->get_property('value');
 }
 
 sub add_row {

@@ -93,7 +93,7 @@ sub post_step {
                 sub {
                     my $rv = (any { $_ eq 'done-parsing' }
                             split( /\s+/,
-                                   $maindiv->get_attribute('class')));
+                                   $maindiv->get_property('class')));
                     return $rv;
                 });
         }

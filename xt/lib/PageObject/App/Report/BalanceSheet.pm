@@ -32,7 +32,7 @@ sub account_balances {
     my @rv;
 
     for my $row (@account_rows) {
-        my $accno = $row->get_attribute('data-lsmb-account');
+        my $accno = $row->get_property('data-lsmb-account');
         $accno //= 'current earnings'; # the only one without a data-account att
 
         my @value_columns = $row->find_all('td.amount', scheme => 'css');

@@ -54,7 +54,7 @@ sub _wait_for_valid_content {
 
     $self->session->wait_for(
         sub {
-            my $class = $self->get_attribute('class');
+            my $class = $self->get_property('class');
             return defined($class)
                 && scalar( grep { $_ eq 'done-parsing' }
                            split /\s+/, $class);

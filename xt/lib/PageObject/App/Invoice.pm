@@ -32,7 +32,7 @@ sub _post_btn {
 
     my $outer = $self->find('.//span[contains(@widgetid,"action-post-")]
                              | .//span[contains(@widgetid,"action-approve-")]');
-    my $lbl_id = $outer->get_attribute('widgetid');
+    my $lbl_id = $outer->get_property('widgetid');
     my $label = $self->find(qq{//span[\@id="${lbl_id}_label"]});
     return $label;
 }
@@ -115,7 +115,7 @@ sub taxes {
 
     for my $tax_row (@tax_rows) {
         my @tax_elms = $tax_row->find_all('./*');
-        if ($tax_row->get_attribute('class') =~ m/\binvoice-auto-tax\b/) {
+        if ($tax_row->get_property('class') =~ m/\binvoice-auto-tax\b/) {
             my $tax = {
                 type => 'automatic',
                 description => $tax_elms[0]->get_text,

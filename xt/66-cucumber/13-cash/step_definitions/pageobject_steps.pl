@@ -69,7 +69,7 @@ When qr/I select the payment line with these values:$/, sub {
 
     my $row = $page->find_payment_row($wanted);
     my $checkbox = $row->find('./td[@class="account_number"]/div/input[@type="checkbox"]');
-    my $checked = $checkbox->get_attribute('checked');
+    my $checked = $checkbox->get_property('checked');
 
     $checked && $checked eq 'true' or $checkbox->click();
 };

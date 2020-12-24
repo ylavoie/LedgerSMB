@@ -131,7 +131,7 @@ jobs:
       - name: Starting ${{ matrix.BROWSER }}
         run: |
           echo "$(ip addr show docker0 | grep -Po 'inet \K[\d.]+') host.docker.internal" | sudo tee -a /etc/hosts
-          docker run -v /dev/shm:/dev/shm -p 4422:4444 -e GRID_DEBUG=true --add-host=host.docker.internal:$(ip addr show docker0 | grep -Po 'inet \K[\d.]+') ${{ matrix.SELENIUM }} &
+          docker run -v /dev/shm:/dev/shm --shm_size=512MB -p 4422:4444 -e GRID_DEBUG=true --add-host=host.docker.internal:$(ip addr show docker0 | grep -Po 'inet \K[\d.]+') ${{ matrix.SELENIUM }} &
 
       # Uncomment to debug
       #- name: Setup tmate session

@@ -61,7 +61,7 @@ sub is_checked_perms_checkbox {
     my $box = $self->find('*labeled', text => $label);
 
     # assume the returned element is of type checkbox
-    return ($box->get_attribute('checked') eq 'true');
+    return ($box->get_property('checked') eq 'true');
 }
 
 

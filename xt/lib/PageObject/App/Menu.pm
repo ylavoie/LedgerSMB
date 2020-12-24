@@ -163,14 +163,14 @@ sub click_menu {
                     return $valid;
                 });
 
-            my $label = $item->get_attribute('id') . '_label';
+            my $label = $item->get_property('id') . '_label';
             ok($label,"Found label $label");
 
             my $submenu = $item->find(".//*[\@id='$label']");
             my $text = $submenu->get_text;
 
             ok($submenu && $text,"Submenu found '" . $text . "'");
-            my $expanded =  $submenu->get_attribute('aria-expanded') // 'false';
+            my $expanded =  $submenu->get_property('aria-expanded') // 'false';
             $submenu->click unless $expanded eq 'true';
             $role = 'group';
         }
