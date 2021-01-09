@@ -187,7 +187,8 @@ sub _linked_accounts {
     my @accounts;
 
     my $sth = $dbh->prepare("select id, accno, description
-                               from chart where link = '$link'")
+                               from chart where link = '$link'
+                                            and charttype = 'A'")
         or die $dbh->errstr;
 
     $sth->execute() or die $sth->errstr;
@@ -274,6 +275,7 @@ sub run_upgrade_script {
         );
 
     my $tempfile = File::Temp->new();
+    $tempfile->unlink_on_destroy( 0 );
     $engine->process("$template.sql",
                      {
                          VERSION_COMPARE => \&Version::Compare::version_compare,
