@@ -376,6 +376,22 @@ $$
         SELECT entity_id from users where username = SESSION_USER OR username = 'Migrator';
 $$ LANGUAGE SQL;
 
+-- Make sure transactions is filled. The actual trigger will be redefined
+-- in modules later.
+
+CREATE OR REPLACE FUNCTION track_global_sequence()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+        IF tg_op = 'INSERT' THEN
+                INSERT INTO transactions (id, table_name, approved)
+                VALUES (new.id, TG_RELNAME, new.approved);
+        END IF;
+        RETURN new;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
 -- adding mapping info for import.
 
 ALTER TABLE :slschema.vendor ADD COLUMN entity_id int;
