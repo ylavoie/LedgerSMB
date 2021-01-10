@@ -887,8 +887,6 @@ SELECT pg_temp.f_insert_account('fxloss_accno_id');
 INSERT INTO assembly (id, parts_id, qty, bom, adj)
 SELECT id, parts_id, qty, bom, adj  FROM :slschema.assembly;
 
-ALTER TABLE gl DISABLE TRIGGER gl_audit_trail;
-
 INSERT INTO business_unit (id, class_id, control_code, description)
 SELECT id, 1, id, description
   FROM :slschema.department;
@@ -909,15 +907,20 @@ UPDATE business_unit_class
  WHERE id = 2
    AND EXISTS (select 1 from :slschema.project);
 
+ALTER TABLE gl DISABLE TRIGGER gl_audit_trail;
+ALTER TABLE gl DISABLE TRIGGER gl_prevent_closed;
+
 INSERT INTO gl(id, reference, description, transdate, person_id, notes)
     SELECT gl.id, reference, description, transdate, p.id, gl.notes
       FROM :slschema.gl
  LEFT JOIN :slschema.employee em ON gl.employee_id = em.id
  LEFT JOIN person p ON em.entity_id = p.id;
 
+ALTER TABLE gl ENABLE TRIGGER gl_prevent_closed;
 ALTER TABLE gl ENABLE TRIGGER gl_audit_trail;
 
 ALTER TABLE ar DISABLE TRIGGER ar_audit_trail;
+ALTER TABLE ar DISABLE TRIGGER ar_prevent_closed;
 
 --TODO: Handle amount_tc and netamount_tc
 insert into ar
@@ -947,9 +950,11 @@ SELECT
 FROM :slschema.ar
 JOIN :slschema.customer ON (ar.customer_id = customer.id) ;
 
+ALTER TABLE ar ENABLE TRIGGER ar_prevent_closed;
 ALTER TABLE ar ENABLE TRIGGER ar_audit_trail;
 
 ALTER TABLE ap DISABLE TRIGGER ap_audit_trail;
+ALTER TABLE ap DISABLE TRIGGER ap_prevent_closed;
 
 insert into ap
 (entity_credit_account, person_id,
@@ -979,6 +984,7 @@ SELECT
         ap.terms, description
 FROM :slschema.ap JOIN :slschema.vendor ON (ap.vendor_id = vendor.id) ;
 
+ALTER TABLE ap ENABLE TRIGGER ap_prevent_closed;
 ALTER TABLE ap ENABLE TRIGGER ap_audit_trail;
 
 -- ### TODO: there used to be projects here!
@@ -997,6 +1003,7 @@ ALTER TABLE :slschema.acc_trans ADD COLUMN lsmb_entry_id integer;
 update :slschema.acc_trans
   set lsmb_entry_id = nextval('acc_trans_entry_id_seq');
 
+ALTER TABLE acc_trans DISABLE TRIGGER acc_trans_prevent_closed;
 INSERT INTO acc_trans (entry_id, trans_id, chart_id, amount_bc, amount_tc, curr,
                        transdate, source, cleared,
                        memo, approved, cleared_on, voucher_id, invoice_id)
@@ -1023,6 +1030,7 @@ INSERT INTO acc_trans (entry_id, trans_id, chart_id, amount_bc, amount_tc, curr,
  LEFT JOIN :slschema.payment y ON (y.trans_id = ac.trans_id AND ac.id = y.id)
  WHERE chart_id IS NOT NULL
     AND ac.trans_id IN (SELECT id FROM transactions);
+ALTER TABLE acc_trans ENABLE TRIGGER acc_trans_prevent_closed;
 
 --Payments
 
