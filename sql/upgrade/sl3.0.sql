@@ -952,7 +952,8 @@ insert into ar
 SELECT
         customer.credit_id,
         (select entity_id from :slschema.employee WHERE id = ar.employee_id),
-        ar.id, invnumber, transdate, transdate, ar.taxincluded, amount, netamount,
+        ar.id, invnumber, transdate, transdate, ar.taxincluded,
+        amount, netamount,
         CASE WHEN exchangerate IS NOT NULL THEN amount/exchangerate ELSE amount END,
         CASE WHEN exchangerate IS NOT NULL THEN netamount/exchangerate ELSE netamount END,
 [% IF VERSION_COMPARE(lsmbversion,'1.6') < 0; %]
