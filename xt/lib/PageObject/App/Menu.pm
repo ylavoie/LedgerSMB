@@ -122,10 +122,14 @@ sub _verify {
         $self->find_all("//*[\@id='company_info_header' and text() = 'Company']");
     my @logged_in_login =
         $self->find_all("//*[\@id='login_info_header' and text() = 'User']");
+    my $class = $self->get_attribute('class');
 
     return $self
         unless ((scalar(@logged_in_company) > 0)
-              && scalar(@logged_in_login) > 0);
+              && scalar(@logged_in_login) > 0)
+              && defined($class)
+              && scalar( grep { $_ eq 'menu-parsed' }
+                          split /\s+/, $class);
 };
 
 sub click_menu {

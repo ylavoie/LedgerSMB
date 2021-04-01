@@ -13,6 +13,8 @@ define([
     "dijit/Tree",
     "dijit/tree/ObjectStoreModel",
     "dijit/registry",
+    "dojo/query",
+    "dojo/dom-class",
     "dojo/topic"
 ], function (
     declare,
@@ -26,6 +28,8 @@ define([
     Tree,
     ObjectStoreModel,
     registry,
+    query,
+    domClass,
     topic
 ) {
     // set up the store to get the tree data, plus define the method
@@ -108,6 +112,15 @@ define([
             // Rebuild the tree
             this.postMixInProperties();
             this._load();
+
+            // Record a loaded callback
+            this.onLoadDeferred.then(lang.hitch(this, "onLoad"));
+        },
+        // Fires when the tree is loaded and expanded
+        onLoad: function () {
+            query("#menudiv").forEach(function (node) {
+                domClass.add(node, "menu-parsed");
+            });
         },
         startup: function () {
             this.inherited(arguments);
@@ -117,6 +130,7 @@ define([
                 _this.refresh();
             });
         },
+        // Fires when is node is clicked
         onClick: function (item, node, _event) {
             // regular handling of non-leafs
             if (item.menu) {
