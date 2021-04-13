@@ -11,10 +11,10 @@ default:
          screenshots_dir: screens
          logging_dir: logs
          screenshot_events:
-           pre-step: 0
+           pre-step: 1
            post-step: 1
-           pre-scenario: 0
-           post-scenario: 0
+           pre-scenario: 1
+           post-scenario: 1
          sessions:
            selenium:
              base_url: ${LSMB_BASE_URL}
