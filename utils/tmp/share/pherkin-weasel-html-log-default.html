@@ -1,0 +1,92 @@
+<html>
+  <head>
+    <meta name="generator" content="Pherkin::Extension::Weasel [% program.version %]">
+    <title>[% feature.title | html %]</title>
+    <style>
+      img:hover {
+         max-width: 100%;
+         width: auto;
+         height: auto;
+         box-shadow: 5px 10px 8px grey;
+         border: 1px solid black;
+      }
+      img {
+         width: 30%;
+         height: auto;
+         box-shadow: 5px 10px 8px lightgrey;
+         border: 1px solid lightgrey;
+      }
+      tbody.failing {
+         background-color: #fff0ff;
+      }
+      tr.step td.failing {
+         color: white;
+         font-weight: bold;
+         background-color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 class="feature">[% feature.title | html %]</h1>
+    <p>[% feature.satisfaction | html %]</p>
+
+    <section class="toc">
+      <ol class="toc">
+[% FOR scenario IN feature.scenarios -%]
+        <li><a href="#s[% loop.index %]">[% scenario.title | html %]</a></li>
+[% END -%]
+      </ol>
+    </section>
+[% FOR scenario IN feature.scenarios %]
+    <section class="scenario">
+      <a name="s[% loop.index %]">
+        <h2 class="scenario">[% scenario.title | html %]</h2>
+      </a>
+      <table>
+        <colgroup>
+          <col class="steps">
+          <col class="session-log">
+          <col class="results">
+        </colgroup>
+[% FOR row IN scenario.rows -%]
+[% IF row.screenshot -%]
+        <tr class="screenshot">
+          <td></td>
+          <td colspan="2">
+            <img src="[% screens_base_url %][% row.screenshot.location | uri %]"
+                 alt="[% row.screenshot.description | html %]"
+                 class="[% row.screenshot.classes.join(' ') %]" />
+          </td>
+        </tr>
+[% ELSIF row.step -%]
+        <tbody class="step [% IF row.step.failing ; 'failing' ; END %]">
+          <tr class="step">
+            <td colspan="2"><h3>[% row.step.text | html %]</h3></td>
+            <td class="[% row.step.result.remove('[<>]') # compensate '<missing>'
+                       %]">[% row.step.result | html %]</td>
+          </tr>
+[% FOR log IN row.step.logs -%]
+          <tr class="log">
+            <td>[% log.timestamp | html %]</td>
+            <td>[% log.text | html %]</td>
+            <td></td>
+          </tr>
+        <tbody>
+[% END -%]
+[% END -%]
+[% END -%]
+      </table>
+    </section>
+[% END -%]
+<!--
+---
+title: [% feature.title | html %]
+filename: [% feature.filename | html %]
+log_filename: [% feature.log_filename | html %]
+stats:
+  success: [% feature.successes.size %]
+  fail: [% feature.failures.size %]
+---
+-->
+  </body>
+</html>

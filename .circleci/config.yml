@@ -145,6 +145,12 @@ commands:
             echo "  password: $PGPASSWORD" >> $HOME/.ledgersmb-admin.conf
             PERL5LIB="lib:$HOME/perl5/lib/perl5" \
               ./bin/ledgersmb-admin create $PGDB
+      - run:
+          name: Patch Pherkin Extension
+          command: |
+            sudo cp utils/tmp/lib/Pherkin/Extension/Weasel.pm $HOME/perl5/lib/perl5/Pherkin/Extension/Weasel.pm
+            sudo cp utils/tmp/share/pherkin-weasel-html-log-default.html $HOME/perl5/lib/perl5/auto/share/dist/Pherkin-Extension-Weasel/pherkin-weasel-html-log-default.html
+
   start_plackup:
     description: "Start plackup"
     steps:
