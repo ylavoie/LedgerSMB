@@ -31,6 +31,15 @@ Given qr/a (fresh )?standard test company(?: named "(.*)")?/, sub {
         $company //= "standard-$$-$job_name-" . $company_seq++;
         S->{ext_lsmb}->create_from_template($company);
     }
+    my $reference_user = 'user';
+    my $user_name = S->{"the $reference_user"};
+
+    my $dbh = S->{ext_lsmb}->admin_dbh;
+    my ($row) = $dbh->selectall_array(
+        q{SELECT * FROM user_preference WHERE name = 'language';},
+        { Slice => {} }
+    );
+    warn "language already set to $row->{value}" if $row && $row->{value} ne 'en';
 };
 
 Given qr/(a nonexistent|an existing) company named "(.*)"/, sub {
