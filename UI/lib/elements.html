@@ -353,7 +353,7 @@ END %]
       position = (element_data.position.defined() ?
             (", position:['" _ element_data.position.join("','") _ "']") : "");
 
-      "<div data-dojo-type=\"dijit/Tooltip\" data-dojo-props=\"connectId:'$ref_id'$position\"  >";
+      "<div data-dojo-type=\"dijit/Tooltip\" data-dojo-props=\"showDelay:1000, connectId:'$ref_id'$position\"  >";
       INCLUDE decorated_text element_data = { msg => element_data.msg };
       "</div>";
    END;
