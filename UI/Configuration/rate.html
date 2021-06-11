@@ -39,12 +39,17 @@
              value_attr='id'
              required=1
              default_values=[form.rate_type] } %]
+
       [% PROCESS input element_data={
              label=text('Valid from')
              name='valid_from'
              type='date'
              required=1
              value=form.valid_from } %]
+       [% INCLUDE tooltip element_data = {
+              ref_id => "valid_from"
+              msg => text("Starting date") }; %]
+
       [% PROCESS input element_data={
              label=text('Rate')
              name='rate'
@@ -53,6 +58,9 @@
              maxlength = '20'
              required=1
          } %]
+         [% INCLUDE tooltip element_data = {
+              ref_id => "rate"
+              msg => text("Exchange rate with default currency") }; %]
 
       [% PROCESS button element_data={
              text = text('Add/Update'),
