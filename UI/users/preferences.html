@@ -1,7 +1,11 @@
 [% PROCESS elements.html %]
 <body class="lsmb [% dojo_theme %]">
   <div id="preferences">
-    [% INCLUDE input element_data = {
+    <div>
+      <div class="listtop">[% text('Preferences') %]</div>
+    </div>
+    <div>&nbsp;</div>
+      [% INCLUDE input element_data = {
                name = "username"
                type = "hidden"
                value = user.login
@@ -38,6 +42,39 @@
               });
             }
             return true;
+          </script>
+          <script type="dojo/on" data-dojo-event="show">
+            require(["dijit/registry", "dojo/on", "dojo/ready"],
+              function(registry, on, ready) {
+                ready(80, function() {
+                  var initial_css = "[% user.prefs.stylesheet %]";
+                  var current_css = initial_css;
+                  function changeCSS(oldValue,newValue) {
+                    let links = document.getElementsByTagName('link');
+                    for (let i = 0; i < links.length; i++) {
+                      if (links[i].getAttribute('rel') == 'stylesheet'
+                       && links[i].getAttribute('href') == 'js/css/' + oldValue) {
+                          let href = links[i].getAttribute('href')
+                                                  .split('?')[0];
+
+                          let newHref = newValue /*+ '?version='
+                                      + new Date().getMilliseconds()*/;
+
+                          links[i].setAttribute('href', 'js/css/' + newHref);
+                          current_css = newValue;
+                      }
+                    }
+                  }
+                  var prefs = registry.byId("prefs");
+                  on(prefs,"blur",function(evt){
+                    changeCSS(current_css,initial_css);
+                  });
+                  var select = registry.byId("stylesheet");
+                  select.watch("value", function(attr, oldValue, newValue){
+                    changeCSS(oldValue,newValue);
+                  });
+                });
+            });
           </script>
           <table width="100%">
             <tr><th class="listtop">[% text('Preferences for [_1]',user.login) %]</th></tr>
@@ -112,10 +149,11 @@
                             <th align="right"><label for="stylesheet">[% text('Stylesheet') %]</label></th>
                             <td>[% PROCESS select element_data={
                                   name = 'stylesheet'
+                                  id = 'stylesheet'
                                   options = user.cssfiles
                                   default_values = [ user.prefs.stylesheet ]
                                   text_attr = 'file'
-                                  value_attr = 'file'
+                                  value_attr = 'file',
                                 } %]</td>
                           </tr>
           [% IF printers.defined %]
