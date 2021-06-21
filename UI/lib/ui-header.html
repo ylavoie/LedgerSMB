@@ -55,7 +55,10 @@
         var dojoConfig = {
             async: 1,
             parseOnLoad: true,
-            locale: "[% USER.language.lower().replace('_','-') %]",
+            /* Not yet ready
+             * locale: "[% USER.language.lower().replace('_','-') %]",
+             */
+            locale: "en",
             packages: [{"name":"lsmb","location":"../lsmb"}],
             mode: "<%= htmlWebpackPlugin.options.mode %>"
         };
