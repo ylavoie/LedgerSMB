@@ -1,5 +1,7 @@
-<template src="./../../welcome.html"></template>
+<div>
+    <template src="./../../welcome.html"></template>
 
-<script>
-export default {};
-</script>
+    <script>
+    export default {};
+    </script>
+</div>

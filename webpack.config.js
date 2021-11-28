@@ -229,7 +229,9 @@ if (TARGET !== 'readme') {
     };
 
     var pluginsProd = [
+        // Add Vue
         new VueLoaderPlugin(),
+
         // Clean UI/js before building
         new CleanWebpackPlugin(CleanWebpackPluginOptions),
 
@@ -394,8 +396,9 @@ if (TARGET !== 'readme') {
 
         resolve: {
             alias: {
-//                "vue$": "vue/dist/vue.esm.js"
-                "vue$": "vue/dist/vue.esm-bundler.js"
+                'vue': '@vue/runtime-dom',
+//                'vuex': 'vuex/dist/vuex.esm-bundler',
+                '@': path.join(__dirname, 'UI/js-src/lsmb')
             },
             extensions: [ ".js", ".vue" ],
             fallback: {
