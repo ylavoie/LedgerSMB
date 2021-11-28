@@ -23,6 +23,7 @@ if (TARGET !== 'readme') {
     const StylelintPlugin = require("stylelint-bare-webpack-plugin");
     const TerserPlugin = require("terser-webpack-plugin");
     const UnusedWebpackPlugin = require("unused-webpack-plugin");
+    const { VueLoaderPlugin } = require("vue-loader");
 
     const { CleanWebpackPlugin } = require("clean-webpack-plugin"); // installed via npm
 
@@ -105,12 +106,19 @@ if (TARGET !== 'readme') {
                 }
             }
         ],
-        exclude: /node_modules/
+        exclude: file => {
+            return /node_modules/.test(file) || /_scripts/.test(file);
+        }
+    };
+
+    const vue = {
+        test: /\.vue$/,
+        loader: "vue-loader"
     };
 
     const css = {
         test: /\.css$/i,
-        use: [MiniCssExtractPlugin.loader, "css-loader"]
+        use: [ MiniCssExtractPlugin.loader, "css-loader"]
     };
 
     const images = {
@@ -221,6 +229,7 @@ if (TARGET !== 'readme') {
     };
 
     var pluginsProd = [
+        new VueLoaderPlugin(),
         // Clean UI/js before building
         new CleanWebpackPlugin(CleanWebpackPluginOptions),
 
@@ -300,7 +309,8 @@ if (TARGET !== 'readme') {
             test: /\.js$|\.css$|\.html$/,
             threshold: 10240,
             minRatio: 0.8
-        })
+        }),
+
     ];
 
     var pluginsDev = [
@@ -347,7 +357,7 @@ if (TARGET !== 'readme') {
                         )[1];
                         return `npm.${packageName.replace("@", "")}`;
                     },
-                    chunks: "all",
+                    chunks: "all"
                 }
             }
         }
@@ -377,12 +387,17 @@ if (TARGET !== 'readme') {
         },
 
         module: {
-            rules: [javascript, css, images, svg, html]
+            rules: [vue, javascript, css, images, svg, html]
         },
 
         plugins: pluginsList,
 
         resolve: {
+            alias: {
+//                "vue$": "vue/dist/vue.esm.js"
+                "vue$": "vue/dist/vue.esm-bundler.js"
+            },
+            extensions: [ ".js", ".vue" ],
             fallback: {
                 buffer: require.resolve("buffer/"),
                 path: require.resolve("path-browserify")
