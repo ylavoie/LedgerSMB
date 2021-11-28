@@ -45,6 +45,7 @@
   ],
   "devDependencies": {
     "@babel/eslint-parser": "7.16.3",
+    "@babel/plugin-syntax-jsx": "7.16.0",
     "@babel/plugin-proposal-object-rest-spread": "7.16.0",
     "@babel/preset-env": "7.16.4",
     "@bcox280/markdown-spellcheck": "2.0.1",
@@ -130,9 +131,10 @@
   },
   "babel": {
     "presets": [
-      [
-        "@babel/preset-env"
-      ]
+      "@babel/preset-env"
+    ],
+    "plugins": [
+      "@babel/plugin-syntax-jsx"
     ]
   },
   "eslintConfig": {
