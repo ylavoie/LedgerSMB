@@ -96,7 +96,6 @@ if (TARGET !== 'readme') {
     /* LOADERS */
 
     const javascript = {
-        enforce: "pre",
         test: /\.js$/,
         use: [
             {
