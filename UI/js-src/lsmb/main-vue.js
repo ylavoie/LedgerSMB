@@ -1,14 +1,15 @@
 /** @format */
+/* eslint-disable no-console */
 
 import { createApp } from "vue";
 import { createRouter, createWebHashHistory } from "vue-router";
 
 const registry   = require("dijit/registry");
 const dojoParser = require("dojo/parser");
-const dojoDOM    = require("dojo/dom");
+const dojoDOM = require("dojo/dom");
 
-import Home from './Home';
-import ServerUI from './ServerUI';
+import Home from "./Home.vue";
+import ServerUI from "./ServerUI";
 
 const routes = [
     { name: "home", path: "/", component: Home },
@@ -21,7 +22,6 @@ const router = createRouter({
     routes
 });
 
-
 export const app = createApp({
     components: [
         Home, ServerUI
@@ -32,6 +32,6 @@ export const app = createApp({
         registry.byId("top_menu").load_link =
             url => this.$router.push(url);
     }
-}).use(router)
-   .mount('#main');
-;
+})
+    .use(router)
+    .mount("#main");
