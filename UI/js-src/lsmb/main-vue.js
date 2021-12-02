@@ -1,14 +1,15 @@
 /** @format */
+/* eslint-disable no-console */
 
 import { createApp } from "vue";
 import { createRouter, createWebHashHistory } from "vue-router";
 
 const registry   = require("dijit/registry");
 const dojoParser = require("dojo/parser");
-const dojoDOM    = require("dojo/dom");
+const dojoDOM = require("dojo/dom");
 
-import Home from './Home';
-import ServerUI from './ServerUI';
+import Home from "./Home.vue";
+import ServerUI from "./ServerUI";
 
 const routes = [
     { name: "home", path: "/", component: Home },
@@ -29,11 +30,12 @@ export const app = createApp({
     mounted() {
         let m = dojoDOM.byId("main");
         dojoParser.parse(m);
-        registry.byId("top_menu").load_link =
-            url => this.$router.push(url);
-        window.__lsmbLoadLink =
-            url => this.$router.push(url);
+        let r = registry.byId("top_menu");
+        if ( r ) { // Setup doesn't have top_menu
+            r.load_link =
+                url => this.$router.push(url);
+        }
     }
-}).use(router)
-   .mount('#main');
-;
+})
+    .use(router)
+    .mount("#main");
