@@ -4,7 +4,7 @@
 import { createApp } from "vue";
 import { createRouter, createWebHashHistory } from "vue-router";
 
-const registry   = require("dijit/registry");
+const registry = require("dijit/registry");
 const dojoParser = require("dojo/parser");
 const dojoDOM = require("dojo/dom");
 const domClass = require("dojo/dom-class");
@@ -14,8 +14,12 @@ import ServerUI from "./ServerUI";
 
 const routes = [
     { name: "home", path: "/", component: Home },
-    { name: "default", path: "/:pathMatch(.*)", component: ServerUI,
-      props: route => ({ uiURL: route.fullPath }) }
+    {
+        name: "default",
+        path: "/:pathMatch(.*)",
+        component: ServerUI,
+        props: (route) => ({ uiURL: route.fullPath })
+    }
 ];
 
 const router = createRouter({
@@ -23,24 +27,22 @@ const router = createRouter({
     routes
 });
 
-
 export const app = createApp({
-    components: [
-        Home, ServerUI
-    ],
+    components: [Home, ServerUI],
     mounted() {
         let m = dojoDOM.byId("main");
         this.$nextTick(
             () => {
-                dojoParser.parse(m);
-                domClass.add(document.body, "done-parsing");
+                dojoParser.parse(m).then(
+                    () => domClass.add(document.body, "done-parsing")
+                )
             });
         window.__lsmbLoadLink =
             url => this.$router.push(url);
         let r = registry.byId("top_menu");
-        if ( r ) { // Setup doesn't have top_menu
-            r.load_link =
-                url => this.$router.push(url);
+        if (r) {
+            // Setup doesn't have top_menu
+            r.load_link = (url) => this.$router.push(url);
         }
     },
     beforeUpdate() {
