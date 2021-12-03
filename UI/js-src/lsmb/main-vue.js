@@ -7,6 +7,7 @@ import { createRouter, createWebHashHistory } from "vue-router";
 const registry   = require("dijit/registry");
 const dojoParser = require("dojo/parser");
 const dojoDOM = require("dojo/dom");
+const domClass = require("dojo/dom-class");
 
 import Home from "./Home.vue";
 import ServerUI from "./ServerUI";
@@ -29,7 +30,11 @@ export const app = createApp({
     ],
     mounted() {
         let m = dojoDOM.byId("main");
-        dojoParser.parse(m);
+        this.$nextTick(
+            () => {
+                dojoParser.parse(m);
+                domClass.add(document.body, "done-parsing");
+            });
         window.__lsmbLoadLink =
             url => this.$router.push(url);
         let r = registry.byId("top_menu");
@@ -37,7 +42,16 @@ export const app = createApp({
             r.load_link =
                 url => this.$router.push(url);
         }
+    },
+    beforeUpdate() {
+        domClass.remove(document.body, "done-parsing");
+    },
+    updated() {
+        domClass.add(document.body, "done-parsing");
     }
 })
-    .use(router)
-    .mount("#main");
+    .use(router);
+
+if (dojoDOM.byId("main")) {
+    app.mount("#main");
+}
