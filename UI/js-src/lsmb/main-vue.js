@@ -31,14 +31,12 @@ export const app = createApp({
     components: [Home, ServerUI],
     mounted() {
         let m = dojoDOM.byId("main");
-        this.$nextTick(
-            () => {
-                dojoParser.parse(m).then(
-                    () => domClass.add(document.body, "done-parsing")
-                )
-            });
-        window.__lsmbLoadLink =
-            url => this.$router.push(url);
+        this.$nextTick(() => {
+            dojoParser
+                .parse(m)
+                .then(() => domClass.add(document.body, "done-parsing"));
+        });
+        window.__lsmbLoadLink = (url) => this.$router.push(url);
         let r = registry.byId("top_menu");
         if (r) {
             // Setup doesn't have top_menu
@@ -51,8 +49,7 @@ export const app = createApp({
     updated() {
         domClass.add(document.body, "done-parsing");
     }
-})
-    .use(router);
+}).use(router);
 
 if (dojoDOM.byId("main")) {
     app.mount("#main");
