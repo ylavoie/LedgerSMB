@@ -19,7 +19,7 @@ export class LsmbBaseInput extends LsmbDijit {
     }
 
     _valueAttrs() {
-        return ["title", "name", "value"];
+        return ["title", "name", "tabindex", "value"]; // id, maxlength, aria-invalid missings
     }
 
     _labelRoot() {

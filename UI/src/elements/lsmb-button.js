@@ -14,7 +14,7 @@ export class LsmbButton extends LsmbDijit {
     }
 
     _valueAttrs() {
-        return ["type"];
+        return ["tabindex", "type"];
     }
 
     connectedCallback() {

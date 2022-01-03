@@ -22,9 +22,15 @@ export class LsmbDijit extends HTMLElement {
 
     _collectProps() {
         /* eslint-disable no-eval */
-        let extra = this.hasAttribute("dojo-props")
+        let extra;
+        try {
+            extra = this.hasAttribute("dojo-props")
             ? eval("({" + this.getAttribute("dojo-props") + "})")
             : {};
+        } catch(e) {
+            console.log(this.getAttribute("dojo-props"),e);
+            extra = {};
+        }
         let props = { ...extra, ...this._stdProps() };
         this._valueAttrs().forEach((prop) => {
             if (this.hasAttribute(prop)) {
