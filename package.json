@@ -252,6 +252,7 @@
         "error",
         {
           "bracketSpacing": true,
+          "bracketSameLine": true,
           "printWidth": 80,
           "quote-props": [
             "error",
