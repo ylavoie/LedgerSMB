@@ -36,7 +36,7 @@
             </div>
           </div>
           <div v-show="inProgress">
-             Logging in... Please wait.
+             {{ $t('Logging in... Please wait.')}}
           </div>
         </div>
       </div>
@@ -75,13 +75,13 @@ export default {
             window.location.href = data.target;
             return;
          } else if (r.status === 454) {
-            alert("Company does not exist");
+            alert(this.$t("Company does not exist"));
          } else if (r.status === 401) {
-            alert("Access denied: Bad username or password");
+            alert(this.$t("Access denied: Bad username or password"));
          } else if (r.status === 521) {
-            alert("Database version mismatch");
+            alert(this.$t("Database version mismatch"));
          } else {
-            alert("Unknown error preventing login");
+            alert(this.$t("Unknown error preventing login"));
          }
          this.inProgress = false;
       }

@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LedgerSMB 1.8.0-dev\n"
 "Report-Msgid-Bugs-To: devel@lists.ledgersmb.org\n"
-"POT-Creation-Date: 2022-01-09 22:19+0000\n"
+"POT-Creation-Date: 2022-01-10 04:32+0000\n"
 "PO-Revision-Date: 2019-01-21 05:20+0000\n"
 "Last-Translator: Erik Huelsmann <ehuels@gmail.com>\n"
 "Language-Team: German (http://www.transifex.com/ledgersmb/ledgersmb/language/"
@@ -68,6 +68,10 @@ msgstr "60"
 #: templates/demo/statement.html:65 templates/xedemo/statement.html:65
 msgid "90"
 msgstr "90"
+
+#: UI/src/components/ImportCSV-GL.vue:45
+msgid "A note field for the specific transaction line"
+msgstr ""
 
 #: templates/demo/invoice.tex:40 templates/demo/packing_list.tex:28
 #: templates/xedemo/invoice.tex:38 templates/xedemo/packing_list.tex:26
@@ -195,6 +199,10 @@ msgstr "Verzicht"
 #: lib/LedgerSMB/Scripts/configuration.pm:355
 msgid "Access Denied"
 msgstr "Zugriff verweigert"
+
+#: UI/src/components/LoginPage.vue:80 UI/src/components/SetupPage.vue:105
+msgid "Access denied: Bad username or password"
+msgstr ""
 
 #: lib/LedgerSMB/Report/Invoices/Outstanding.pm:220
 #: lib/LedgerSMB/Report/Reconciliation/Summary.pm:137
@@ -1199,6 +1207,10 @@ msgstr "Posten Nr"
 msgid "Batch ID Missing"
 msgstr "Posten Nr. fehlt"
 
+#: UI/src/components/ImportCSV-Base.vue:8
+msgid "Batch Information"
+msgstr "Posten Information"
+
 #: old/bin/aa.pl:577
 msgid "Batch Name"
 msgstr "Postenname"
@@ -1669,6 +1681,7 @@ msgstr ""
 #: templates/xedemo/display_report.tex:35 UI/Contact/contact.html:12
 #: UI/Contact/divs/company.html:2 UI/main.html:32
 #: UI/Reports/aging_report.html:14 UI/Reports/display_report.html:28
+#: UI/src/components/LoginPage.vue:30
 msgid "Company"
 msgstr "Firma"
 
@@ -1700,6 +1713,10 @@ msgstr "Firmentelefon"
 #: lib/LedgerSMB/Scripts/configuration.pm:53
 msgid "Company Sales Tax ID"
 msgstr "Firmensteuernummer"
+
+#: UI/src/components/LoginPage.vue:78 UI/src/components/SetupPage.vue:103
+msgid "Company does not exist"
+msgstr ""
 
 #: UI/Reports/filters/balance_sheet.html:138
 msgid "Comparison Dates"
@@ -1900,6 +1917,7 @@ msgid "Country:"
 msgstr "Land:"
 
 #: UI/setup/credentials.html:96 UI/templates/widget.html:120
+#: UI/src/components/SetupPage.vue:52
 msgid "Create"
 msgstr "Erstellen"
 
@@ -2102,7 +2120,8 @@ msgstr "Kunden/Lieferant Konto"
 msgid "D M"
 msgstr "D M"
 
-#: UI/setup/credentials.html:53
+#: UI/setup/credentials.html:53 UI/src/components/SetupPage.vue:26
+#: UI/src/components/SetupPage.vue:37
 msgid "DB admin login"
 msgstr "Datenbankadministrator Login"
 
@@ -2131,7 +2150,7 @@ msgid "Data not saved.  Please update again."
 msgstr "Daten nicht gespeichert.  Bitte aktualisieren Sie erneut."
 
 #: UI/setup/credentials.html:81 UI/setup/list_databases.html:13
-#: UI/setup/ui-db-credentials.html:6
+#: UI/setup/ui-db-credentials.html:6 UI/src/components/SetupPage.vue:45
 msgid "Database"
 msgstr "Datenbank"
 
@@ -2141,9 +2160,9 @@ msgstr "Datenbank Anmeldedaten"
 
 #: UI/setup/begin_backup.html:7 UI/setup/complete.html:8
 #: UI/setup/complete_migration_revert.html:8 UI/setup/confirm_operation.html:7
-#: UI/setup/credentials.html:20 UI/setup/migration_step.html:9
-#: UI/setup/new_user.html:7 UI/setup/select_coa.html:7
-#: UI/setup/template_info.html:7 UI/setup/upgrade_info.html:7
+#: UI/setup/migration_step.html:9 UI/setup/new_user.html:7
+#: UI/setup/select_coa.html:7 UI/setup/template_info.html:7
+#: UI/setup/upgrade_info.html:7
 msgid "Database Management Console"
 msgstr "Datenbank Management Konsole"
 
@@ -2170,6 +2189,10 @@ msgstr "Datenbank existiert nicht."
 #: lib/LedgerSMB/Scripts/setup.pm:1000
 msgid "Database exists."
 msgstr "Datenbank existiert."
+
+#: UI/src/components/LoginPage.vue:82
+msgid "Database version mismatch"
+msgstr ""
 
 #: lib/LedgerSMB/Report/Aging.pm:119 lib/LedgerSMB/Report/GL.pm:92
 #: lib/LedgerSMB/Report/Inventory/History.pm:145
@@ -2612,7 +2635,7 @@ msgstr "Abschreibungsbeginn"
 #: UI/Reports/filters/search_goods.html:63
 #: UI/Reports/filters/search_goods.html:271 UI/timecards/timecard.html:45
 #: UI/timecards/timecard-week.html:111 sql/Pg-database.sql:2612
-#: sql/Pg-database.sql:2617
+#: sql/Pg-database.sql:2617 UI/src/components/ImportCSV-Base.vue:18
 msgid "Description"
 msgstr "Beschreibung"
 
@@ -3550,6 +3573,10 @@ msgstr "Hauptbuch"
 msgid "GL Reference Number"
 msgstr "Grundbuch Referenznummer"
 
+#: UI/src/components/ImportCSV-GL.vue:14
+msgid "GL acount code (accno) for the debit or credit to be posted"
+msgstr ""
+
 #: UI/accounts/edit.html:519
 msgid "Gain"
 msgstr "Gewinn"
@@ -3570,6 +3597,10 @@ msgstr "Gewinn (Verlust)"
 #: lib/LedgerSMB/Scripts/configuration.pm:87
 msgid "Gapless AR"
 msgstr "Lückenlose Debitorenbuchhaltung"
+
+#: UI/src/components/ImportCSV-GIFI.vue:5
+msgid "General Index of Financial Information"
+msgstr ""
 
 #: sql/Pg-database.sql:2703
 msgid "General Journal"
@@ -3772,9 +3803,21 @@ msgstr "Stapel importieren"
 msgid "Import Chart"
 msgstr "Diagramm importieren"
 
+#: UI/src/components/ImportCSV-CoA.vue:4
+msgid "Import Chart of Accounts"
+msgstr ""
+
 #: sql/Pg-database.sql:2692
 msgid "Import GIFI"
 msgstr "GIFI importieren"
+
+#: UI/src/components/ImportCSV-GL.vue:4
+msgid "Import GL transaction"
+msgstr ""
+
+#: UI/src/components/ImportCSV-GL-Batch.vue:4
+msgid "Import GL transaction batch"
+msgstr ""
 
 #: sql/Pg-database.sql:2560
 msgid "Import Inventory"
@@ -3783,6 +3826,10 @@ msgstr "Lagerbestand importieren"
 #: UI/Contact/divs/user.html:92 UI/setup/new_user.html:56
 msgid "Import existing user"
 msgstr "Existierenden Benutzer importieren"
+
+#: UI/src/components/ImportCSV-Timecard.vue:4
+msgid "Import timecards"
+msgstr ""
 
 #: templates/demo/timecard.html:60 templates/demo/timecard.tex:36
 #: templates/xedemo/timecard.html:60 templates/xedemo/timecard.tex:34
@@ -4263,7 +4310,7 @@ msgstr ""
 #: lib/LedgerSMB/Scripts/setup.pm:236
 #, fuzzy
 msgid "LedgerSMB 1.10 db found."
-msgstr "LedgerSMB 1.2 db gefunden."
+msgstr "LedgerSMB 1.10 db gefunden."
 
 #: lib/LedgerSMB/Scripts/setup.pm:195
 msgid "LedgerSMB 1.2 db found."
@@ -4428,6 +4475,10 @@ msgstr ""
 msgid "Load Templates"
 msgstr ""
 
+#: UI/src/components/SetupPage.vue:58
+msgid "Loading..."
+msgstr ""
+
 #: UI/asset/edit_asset.html:137 UI/asset/search_asset.html:124
 #: UI/payments/payment2.html:36 UI/payments/use_overpayment2.html:32
 msgid "Location"
@@ -4449,7 +4500,11 @@ msgstr "Gesperrt von [_1]"
 msgid "Logged out due to inactivity"
 msgstr ""
 
-#: UI/setup/credentials.html:91
+#: UI/src/components/LoginPage.vue:39
+msgid "Logging in... Please wait."
+msgstr ""
+
+#: UI/src/components/LoginPage.vue:34 UI/src/components/SetupPage.vue:51
 msgid "Login"
 msgstr "Anmelden"
 
@@ -5396,6 +5451,7 @@ msgstr ""
 
 #: UI/Contact/divs/user.html:55 UI/setup/credentials.html:68
 #: UI/setup/edit_user.html:49 UI/setup/new_user.html:29
+#: UI/src/components/LoginPage.vue:27 UI/src/components/SetupPage.vue:42
 msgid "Password"
 msgstr "Passwort"
 
@@ -6244,6 +6300,7 @@ msgstr "Wiederkehrende Transaktionen"
 #: UI/budgetting/budget_entry.html:16 UI/journal/journal_entry.html:29
 #: UI/Reports/filters/budget_search.html:18 UI/Reports/filters/gl.html:23
 #: UI/Reports/filters/gl.html:210 UI/Reports/filters/unapproved.html:29
+#: UI/src/components/ImportCSV-Base.vue:12
 msgid "Reference"
 msgstr "Referenz"
 
@@ -6632,6 +6689,7 @@ msgstr "Sat"
 #: UI/taxform/add_taxform.html:84 UI/templates/widget.html:142
 #: UI/templates/widget.html:156 UI/timecards/timecard.html:168
 #: UI/timecards/timecard-week.html:125 UI/users/preferences.html:153
+#: UI/src/components/ImportCSV-Base.vue:37
 msgid "Save"
 msgstr "Speichern"
 
@@ -6881,7 +6939,7 @@ msgstr "WÃ¤hle aus einem der unten genannten Namen"
 msgid "Select invoices"
 msgstr "Wähle Rechnung aus"
 
-#: UI/setup/credentials.html:42
+#: UI/src/components/SetupPage.vue:27
 msgid "Select or Enter User"
 msgstr "Wähle aus oder gebe Benutzer an"
 
@@ -7271,6 +7329,10 @@ msgstr ""
 #: UI/lib/report_base.html:70
 msgid "Standard"
 msgstr "Standard"
+
+#: UI/src/components/ImportCSV-SIC.vue:5
+msgid "Standard Industrial Classification"
+msgstr ""
 
 #: lib/LedgerSMB/Report/Listings/SIC.pm:63
 msgid "Standard Industrial Codes"
@@ -7724,11 +7786,34 @@ msgstr "Danke für Ihr geschätztes Geschäft!"
 msgid "The amount of"
 msgstr "Die Summe von"
 
+#: UI/src/components/ImportCSV-GL.vue:22
+msgid "The credit amount to be posted on the line"
+msgstr ""
+
 #: UI/email.html:125
 msgid ""
 "The e-mail body may contain variables to be expanded - e.g. <%invnumber%> - "
 "the table below specifies the available variables and their expansions for "
 "this e-mail"
+msgstr ""
+
+#: UI/src/components/ImportCSV-SIC.vue:10
+#: UI/src/components/ImportCSV-GIFI.vue:11
+#: UI/src/components/ImportCSV-CoA.vue:10
+#: UI/src/components/ImportCSV-Timecard.vue:9
+msgid "The following fields are expected (in this order):"
+msgstr ""
+
+#: UI/src/components/ImportCSV-GIFI.vue:8
+msgid "The uploaded file contains one GIFI code per line."
+msgstr ""
+
+#: UI/src/components/ImportCSV-SIC.vue:7
+msgid "The uploaded file contains one SIC code per line."
+msgstr ""
+
+#: UI/src/components/ImportCSV-CoA.vue:7
+msgid "The uploaded file contains one account or heading per line."
 msgstr ""
 
 #: lib/LedgerSMB/Scripts/recon.pm:501
@@ -8044,6 +8129,7 @@ msgstr " Transaktionsbestätigung"
 #: lib/LedgerSMB/Report/PNL/Invoice.pm:85
 #: UI/Reports/filters/purchase_history.html:129
 #: UI/Reports/filters/purchase_history.html:342
+#: UI/src/components/ImportCSV-Base.vue:22
 msgid "Transaction Date"
 msgstr "Transaktionsdatum"
 
@@ -8260,6 +8346,10 @@ msgstr "Unbekannter Diagrammtyp; sollte H(eader)/A(ccount) sein"
 msgid "Unknown database found."
 msgstr "Unbekannte Datenbank gefunden."
 
+#: UI/src/components/LoginPage.vue:84 UI/src/components/SetupPage.vue:107
+msgid "Unknown error preventing login"
+msgstr ""
+
 #: lib/LedgerSMB/Report/Unapproved/Batch_Overview.pm:252
 msgid "Unlock"
 msgstr "Freischalten"
@@ -8387,6 +8477,10 @@ msgstr "Gebraucht"
 #: UI/Contact/divs/user.html:3 UI/main.html:28
 msgid "User"
 msgstr "Benutzer"
+
+#: UI/src/components/LoginPage.vue:19
+msgid "User Name"
+msgstr "Benutzername"
 
 #: lib/LedgerSMB/Scripts/setup.pm:1204
 msgid "User already exists. Import?"
@@ -9078,9 +9172,6 @@ msgstr "Nutzen einer Ãœberzahlung"
 #~ msgid "Attached document for [_1] [_2]"
 #~ msgstr "Angehängtes Dokument für [_1] [_2]"
 
-#~ msgid "Batch Information"
-#~ msgstr "Posten Information"
-
 #~ msgid "Bcc: [_1]"
 #~ msgstr "Bcc: [_1]"
 
@@ -9164,9 +9255,6 @@ msgstr "Nutzen einer Ãœberzahlung"
 
 #~ msgid "To: [_1]"
 #~ msgstr "An: [_1]"
-
-#~ msgid "User Name"
-#~ msgstr "Benutzername"
 
 #~ msgid "Username "
 #~ msgstr "Benutzername"

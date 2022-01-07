@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LedgerSMB 1.8.0-dev\n"
 "Report-Msgid-Bugs-To: devel@lists.ledgersmb.org\n"
-"POT-Creation-Date: 2022-01-09 22:19+0000\n"
+"POT-Creation-Date: 2022-01-10 04:32+0000\n"
 "PO-Revision-Date: 2019-01-21 05:20+0000\n"
 "Last-Translator: Erik Huelsmann <ehuels@gmail.com>\n"
 "Language-Team: Malay (Malaysia) (http://www.transifex.com/ledgersmb/ledgersmb/"
@@ -67,6 +67,10 @@ msgstr "60"
 #: templates/demo/statement.html:65 templates/xedemo/statement.html:65
 msgid "90"
 msgstr "90"
+
+#: UI/src/components/ImportCSV-GL.vue:45
+msgid "A note field for the specific transaction line"
+msgstr ""
 
 #: templates/demo/invoice.tex:40 templates/demo/packing_list.tex:28
 #: templates/xedemo/invoice.tex:38 templates/xedemo/packing_list.tex:26
@@ -191,6 +195,10 @@ msgstr ""
 #: lib/LedgerSMB/Scripts/configuration.pm:355
 msgid "Access Denied"
 msgstr "Akses Dinafikan"
+
+#: UI/src/components/LoginPage.vue:80 UI/src/components/SetupPage.vue:105
+msgid "Access denied: Bad username or password"
+msgstr ""
 
 #: lib/LedgerSMB/Report/Invoices/Outstanding.pm:220
 #: lib/LedgerSMB/Report/Reconciliation/Summary.pm:137
@@ -1195,6 +1203,10 @@ msgstr "ID Kumpulan"
 msgid "Batch ID Missing"
 msgstr "Kumpulan ID hilang"
 
+#: UI/src/components/ImportCSV-Base.vue:8
+msgid "Batch Information"
+msgstr ""
+
 #: old/bin/aa.pl:577
 msgid "Batch Name"
 msgstr "Nama Batch"
@@ -1660,6 +1672,7 @@ msgstr ""
 #: templates/xedemo/display_report.tex:35 UI/Contact/contact.html:12
 #: UI/Contact/divs/company.html:2 UI/main.html:32
 #: UI/Reports/aging_report.html:14 UI/Reports/display_report.html:28
+#: UI/src/components/LoginPage.vue:30
 msgid "Company"
 msgstr "Syarikat"
 
@@ -1691,6 +1704,10 @@ msgstr "Nombor Telefon Syarikat"
 #: lib/LedgerSMB/Scripts/configuration.pm:53
 msgid "Company Sales Tax ID"
 msgstr "ID Cukai Jualan Syarikat"
+
+#: UI/src/components/LoginPage.vue:78 UI/src/components/SetupPage.vue:103
+msgid "Company does not exist"
+msgstr ""
 
 #: UI/Reports/filters/balance_sheet.html:138
 msgid "Comparison Dates"
@@ -1887,7 +1904,7 @@ msgstr ""
 msgid "Country:"
 msgstr ""
 
-#: UI/setup/credentials.html:96 UI/templates/widget.html:120
+#: UI/templates/widget.html:120 UI/src/components/SetupPage.vue:52
 msgid "Create"
 msgstr ""
 
@@ -2090,7 +2107,7 @@ msgstr ""
 msgid "D M"
 msgstr ""
 
-#: UI/setup/credentials.html:53
+#: UI/src/components/SetupPage.vue:26 UI/src/components/SetupPage.vue:37
 msgid "DB admin login"
 msgstr ""
 
@@ -2118,8 +2135,8 @@ msgstr "Data gagal disimpan. Sila cuba lagi"
 msgid "Data not saved.  Please update again."
 msgstr "Data tidak disimpan. Tolong update semula."
 
-#: UI/setup/credentials.html:81 UI/setup/list_databases.html:13
-#: UI/setup/ui-db-credentials.html:6
+#: UI/setup/list_databases.html:13 UI/setup/ui-db-credentials.html:6
+#: UI/src/components/SetupPage.vue:45
 msgid "Database"
 msgstr ""
 
@@ -2129,9 +2146,9 @@ msgstr ""
 
 #: UI/setup/begin_backup.html:7 UI/setup/complete.html:8
 #: UI/setup/complete_migration_revert.html:8 UI/setup/confirm_operation.html:7
-#: UI/setup/credentials.html:20 UI/setup/migration_step.html:9
-#: UI/setup/new_user.html:7 UI/setup/select_coa.html:7
-#: UI/setup/template_info.html:7 UI/setup/upgrade_info.html:7
+#: UI/setup/migration_step.html:9 UI/setup/new_user.html:7
+#: UI/setup/select_coa.html:7 UI/setup/template_info.html:7
+#: UI/setup/upgrade_info.html:7
 msgid "Database Management Console"
 msgstr ""
 
@@ -2157,6 +2174,10 @@ msgstr "Pengkalan data tidak wujud"
 
 #: lib/LedgerSMB/Scripts/setup.pm:1000
 msgid "Database exists."
+msgstr ""
+
+#: UI/src/components/LoginPage.vue:82
+msgid "Database version mismatch"
 msgstr ""
 
 #: lib/LedgerSMB/Report/Aging.pm:119 lib/LedgerSMB/Report/GL.pm:92
@@ -2599,7 +2620,7 @@ msgstr "Permulaan Susut Nilai"
 #: UI/Reports/filters/search_goods.html:63
 #: UI/Reports/filters/search_goods.html:271 UI/timecards/timecard.html:45
 #: UI/timecards/timecard-week.html:111 sql/Pg-database.sql:2612
-#: sql/Pg-database.sql:2617
+#: sql/Pg-database.sql:2617 UI/src/components/ImportCSV-Base.vue:18
 msgid "Description"
 msgstr "Penerangan"
 
@@ -3534,6 +3555,10 @@ msgstr "GL"
 msgid "GL Reference Number"
 msgstr "Nombor rujukan GL"
 
+#: UI/src/components/ImportCSV-GL.vue:14
+msgid "GL acount code (accno) for the debit or credit to be posted"
+msgstr ""
+
 #: UI/accounts/edit.html:519
 msgid "Gain"
 msgstr ""
@@ -3553,6 +3578,10 @@ msgstr "Dapat (Kerugian)"
 
 #: lib/LedgerSMB/Scripts/configuration.pm:87
 msgid "Gapless AR"
+msgstr ""
+
+#: UI/src/components/ImportCSV-GIFI.vue:5
+msgid "General Index of Financial Information"
 msgstr ""
 
 #: sql/Pg-database.sql:2703
@@ -3756,9 +3785,21 @@ msgstr "Import kumpulan"
 msgid "Import Chart"
 msgstr "Carta Kemasukan"
 
+#: UI/src/components/ImportCSV-CoA.vue:4
+msgid "Import Chart of Accounts"
+msgstr ""
+
 #: sql/Pg-database.sql:2692
 msgid "Import GIFI"
 msgstr "Import GIFI"
+
+#: UI/src/components/ImportCSV-GL.vue:4
+msgid "Import GL transaction"
+msgstr ""
+
+#: UI/src/components/ImportCSV-GL-Batch.vue:4
+msgid "Import GL transaction batch"
+msgstr ""
 
 #: sql/Pg-database.sql:2560
 msgid "Import Inventory"
@@ -3766,6 +3807,10 @@ msgstr ""
 
 #: UI/Contact/divs/user.html:92 UI/setup/new_user.html:56
 msgid "Import existing user"
+msgstr ""
+
+#: UI/src/components/ImportCSV-Timecard.vue:4
+msgid "Import timecards"
 msgstr ""
 
 #: templates/demo/timecard.html:60 templates/demo/timecard.tex:36
@@ -4290,6 +4335,11 @@ msgstr ""
 msgid "LedgerSMB has introduced three new system wide default values which "
 msgstr ""
 
+msgid ""
+"LedgerSMB is a double entry accounting system offering a wide\n"
+"                  variety of related functionalities, such as"
+msgstr ""
+
 #: UI/setup/upgrade_info.html:72
 msgid "LedgerSMB supports multiple <em>Accounts payable (AP)</em> accounts "
 msgstr ""
@@ -4397,6 +4447,10 @@ msgstr ""
 msgid "Load Templates"
 msgstr ""
 
+#: UI/src/components/SetupPage.vue:58
+msgid "Loading..."
+msgstr ""
+
 #: UI/asset/edit_asset.html:137 UI/asset/search_asset.html:124
 #: UI/payments/payment2.html:36 UI/payments/use_overpayment2.html:32
 msgid "Location"
@@ -4418,7 +4472,11 @@ msgstr ""
 msgid "Logged out due to inactivity"
 msgstr ""
 
-#: UI/setup/credentials.html:91
+#: UI/src/components/LoginPage.vue:39
+msgid "Logging in... Please wait."
+msgstr ""
+
+#: UI/src/components/LoginPage.vue:34 UI/src/components/SetupPage.vue:51
 msgid "Login"
 msgstr "Daftar masuk"
 
@@ -5361,8 +5419,9 @@ msgstr ""
 msgid "Partsgroups"
 msgstr ""
 
-#: UI/Contact/divs/user.html:55 UI/setup/credentials.html:68
-#: UI/setup/edit_user.html:49 UI/setup/new_user.html:29
+#: UI/Contact/divs/user.html:55 UI/setup/edit_user.html:49
+#: UI/setup/new_user.html:29 UI/src/components/LoginPage.vue:26
+#: UI/src/components/SetupPage.vue:42
 msgid "Password"
 msgstr ""
 
@@ -6210,6 +6269,7 @@ msgstr "Perulangan Input Transaksi"
 #: UI/budgetting/budget_entry.html:16 UI/journal/journal_entry.html:29
 #: UI/Reports/filters/budget_search.html:18 UI/Reports/filters/gl.html:23
 #: UI/Reports/filters/gl.html:210 UI/Reports/filters/unapproved.html:29
+#: UI/src/components/ImportCSV-Base.vue:12
 msgid "Reference"
 msgstr "Rujukan"
 
@@ -6598,6 +6658,7 @@ msgstr "Sabtu"
 #: UI/taxform/add_taxform.html:84 UI/templates/widget.html:142
 #: UI/templates/widget.html:156 UI/timecards/timecard.html:168
 #: UI/timecards/timecard-week.html:125 UI/users/preferences.html:153
+#: UI/src/components/ImportCSV-Base.vue:37
 msgid "Save"
 msgstr "Simpan"
 
@@ -6847,7 +6908,7 @@ msgstr "Pilih salah satu nama dibawah"
 msgid "Select invoices"
 msgstr ""
 
-#: UI/setup/credentials.html:42
+#: UI/src/components/SetupPage.vue:27
 msgid "Select or Enter User"
 msgstr ""
 
@@ -7235,6 +7296,10 @@ msgstr ""
 
 #: UI/lib/report_base.html:70
 msgid "Standard"
+msgstr ""
+
+#: UI/src/components/ImportCSV-SIC.vue:5
+msgid "Standard Industrial Classification"
 msgstr ""
 
 #: lib/LedgerSMB/Report/Listings/SIC.pm:63
@@ -7688,11 +7753,39 @@ msgstr ""
 msgid "The amount of"
 msgstr ""
 
+#: UI/src/components/ImportCSV-GL.vue:22
+msgid "The credit amount to be posted on the line"
+msgstr ""
+
 #: UI/email.html:125
 msgid ""
 "The e-mail body may contain variables to be expanded - e.g. <%invnumber%> - "
 "the table below specifies the available variables and their expansions for "
 "this e-mail"
+msgstr ""
+
+msgid ""
+"The project is always looking for contributions. The easiest ways to\n"
+"                  contribute to the project are:"
+msgstr ""
+
+#: UI/src/components/ImportCSV-SIC.vue:10
+#: UI/src/components/ImportCSV-GIFI.vue:11
+#: UI/src/components/ImportCSV-CoA.vue:10
+#: UI/src/components/ImportCSV-Timecard.vue:9
+msgid "The following fields are expected (in this order):"
+msgstr ""
+
+#: UI/src/components/ImportCSV-GIFI.vue:8
+msgid "The uploaded file contains one GIFI code per line."
+msgstr ""
+
+#: UI/src/components/ImportCSV-SIC.vue:7
+msgid "The uploaded file contains one SIC code per line."
+msgstr ""
+
+#: UI/src/components/ImportCSV-CoA.vue:7
+msgid "The uploaded file contains one account or heading per line."
 msgstr ""
 
 #: lib/LedgerSMB/Scripts/recon.pm:501
@@ -8006,6 +8099,7 @@ msgstr "Transaksi Diterima"
 #: lib/LedgerSMB/Report/PNL/Invoice.pm:85
 #: UI/Reports/filters/purchase_history.html:129
 #: UI/Reports/filters/purchase_history.html:342
+#: UI/src/components/ImportCSV-Base.vue:22
 msgid "Transaction Date"
 msgstr "Tarikh Transaksi"
 
@@ -8349,6 +8443,10 @@ msgstr "Digunakan"
 #: UI/Contact/divs/user.html:3 UI/main.html:28
 msgid "User"
 msgstr "Pengguna"
+
+#: UI/src/components/LoginPage.vue:19
+msgid "User Name"
+msgstr ""
 
 #: lib/LedgerSMB/Scripts/setup.pm:1204
 msgid "User already exists. Import?"
@@ -8921,7 +9019,7 @@ msgstr ""
 msgid "in years"
 msgstr ""
 
-#: UI/src/components/Home.vue:9
+#: UI/src/components/Home.vue:10
 msgid "invoicing"
 msgstr ""
 
@@ -8941,12 +9039,16 @@ msgstr "kurang daripada jumlah perlu dibayar"
 msgid "is null"
 msgstr "kosong"
 
-#: UI/src/components/Home.vue:12
+#: UI/src/components/Home.vue:13
 msgid "keeping stock"
 msgstr ""
 
 #: UI/Configuration/sequence.html:9
 msgid "label"
+msgstr ""
+
+#: UI/src/components/Home.vue:58 UI/src/components/Home.vue:33
+msgid "mailing lists"
 msgstr ""
 
 #: UI/src/components/Home.vue:11
@@ -8965,7 +9067,7 @@ msgstr ""
 msgid "production"
 msgstr ""
 
-#: UI/src/components/Home.vue:14
+#: UI/src/components/Home.vue:15
 msgid "shipping &amp; receiving"
 msgstr ""
 
@@ -8990,7 +9092,7 @@ msgstr "masa(s)"
 msgid "to_date"
 msgstr ""
 
-#: UI/src/components/Home.vue:13
+#: UI/src/components/Home.vue:14
 msgid "tracking hours (timecards)"
 msgstr ""
 

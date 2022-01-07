@@ -5,6 +5,7 @@ import { createApp } from "vue";
 import router from "./router";
 import i18n, { loadLocaleMessages } from "./i18n";
 import LoginPage from "./components/LoginPage";
+import SetupPage from "./components/SetupPage";
 
 const registry = require("dijit/registry");
 const dojoParser = require("dojo/parser");
@@ -58,19 +59,17 @@ if (document.getElementById("main")) {
 
     app.mount("#main");
 } else if (document.getElementById("login")) {
-    app = createApp(LoginPage);
+    app = createApp(LoginPage).use(i18n);
     app.config.compilerOptions.isCustomElement = (tag) =>
         tag.startsWith("lsmb-");
     app.directive("update", lsmbDirective);
 
     app.mount("#login");
 } else {
-    /* In case we're running a "setup.pl" page */
-    dojoParser.parse(document.body).then(() => {
-        const l = document.getElementById("loading");
-        if (l) {
-            l.style.display = "none";
-        }
-        document.body.setAttribute("data-lsmb-done", "true");
-    });
+    app = createApp(SetupPage).use(i18n);
+    app.config.compilerOptions.isCustomElement = (tag) =>
+        tag.startsWith("lsmb-");
+    app.directive("update", lsmbDirective);
+
+    app.mount("#setupconsole");
 }
