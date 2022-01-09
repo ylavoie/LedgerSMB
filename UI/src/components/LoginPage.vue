@@ -16,22 +16,23 @@
               <div>
                 <div id="company_div">
                   <lsmb-text type="text" name="login" size="20"
-                             id="username" title="User Name"
+                             id="username"
+                             :title="$t('User Name')"
                              tabindex="1"
                              :value="username"
                              v-update:username=""
                              autocomplete="off" />
                   <lsmb-password type="password" name="password"
                                  id="password" size="20"
-                                 title="Password"
+                                 :title="$t('Password')"
                                  :value="password" v-update:password=""
                                  tabindex="2" autocomplete="off" />
                   <lsmb-text type="text" name="company" size="20"
-                             title="Company" tabindex="3"
+                             :title="$t('Company')" tabindex="3"
                              :value="company"
                              v-update:company="" />
                 </div>
-                <lsmb-button tabindex="4" id="login" @click="login">Login</lsmb-button>
+                <lsmb-button tabindex="4" id="login" @click="login">{{ $t('Login') }}</lsmb-button>
               </div>
             </div>
           </div>
@@ -44,8 +45,14 @@
 </template>
 
 <script>
+import { defineComponent, ref } from 'vue';
+import { loadLocaleMessages } from '../i18n.js';
 
-export default {
+export default defineComponent({
+   name: 'LoginPage',
+   setup(){
+      loadLocaleMessages('fr_CA');
+   },
    data() {
       return {
          version: window.lsmbConfig.version,
@@ -75,13 +82,13 @@ export default {
             window.location.href = data.target;
             return;
          } else if (r.status === 454) {
-            alert(this.$t("Company does not exist"));
+            alert($t("Company does not exist"));
          } else if (r.status === 401) {
-            alert(this.$t("Access denied: Bad username or password"));
+            alert($t("Access denied: Bad username or password"));
          } else if (r.status === 521) {
-            alert(this.$t("Database version mismatch"));
+            alert($t("Database version mismatch"));
          } else {
-            alert(this.$t("Unknown error preventing login"));
+            alert($t("Unknown error preventing login"));
          }
          this.inProgress = false;
       }
@@ -89,5 +96,16 @@ export default {
    mounted() {
      document.body.setAttribute("data-lsmb-done", "true");
    }
-}
+})
 </script>
+
+<style scoped>
+#loading {
+    display: block;
+    margin: auto auto;
+}
+#logindiv {
+    width:100%;
+    height:100%
+}
+</style>
