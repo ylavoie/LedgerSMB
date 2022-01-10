@@ -1,7 +1,7 @@
 <template>
    <div id="import-gl">
       <import-csv :type="type">
-        <template v-slot:title>Import GL transaction</template>
+        <template v-slot:title>{{ $t('Import GL transaction') }}</template>
         <template v-slot:info>The uploaded file contains the lines in the
            transaction; the header data is entered into the fields below.
         </template>
@@ -11,7 +11,7 @@
            this order):
            <dl>
              <dt>accno</dt>
-             <dd>GL acount code (accno) for the debit or credit to be posted</dd>
+             <dd>{{ $t('GL acount code (accno) for the debit or credit to be posted') }}</dd>
 
              <dt>debit</dt>
              <dd>The debit amount to be posted on the line, in the functional (or
@@ -19,7 +19,7 @@
                  <em>either</em> debit or credit</dd>
 
              <dt>credit</dt>
-             <dd>The credit amount to be posted on the line</dd>
+             <dd>{{ $t('The credit amount to be posted on the line') }}</dd>
 
              <dt>curr</dt>
              <dd>The currency to be used for the transaction; if the transaction
@@ -42,7 +42,7 @@
                  used for e.g. bank reconciliation</dd>
 
              <dt>memo</dt>
-             <dd>A note field for the specific transaction line</dd>
+             <dd>{{ $t('A note field for the specific transaction line') }}</dd>
 
            </dl>
         </template>

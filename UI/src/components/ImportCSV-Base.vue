@@ -5,21 +5,21 @@
     <form name="csvupload">
       <input type="hidden" name="type" :value="type">
       <div v-if="multi"
-           class="listheading">Batch Information</div>
+           class="listheading">{{ $t('Batch Information')}}</div>
       <div class="two-column-grid" style="width:fit-content;grid-gap:4px">
         <lsmb-text class="reference"
                  name="reference"
-                 title="Reference"
+                 :title="this.$t('Reference')"
                  value=""
                  size="15"
                  @input="status=null" />
         <lsmb-text class="description"
                  name="description"
-                 title="Description"
+                 :title="this.$t('Description')"
                  value=""
                  required
                  @input="status=null" />
-        <lsmb-date title="Transaction Date"
+        <lsmb-date :title="this.$t('Transaction Date')"
                  name="transdate"
                  size="12"
                  required
@@ -34,7 +34,7 @@
       <div class="inputrow" id="buttonrow">
         <input type="hidden" name="trans_type" />
         <lsmb-button class="submit"
-                name="action" @click="upload">{{ "Save" }}</lsmb-button>
+                name="action" @click="upload">{{ $t("Save") }}</lsmb-button>
       </div>
       <div v-show="status!==null" :class='status ? "success" : "failure"'>
         {{ message }}

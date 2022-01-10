@@ -1,12 +1,12 @@
 <template>
    <div id="import-timecard">
       <import-csv :type="type">
-        <template v-slot:title>Import timecards</template>
+        <template v-slot:title>{{ $t('Import timecards') }}</template>
         <template v-slot:info>The uploaded file contains one timecard per row;
              as there is no functionality to put timecards into batches,\
              no header fields need to be entered below.</template>
         <template v-slot:default>
-           The following fields are expected (in this order):
+           {{ $t('The following fields are expected (in this order):') }}
 
            <dl>
              <dt>employee</dt>

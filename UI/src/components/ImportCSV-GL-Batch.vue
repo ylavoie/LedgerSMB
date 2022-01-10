@@ -1,7 +1,7 @@
 <template>
    <div id="import-gl-batch">
       <import-csv :type="type" :multi="multi">
-        <template v-slot:title>Import GL transaction batch</template>
+        <template v-slot:title>{{ $t('Import GL transaction batch') }}</template>
         <template v-slot:info>The uploaded file contains the details of all
              transactions; the batch data is entered into the fields
              below.</template>

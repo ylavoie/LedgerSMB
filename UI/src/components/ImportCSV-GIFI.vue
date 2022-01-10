@@ -2,13 +2,13 @@
    <div id="import-gifi">
       <import-csv :type="type">
         <template v-slot:title>Import <abbr
-           title="General Index of Financial Information">GIFI</abbr> codes
+           :title="this.$t('General Index of Financial Information')">GIFI</abbr> codes
         </template>
         <template v-slot:info>
-           The uploaded file contains one GIFI code per line.
+           {{ $t('The uploaded file contains one GIFI code per line.') }}
         </template>
         <template v-slot:default>
-           The following fields are expected (in this order):
+           {{ $t('The following fields are expected (in this order):') }}
 
            <dl>
              <dt>code</dt>

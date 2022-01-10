@@ -2,12 +2,12 @@
    <div id="import-sic">
       <import-csv :type="type">
         <template v-slot:title>Import <abbr
-            title="Standard Industrial Classification">SIC</abbr> codes</template>
+            :title="this.$t('Standard Industrial Classification')">SIC</abbr> codes</template>
         <template v-slot:info>
-           The uploaded file contains one SIC code per line.
+           {{ $t('The uploaded file contains one SIC code per line.') }}
         </template>
         <template v-slot:default>
-           The following fields are expected (in this order):
+           {{ $t('The following fields are expected (in this order):') }}
 
            <dl>
              <dt>code</dt>

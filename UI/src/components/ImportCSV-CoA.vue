@@ -1,13 +1,13 @@
 <template>
    <div id="import-chart">
       <import-csv :type="type">
-        <template v-slot:title>Import Chart of Accounts
+        <template v-slot:title>{{ $t('Import Chart of Accounts') }}
         </template>
         <template v-slot:info>
-           The uploaded file contains one account or heading per line.
+           {{ $t('The uploaded file contains one account or heading per line.') }}
         </template>
         <template v-slot:default>
-           The following fields are expected (in this order):
+           {{ $t('The following fields are expected (in this order):') }}
 
            <dl>
              <dt>accno</dt>
