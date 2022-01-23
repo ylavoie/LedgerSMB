@@ -42,8 +42,8 @@ if (TARGET !== 'readme') {
         "dijit/form/Button",
         "dijit/form/CheckBox",
         "dijit/form/ComboBox",
-        "dijit/form/CurrencyTextBox",
-        "dijit/form/MultiSelect",
+        // "dijit/form/CurrencyTextBox", // Not used
+        // "dijit/form/MultiSelect", // Not used
         "dijit/form/NumberSpinner",
         "dijit/form/RadioButton",
         "dijit/form/Select",
