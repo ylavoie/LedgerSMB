@@ -422,12 +422,17 @@ if (TARGET !== 'readme') {
         resolve: {
             alias: {
                 "vue$": "vue/dist/vue.esm-bundler.js",
-                "@": path.join(__dirname, "UI/src/")
+                "@": "UI/src"
             },
-            extensions: [ ".js", ".vue" ],
+            extensions: [".vue", ".js", ".json", "..."],
             fallback: {
                 path: require.resolve("path-browserify")
-            }
+            },
+            modules: [
+                'UI/src',
+                'UI/js-src',
+                'node_modules'
+            ],
         },
 
         resolveLoader: {

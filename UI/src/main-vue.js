@@ -12,7 +12,7 @@ const dojoParser = require("dojo/parser");
 
 let app;
 let lsmbDirective = {
-    beforeMount(el, binding /* , vnode */) {
+    beforeMount(el, binding) {
         let handler = (event) => {
             /* eslint-disable no-param-reassign */
             binding.instance[binding.arg] = event.target.value;
