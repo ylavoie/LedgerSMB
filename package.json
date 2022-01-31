@@ -152,6 +152,7 @@
       "import/resolver": "webpack"
     },
     "plugins": [
+      "eslint-plugin",
       "amd",
       "compat",
       "import",
@@ -240,8 +241,7 @@
       "node/exports-style": ["error", "module.exports"],
       "node/no-missing-import": ["error"],
       "node/no-missing-require": ["error", {
-        "resolvePaths": ["UI/src/", "UI/js-src/"],
-        "tryExtensions": [".vue", ".js", ".json"]
+        "resolvePaths": ["UI/src/", "UI/js-src/"]
       }],
       "node/no-unpublished-import": "off",
       "node/no-unsupported-features/es-syntax": "off",
