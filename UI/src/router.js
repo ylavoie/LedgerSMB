@@ -2,17 +2,18 @@
 
 import { createRouter, createWebHashHistory } from "vue-router";
 
-import Home from "./components/Home";
 import ServerUI from "./components/ServerUI";
-import ImportCsvAaBatch from "./components/ImportCSV-AA-Batch";
-import ImportCsvCoA from "./components/ImportCSV-CoA";
-import ImportCsvGifi from "./components/ImportCSV-GIFI";
-import ImportCsvGl from "./components/ImportCSV-GL";
-import ImportCsvGlBatch from "./components/ImportCSV-GL-Batch";
-import ImportCsvGSO from "./components/ImportCSV-GSO";
-import ImportCsvInventory from "./components/ImportCSV-Inventory";
-import ImportCsvSic from "./components/ImportCSV-SIC";
-import ImportCsvTimecard from "./components/ImportCSV-Timecard";
+
+import Home from "./components/Home.vue";
+import ImportCsvAaBatch from "./components/ImportCSV-AA-Batch.vue";
+import ImportCsvCoA from "./components/ImportCSV-CoA.vue";
+import ImportCsvGifi from "./components/ImportCSV-GIFI.vue";
+import ImportCsvGl from "./components/ImportCSV-GL.vue";
+import ImportCsvGlBatch from "./components/ImportCSV-GL-Batch.vue";
+import ImportCsvGSO from "./components/ImportCSV-GSO.vue";
+import ImportCsvInventory from "./components/ImportCSV-Inventory.vue";
+import ImportCsvSic from "./components/ImportCSV-SIC.vue";
+import ImportCsvTimecard from "./components/ImportCSV-Timecard.vue";
 
 const routes = [
     { name: "home", path: "/", component: Home },

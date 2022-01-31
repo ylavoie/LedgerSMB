@@ -238,10 +238,7 @@
       "no-useless-escape": "error",
       "no-useless-return": "error",
       "node/exports-style": ["error", "module.exports"],
-      "node/no-missing-import": ["error", {
-        "resolvePaths": ["UI/src/", "UI/js-src/"],
-        "tryExtensions": [".vue", ".js", ".json"]
-      }],
+      "node/no-missing-import": ["error"],
       "node/no-missing-require": ["error", {
         "resolvePaths": ["UI/src/", "UI/js-src/"],
         "tryExtensions": [".vue", ".js", ".json"]
