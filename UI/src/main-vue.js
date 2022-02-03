@@ -25,7 +25,7 @@ let lsmbDirective = {
 
 if (document.getElementById("main")) {
     app = createApp({
-        beforeCreate() {
+        beforeMount() {
             // Load the user desired language if not default
             loadLocaleMessages(detectLanguage());
         },

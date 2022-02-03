@@ -15,9 +15,9 @@ export function detectLanguage() {
     try {
         language =
             (!!window.lsmbConfig.language && window.lsmbConfig.language) ||
-            (window.navigator.languages && window.navigator.languages[0]) ||
-            window.navigator.language ||
             window.navigator.userLanguage ||
+            window.navigator.language ||
+            (window.navigator.languages && window.navigator.languages[0]) ||
             "en";
         languages = [
             language,
@@ -48,13 +48,15 @@ const i18n = createI18n({
     }
 });
 
-export async function loadLocaleMessages(locale) {
+export function loadLocaleMessages(locale) {
     if (SUPPORT_LOCALES.includes(locale)) {
         // load locale messages
         if (!i18n.global.availableLocales.includes(locale)) {
             // load locale messages with dynamic import
-            const messages = await import(
-                /* webpackChunkName: "locale-[request]" */ `./locales/${locale}.json`
+            // TODO: Fix already outputted Dojo texts & labels
+            const messages = require(
+                /* webpackChunkName: "locale-[request]" */
+                `./locales/${locale}.json`
             );
 
             // set locale and locale messages
@@ -64,7 +66,7 @@ export async function loadLocaleMessages(locale) {
         document.querySelector("html").setAttribute("lang", locale);
 
         // Switch the whole application to this locale
-        i18n.global.locale.value = locale;
+        i18n.global.locale = locale;
     }
 }
 
