@@ -20,15 +20,15 @@
                         <div class="tabular col-1">
                             <div id="userpass">
                                 <div id="company_div">
-                                    <lsmb-combobox id = "s-user" name = "s_user"
+                                    <lsmb-combobox v-update:username=""
+                                        id = "s-user" name = "s_user"
                                         size="15" tabindex=1
                                         autocomplete="off" class="username"
                                         :label = "$t('DB admin login')"
                                         :options = "s_user_options"
-                                        :value = "s_user"
                                         :placeHolder = "$t('Select or Enter User')" />
-                                    <lsmb-password id="password" v-update:password=""
-                                                    type="password" name="password"
+                                    <lsmb-password id="s-password" v-update:password=""
+                                                    type="password" name="s_password"
                                                     size="20" :title="$t('Password')" :value="password"
                                                     tabindex="2" autocomplete="off" />
                                     <lsmb-text v-update:database="" type="text" name="database"
@@ -64,8 +64,8 @@ export default defineComponent({
     data() {
         return {
             version: window.lsmbConfig.version,
+            username: "",
             password: "",
-            s_user: "",
             database: "",
             inProgress: false,
             s_user_options: [
@@ -80,18 +80,17 @@ export default defineComponent({
     methods: {
         async _fetch(action) {
             this.inProgress = true;
-            console.log(this);
             let r = await fetch("setup.pl?action=authenticate&company=postgres",
             {
                 method: "POST",
                 body: JSON.stringify({
                     password: this.password,
-                    user: this.s_user
-                })/*,
+                    user: this.username
+                }),
                 headers: new Headers({
                     "X-Requested-With": "XMLHttpRequest",
                     "Content-Type": "application/json"
-                })*/
+                })
             });
             if (r.ok) {
                 window.location.href = "setup.pl?action=" + action +
