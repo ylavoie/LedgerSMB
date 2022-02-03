@@ -19,7 +19,7 @@ export class LsmbBaseInput extends LsmbDijit {
     }
 
     _valueAttrs() {
-        return ["title", "name", "tabindex", "value"]; // id, maxlength, aria-invalid missings
+        return ["title", "name", "placeHolder", "tabindex", "value"]; // id, maxlength, aria-invalid missings
     }
 
     _labelRoot() {
@@ -38,7 +38,19 @@ export class LsmbBaseInput extends LsmbDijit {
 
     static get observedAttributes() {
         /* "disabled" prop is inherited */
-        return ["disabled", "readonly", "required", "value"];
+        return ["disabled", "placeHolder", "readonly", "required", "value"];
+    }
+
+    get placeHolder() {
+        return this.getAttribute("placeHolder");
+    }
+
+    set placeHolder(newValue) {
+        if (newValue) {
+            this.setAttribute("placeHolder", newValue);
+        } else {
+            this.removeAttribute("placeHolder");
+        }
     }
 
     get readonly() {

@@ -25,7 +25,8 @@
                                         autocomplete="off" class="username"
                                         :label = "$t('DB admin login')"
                                         :options = "s_user_options"
-                                        :dojo-props = "{value: 's_user', placeHolder: $t('Select or Enter User')}" />
+                                        :value = "s_user"
+                                        :placeHolder = "$t('Select or Enter User')" />
                                     <lsmb-password id="password" v-update:password=""
                                                     type="password" name="password"
                                                     size="20" :title="$t('Password')" :value="password"
@@ -53,7 +54,7 @@
 <script>
 /* eslint-disable no-console, no-alert, no-unused-vars */
 import { defineComponent } from 'vue';
-import i18n, { detectLanguage, loadLocaleMessages } from '../i18n.js';
+import { detectLanguage, loadLocaleMessages } from '../i18n.js';
 
 export default defineComponent({
     name: 'SetupPage',
@@ -135,8 +136,8 @@ h2 {
 #logindiv {
     width: 350px;
 }
-.inputrows .buttons {
-    text-align: right;
+.buttons {
+    text-align: center;
     padding-right: 4ex;
     margin-top: 1ex
 }
