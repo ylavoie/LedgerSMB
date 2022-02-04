@@ -46,12 +46,12 @@
 
 <script>
 import { defineComponent, ref } from 'vue';
-import { loadLocaleMessages } from '../i18n.js';
+import { detectLanguage, loadLocaleMessages } from '../i18n.js';
 
 export default defineComponent({
    name: 'LoginPage',
    setup(){
-      loadLocaleMessages('fr_CA');
+      loadLocaleMessages(detectLanguage());
    },
    data() {
       return {
