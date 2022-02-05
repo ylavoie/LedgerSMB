@@ -28,6 +28,10 @@ export class LsmbComboBox extends LsmbBaseInput {
     set options(newValue) {
         this._options = newValue;
     }
+
+    get value() {
+        return this.dojoWidget ? this.dojoWidget.value : undefined;
+    }
 }
 
 customElements.define("lsmb-combobox", LsmbComboBox);
