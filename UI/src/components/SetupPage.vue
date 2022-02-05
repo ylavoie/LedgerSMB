@@ -20,7 +20,7 @@
                         <div class="tabular col-1">
                             <div id="userpass">
                                 <div id="company_div">
-                                    <lsmb-combobox v-update:username=""
+                                    <lsmb-combobox v-update:value="username"
                                         id = "s-user" name = "s_user"
                                         size="15" tabindex=1
                                         autocomplete="off" class="username"
@@ -80,16 +80,13 @@ export default defineComponent({
     methods: {
         async _fetch(action) {
             this.inProgress = true;
+            console.log(this);
             let r = await fetch("setup.pl?action=authenticate&company=postgres",
             {
                 method: "POST",
                 body: JSON.stringify({
                     password: this.password,
                     user: this.username
-                }),
-                headers: new Headers({
-                    "X-Requested-With": "XMLHttpRequest",
-                    "Content-Type": "application/json"
                 })
             });
             if (r.ok) {
