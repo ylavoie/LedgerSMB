@@ -20,20 +20,20 @@
                         <div class="tabular col-1">
                             <div id="userpass">
                                 <div id="company_div">
-                                    <lsmb-combobox v-update:value="username"
-                                        id = "s-user" name = "s_user"
-                                        size="15" tabindex=1
-                                        autocomplete="off" class="username"
-                                        :label = "$t('DB admin login')"
-                                        :options = "s_user_options"
-                                        :placeHolder = "$t('Select or Enter User')" />
+                                    <lsmb-combobox id="s-user" v-update:username=""
+                                                    name="s_user" size="15" tabindex=1
+                                                    autocomplete="off" class="username"
+                                                    :label="$t('DB admin login')"
+                                                    :value="username"
+                                                    :options="s_user_options"
+                                                    :placeHolder = "$t('Select or Enter User')" />
                                     <lsmb-password id="s-password" v-update:password=""
-                                                    type="password" name="s_password"
-                                                    size="20" :title="$t('Password')" :value="password"
+                                                    type="password" name="s_password" :value="password"
+                                                    size="20" :title="$t('Password')"
                                                     tabindex="2" autocomplete="off" />
                                     <lsmb-text v-update:database="" type="text" name="database"
-                                                size="15" :title="$t('Database')" tabindex="3"
-                                                :value="database" />
+                                                    size="15" :title="$t('Database')" tabindex="3"
+                                                    :value="database" />
                                 </div>
                             </div>
                         </div>
