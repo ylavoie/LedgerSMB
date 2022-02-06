@@ -41,11 +41,11 @@
                             <lsmb-button id="login" tabindex="4" @click="login">{{ $t('Login') }}</lsmb-button>
                             <lsmb-button id="create" tabindex="5" @click="login">{{ $t('Create') }}</lsmb-button>
                         </div>
+                        <div>Username: '{{ username }}'</div>
+                        <div>Password: '{{ password }}'</div>
+                        <div>Database: '{{ database }}'</div>
                     </div>
                 </div>
-            </div>
-            <div v-show="inProgress" id="loading">
-                {{ $t('Loading...') }}
             </div>
         </form>
     </div>
@@ -67,7 +67,6 @@ export default defineComponent({
             username: "",
             password: "",
             database: "",
-            inProgress: false,
             s_user_options: [
                 { text: "lsmb_dbadmin", id: "lsmb_dbadmin" },
                 { text: "postgres", id: "postgres" }
@@ -79,7 +78,6 @@ export default defineComponent({
     },
     methods: {
         async _fetch(action) {
-            this.inProgress = true;
             console.log(this);
             let r = await fetch("setup.pl?action=authenticate&company=postgres",
             {
@@ -98,7 +96,6 @@ export default defineComponent({
             } else {
                 alert(this.$t("Access denied ({ status }): Bad username/password", { status: r.status } ));
             }
-            this.inProgress = false;
         },
         login() {
             this._fetch('login');

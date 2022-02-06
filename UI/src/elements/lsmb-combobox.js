@@ -29,9 +29,11 @@ export class LsmbComboBox extends LsmbBaseInput {
         this._options = newValue;
     }
 
+    /*
+    // This works on input and change, is reactive, but ain't the proper way
     get value() {
         return this.dojoWidget ? this.dojoWidget.value : undefined;
-    }
+    }*/
 }
 
 customElements.define("lsmb-combobox", LsmbComboBox);
