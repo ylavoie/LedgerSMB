@@ -223,7 +223,7 @@ jobs:
       # Fix the condition to debug
       - name: Setup upterm session
         uses: lhotari/action-upterm@v1
-        if: ${{ matrix.BROWSER == 'chrome' && 0 }}
+        if: ${{ matrix.BROWSER == 'firefox' && 1 }}
 
       - name: Run Perl tests
         run: |
