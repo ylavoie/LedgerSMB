@@ -66,7 +66,7 @@
     "eslint-config-airbnb-base": "14.2.1",
     "eslint-config-eslint": "7.0.0",
     "eslint-config-prettier": "8.3.0",
-    "eslint-config-standard": "16.0.3",
+    "eslint-config-standard": "17.0.0",
     "eslint-friendly-formatter": "4.0.1",
     "eslint-plugin-amd": "1.1.0",
     "eslint-plugin-compat": "3.13.0",
