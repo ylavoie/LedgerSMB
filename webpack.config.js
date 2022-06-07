@@ -9,6 +9,7 @@ if (TARGET !== 'readme') {
     const glob = require("glob");
     const path = require("path");
     const webpack = require("webpack");
+    const webpackDevServer = require('webpack-dev-server');
 
     const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
     const CompressionPlugin = require("compression-webpack-plugin");
@@ -427,10 +428,42 @@ if (TARGET !== 'readme') {
 
         performance: { hints: prodMode ? false : "warning" },
 
-        devtool: prodMode ? "hidden-source-map" : "source-map"
+        devtool: prodMode ? "hidden-source-map" : "source-map",
+
+        devServer: {
+            allowedHosts: 'auto',
+            bonjour: true,
+            client: {
+                logging: 'info',
+                overlay: true,
+            },
+            compress: true,
+            hot: true,
+            port: 9000,
+            /*
+            proxy: {
+                '/': 'http://localhost:5000',
+            },
+            */
+            static: {
+                directory: path.join(__dirname, 'UI/js'),
+            },
+        }
     };
 
     module.exports = webpackConfigs;
+
+    if ( argv._ === 'serve' ) {
+        const compiler = webpack(webpackConfigs);
+        const devServerOptions = { ...webpackConfigs.devServer, open: true };
+        const server = new webpackDevServer(devServerOptions, compiler);
+
+        const runServer = async () => {
+            console.log('Starting server...');
+            await server.start();
+        };
+        runServer();
+    }
 }
 else{
     const { merge } = require("webpack-merge");
