@@ -192,6 +192,7 @@ if (TARGET !== "readme") {
         loaderConfig: require("./UI/js-src/lsmb/webpack.loaderConfig.js"),
         environment: { dojoRoot: "UI/js" }, // used at run time for non-packed resources (e.g. blank.gif)
         buildEnvironment: { dojoRoot: "node_modules" }, // used at build time
+        //locales: ["en"],
         locales: getPOFilenames("locale/po", ".po"),
         noConsole: true
     };
@@ -380,12 +381,23 @@ if (TARGET !== "readme") {
                         );
                     },
                     name(module) {
+                        // const nlsName = module.context.match(
+                        //     /[\\/]dojo[\\/]cldr[\\/]nls[\\/]([a-zA-Z0-9]+)/
+                        // );
+                        // if (nlsName) {
+                        //     return `npm.dojo-nls`;
+                        // }
+                        if (module.context.match(/cldr[\\/]/)) {
+                            return `npm.dojo-cldr`;
+                        }
                         const packageName = module.context.match(
                             /[\\/]node_modules[\\/](.*?)([\\/]|$)/
                         )[1];
                         return `npm.${packageName.replace("@", "")}`;
                     },
                     chunks: "all"
+                    //,
+                    //enforce: true
                 }
             }
         }
