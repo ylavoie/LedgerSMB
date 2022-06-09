@@ -199,7 +199,7 @@ if (TARGET !== "readme") {
         loaderConfig: require("./UI/js-src/lsmb/webpack.loaderConfig.js"),
         environment: { dojoRoot: "UI/js" }, // used at run time for non-packed resources (e.g. blank.gif)
         buildEnvironment: { dojoRoot: "node_modules" }, // used at build time
-        locales: getPOFilenames("locale/po", ".po"),
+        locales: [], // getPOFilenames("locale/po", ".po"),
         noConsole: true
     };
 
