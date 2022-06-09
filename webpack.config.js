@@ -327,7 +327,7 @@ if (TARGET !== "readme") {
             analyzerHost: "0.0.0.0",
             analyzerMode: prodMode ? "disabled" : "json",
             openAnalyzer: false,
-            generateStatsFile: !prodMode,
+            generateStatsFile: 1,
             statsFilename: "../../logs/stats.json",
             reportFilename: "../../logs/report.json"
         }),
@@ -380,14 +380,16 @@ if (TARGET !== "readme") {
         chunkIds: "named", // Keep names to load only 1 theme
         emitOnErrors: false,
         minimize: prodMode,
-        minimizer: [
-            `...`,
-            new CssMinimizerPlugin({
-                parallel: parallelJobs
-            })
-        ],
+        minimizer: prodMode
+            ? [
+                  `...`,
+                  new CssMinimizerPlugin({
+                      parallel: parallelJobs
+                  })
+              ]
+            : [],
         moduleIds: "deterministic",
-        runtimeChunk: "multiple",
+        runtimeChunk: prodMode ? "multiple" : false,
         splitChunks: prodMode
             ? {
                   cacheGroups: {
@@ -404,8 +406,11 @@ if (TARGET !== "readme") {
                               );
                           },
                           name(module) {
-                              if (module.context.match(/.+cldr[\\/]/)) {
-                                  return `npm.dojo-cldr`;
+                              const nlsName = module.context.match(
+                                  /[\\/](dojo[\\/]cldr|dijit)[\\/]nls[\\/]([a-zA-Z0-9-]+)/
+                              );
+                              if (nlsName) {
+                                  return `npm.${nlsName[1]}-nls.${nlsName[2]}`;
                               }
                               const packageName = module.context.match(
                                   /[\\/]node_modules[\\/](.*?)([\\/]|$)/
@@ -483,17 +488,17 @@ if (TARGET !== "readme") {
             allowedHosts: "all", // Replace with docker parent and localhost
             client: {
                 logging: "info",
-                overlay: false  // true would be nice when duplicates sources is fixed
+                overlay: false // true would be nice when duplicates sources is fixed
             },
             compress: true,
             devMiddleware: {
-                publicPath: 'js/',
-                writeToDisk: true,
+                publicPath: "js/",
+                writeToDisk: true
             },
             hot: true,
             port: 9000,
             proxy: {
-                '/': 'http://localhost:5762',
+                "/": "http://localhost:5762"
             },
             static: {
                 directory: path.join(__dirname, "/UI")
