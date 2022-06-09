@@ -388,41 +388,35 @@ if (TARGET !== "readme") {
         ],
         moduleIds: "deterministic",
         runtimeChunk: "multiple",
-        splitChunks: {
-            cacheGroups: {
-                node_modules: {
-                    test(module) {
-                        // `module.resource` contains the absolute path of the file on disk.
-                        // Note the usage of `path.sep` instead of / or \, for cross-platform compatibility.
-                        return (
-                            module.resource &&
-                            !module.resource.endsWith(".css") &&
-                            module.resource.includes(
-                                `${path.sep}node_modules${path.sep}`
-                            )
-                        );
-                    },
-                    name(module) {
-                        // const nlsName = module.context.match(
-                        //     /[\\/]dojo[\\/]cldr[\\/]nls[\\/]([a-zA-Z0-9]+)/
-                        // );
-                        // if (nlsName) {
-                        //     return `npm.dojo-nls`;
-                        // }
-                        if (module.context.match(/.+cldr[\\/]/)) {
-                            return `npm.dojo-cldr`;
-                        }
-                        const packageName = module.context.match(
-                            /[\\/]node_modules[\\/](.*?)([\\/]|$)/
-                        )[1];
-                        return `npm.${packageName.replace("@", "")}`;
-                    },
-                    chunks: "all"
-                    //,
-                    //enforce: true
-                }
-            }
-        }
+        splitChunks: prodMode
+            ? {
+                  cacheGroups: {
+                      node_modules: {
+                          test(module) {
+                              // `module.resource` contains the absolute path of the file on disk.
+                              // Note the usage of `path.sep` instead of / or \, for cross-platform compatibility.
+                              return (
+                                  module.resource &&
+                                  !module.resource.endsWith(".css") &&
+                                  module.resource.includes(
+                                      `${path.sep}node_modules${path.sep}`
+                                  )
+                              );
+                          },
+                          name(module) {
+                              if (module.context.match(/.+cldr[\\/]/)) {
+                                  return `npm.dojo-cldr`;
+                              }
+                              const packageName = module.context.match(
+                                  /[\\/]node_modules[\\/](.*?)([\\/]|$)/
+                              )[1];
+                              return `npm.${packageName.replace("@", "")}`;
+                          },
+                          chunks: "all"
+                      }
+                  }
+              }
+            : false
     };
 
     /* WEBPACK CONFIG */
