@@ -1,5 +1,3 @@
-/* stylelint-disable max-line-length */
-
 /* Gnome Stylesheet for LedgerSMB
 Mixed by: Andres Basile <basile@gmail.com>
 Original file: ledgersmb.css
@@ -11,18 +9,9 @@ This package is free software; you can redistribute it and/or modify it under th
 @import "system/global.css";
 
 /* general stuff */
-
-a:link {
-    text-decoration: none;
-}
-
-a:visited {
-    text-decoration: none;
-}
-
-a:active {
-    text-decoration: underline;
-}
+a:link { text-decoration: none; }
+a:visited { text-decoration: none; }
+a:active { text-decoration: underline; }
 
 a:hover {
     background-color: transparent;
@@ -58,23 +47,22 @@ ul.submenu {
 }
 
 li.menu_closed {
-    background: #999 url("gnome/zoom-in.png") top left no-repeat;
+    background: #999 url('gnome/zoom-in.png') top left no-repeat;
     padding-left: 18px;
 }
 
 li.menu_open {
-    background: #bbb url("gnome/zoom-out.png") top left no-repeat;
+    background: #bbb url('gnome/zoom-out.png') top left no-repeat;
     padding-left: 18px;
 }
 
 li.menu_item {
-    background: #ddd url("gnome/edit-redo.png") top left no-repeat;
+    background: #ddd url('gnome/edit-redo.png') top left no-repeat;
     padding-left: 18px;
 }
 
 /* Reports
 Reportes */
-
 li#menu_4,
 li#menu_13,
 li#menu_24,
@@ -88,12 +76,11 @@ li#menu_103,
 li#menu_109,
 li#menu_226,
 li#menu_236 {
-    background: #eee url("gnome/address-book-new.png") top left no-repeat;
+    background: #eee url('gnome/address-book-new.png') top left no-repeat;
 }
 
 /* Search
 Buscar */
-
 li#menu_14,
 li#menu_33,
 li#menu_49,
@@ -101,20 +88,18 @@ li#menu_104,
 li#menu_221,
 li#menu_233,
 li#menu_222 {
-    background: #eee url("gnome/system-search.png") center left no-repeat;
+    background: #eee url('gnome/system-search.png') center left no-repeat;
 }
 
 /* History
 Historial */
-
 li#menu_15,
 li#menu_34 {
-    background: #eee url("gnome/document-open-recent.png") center left no-repeat;
+    background: #eee url('gnome/document-open-recent.png') center left no-repeat;
 }
 
 /* Add
 Nuevo */
-
 li#menu_2,
 li#menu_12,
 li#menu_22,
@@ -153,12 +138,11 @@ li#menu_68,
 li#menu_69,
 li#menu_51,
 li#menu_52 {
-    background: #eee url("gnome/list-add.png") center left no-repeat;
+    background: #eee url('gnome/list-add.png') center left no-repeat;
 }
 
 /* List
 Lista */
-
 li#menu_138,
 li#menu_140,
 li#menu_143,
@@ -168,11 +152,10 @@ li#menu_152,
 li#menu_155,
 li#menu_225,
 li#menu_231 {
-    background: #eee url("gnome/libreoffice-text.png") top left no-repeat;
+    background: #eee url('gnome/libreoffice-text.png') top left no-repeat;
 }
 
 /* Templates */
-
 li#menu_157,
 li#menu_158,
 li#menu_159,
@@ -206,28 +189,25 @@ li#menu_186,
 li#menu_187,
 li#menu_242,
 li#menu_189 {
-    background: #eee url("gnome/text-x-preview.png") top left no-repeat;
+    background: #eee url('gnome/text-x-preview.png') top left no-repeat;
 }
 
 /* Contacts
 Contactos */
-
 li#menu_11,
 li#menu_30,
 li#menu_47 {
-    background: #eee url("gnome/user-info.png") top left no-repeat;
+    background: #eee url('gnome/user-info.png') top left no-repeat;
 }
 
 /* Inventory
 Inventario */
-
 li#menu_114 {
-    background: #eee url("gnome/package-x-generic.png") center left no-repeat;
+    background: #eee url('gnome/package-x-generic.png') center left no-repeat;
 }
 
 /* Printing
  */
-
 li#menu_114,
 li#menu_117,
 li#menu_118,
@@ -240,43 +220,38 @@ li#menu_124,
 li#menu_125,
 li#menu_126,
 li#menu_127 {
-    background: #eee url("gnome/document-print.png") center left no-repeat;
+    background: #eee url('gnome/document-print.png') center left no-repeat;
 }
 
 /* Recurrents
 Recurrentes */
-
 li#menu_115 {
-    background: #eee url("gnome/view-refresh.png") center left no-repeat;
+    background: #eee url('gnome/view-refresh.png') center left no-repeat;
 }
 
 /* Taxes
 Impuestos */
-
 li#menu_130 {
-    background: #eee url("gnome/face-angry.png") top left no-repeat;
+    background: #eee url('gnome/face-angry.png') top left no-repeat;
 }
 
 /* Preferences
 Preferencias */
-
 li#menu_191,
 li#menu_131 {
-    background: #eee url("gnome/preferences-system.png") center left no-repeat;
+    background: #eee url('gnome/preferences-system.png') center left no-repeat;
 }
 
 /* New Window
 Nueva Ventana */
-
 li#menu_192 {
-    background: #eee url("gnome/window-new.png") center left no-repeat;
+    background: #eee url('gnome/window-new.png') center left no-repeat;
 }
 
 /* Logout
 Salir */
-
 li#menu_193 {
-    background: #eee url("gnome/system-log-out.png") center left no-repeat;
+    background: #eee url('gnome/system-log-out.png') center left no-repeat;
 }
 
 span.warning_label {
@@ -302,7 +277,6 @@ th {
 }
 
 /* login and admin */
-
 .login {
     font-family: Verdana, Arial, Helvetica, sans-serif;
 }
@@ -428,14 +402,10 @@ table.dynatable tr:nth-child(even) {
 }
 
 .listrow1:hover,
-table.dynatable tbody tr:nth-child(odd):hover {
-    background-color: #a4a4a6;
-}
+table.dynatable tbody tr:nth-child(odd):hover { background-color: #a4a4a6; }
 
 .listrow0:hover,
-table.dynatable tbody tr:nth-child(even):hover {
-    background-color: #aaa2a0;
-}
+table.dynatable tbody tr:nth-child(even):hover { background-color: #aaa2a0; }
 
 .listsubtotal {
     background-color: #5a7d9b;
@@ -484,8 +454,7 @@ select {
     font-size: 10pt;
 }
 
-.plus0 {
-    /* font color for negative numbers */
+.plus0 {    /* font color for negative numbers */
     color: red;
 }
 
@@ -542,15 +511,13 @@ tr.warning {
 /* media stuff */
 
 @media screen {
-    .noscreen {
-        /* items with this class won't display */
+    .noscreen {   /* items with this class won't display */
         display: none;
     }
 }
 
 @media print {
-    .noprint {
-        /* items with this class won't print */
+    .noprint {   /* items with this class won't print */
         display: none;
     }
 }
@@ -571,10 +538,7 @@ div.autocomplete ul {
     margin: 0;
     padding: 0;
 }
-
-div.autocomplete ul li.selected {
-    background-color: #ccc;
-}
+div.autocomplete ul li.selected { background-color: #ccc; }
 
 div.autocomplete ul li {
     cursor: pointer;

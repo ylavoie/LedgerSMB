@@ -1,7 +1,5 @@
 /* stylesheet for ledger-smb */
-
 /* stylelint-disable no-descending-specificity, plugin/no-unsupported-browser-features */
-
 @import "system/global.css";
 
 td.money {
@@ -9,18 +7,9 @@ td.money {
 }
 
 /* general stuff */
-
-a:link {
-    text-decoration: none;
-}
-
-a:visited {
-    text-decoration: none;
-}
-
-a:active {
-    text-decoration: underline;
-}
+a:link { text-decoration: none; }
+a:visited { text-decoration: none; }
+a:active { text-decoration: underline; }
 
 a:hover {
     background-color: transparent;
@@ -69,7 +58,6 @@ table.criteria td {
 }
 
 /* login and admin */
-
 .login {
     font-family: Verdana, Arial, Helvetica, sans-serif;
 }
@@ -244,14 +232,10 @@ table.dynatable tr:nth-child(even) {
 }
 
 .listrow1,
-table.dynatable tbody tr:nth-child(odd):hover {
-    background-color: #bbb;
-}
+table.dynatable tbody tr:nth-child(odd):hover { background-color: #bbb; }
 
 .listrow0,
-table.dynatable tbody tr:nth-child(even):hover {
-    background-color: #bbb;
-}
+table.dynatable tbody tr:nth-child(even):hover { background-color: #bbb; }
 
 .listsubtotal,
 table.dynatable tr.sublisttotal {
@@ -301,8 +285,7 @@ select {
     font-size: 10pt;
 }
 
-.plus0 {
-    /* font color for negative numbers */
+.plus0 {    /* font color for negative numbers */
     color: red;
 }
 
@@ -389,15 +372,13 @@ input[type="checkbox"].remove:checked::before {
 /* media stuff */
 
 @media screen {
-    .noscreen {
-        /* items with this class won't display */
+    .noscreen {   /* items with this class won't display */
         display: none;
     }
 }
 
 @media print {
-    .noprint {
-        /* items with this class won't print */
+    .noprint {   /* items with this class won't print */
         display: none;
     }
 }
@@ -418,10 +399,7 @@ div.autocomplete ul {
     margin: 0;
     padding: 0;
 }
-
-div.autocomplete ul li.selected {
-    background-color: #ccc;
-}
+div.autocomplete ul li.selected { background-color: #ccc; }
 
 div.autocomplete ul li {
     cursor: pointer;

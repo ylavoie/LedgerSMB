@@ -100,6 +100,7 @@
     "path-browserify": "1.0.1",
     "prettier": "2.6.2",
     "stylelint": "14.9.1",
+    "stylelint-webpack-plugin": "3.3.0",
     "stylelint-config-standard": "26.0.0",
     "stylelint-declaration-block-no-ignored-properties": "2.5.0",
     "stylelint-no-browser-hacks": "1.2.1",
@@ -285,9 +286,6 @@
     "defaultSeverity": "warning",
     "extends": "stylelint-config-standard",
     "plugins": [
-      "stylelint-declaration-block-no-ignored-properties",
-      "stylelint-no-browser-hacks/lib",
-      "stylelint-no-nested-media",
       "stylelint-no-unsupported-browser-features",
       "stylelint-order"
     ],
