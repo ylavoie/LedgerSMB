@@ -16,7 +16,6 @@ if (TARGET !== "readme") {
     const CopyWebpackPlugin = require("copy-webpack-plugin");
     const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
     const DojoWebpackPlugin = require("dojo-webpack-plugin");
-    const { DuplicatesPlugin } = require("inspectpack/plugin");
     const ESLintPlugin = require("eslint-webpack-plugin");
     const HtmlWebpackPlugin = require("html-webpack-plugin");
     const MiniCssExtractPlugin = require("mini-css-extract-plugin");
@@ -24,6 +23,7 @@ if (TARGET !== "readme") {
     const UnusedWebpackPlugin = require("unused-webpack-plugin");
     const VirtualModulesPlugin = require("webpack-virtual-modules");
     const { VueLoaderPlugin } = require("vue-loader");
+    const { WebpackDeduplicationPlugin } = require('webpack-deduplication-plugin');
 
     const { CleanWebpackPlugin } = require("clean-webpack-plugin"); // installed via npm
 
@@ -199,7 +199,7 @@ if (TARGET !== "readme") {
         loaderConfig: require("./UI/js-src/lsmb/webpack.loaderConfig.js"),
         environment: { dojoRoot: "UI/js" }, // used at run time for non-packed resources (e.g. blank.gif)
         buildEnvironment: { dojoRoot: "node_modules" }, // used at build time
-        locales: [], // getPOFilenames("locale/po", ".po"),
+        locales: getPOFilenames("locale/po", ".po"),
         noConsole: true
     };
 
@@ -327,18 +327,12 @@ if (TARGET !== "readme") {
             analyzerHost: "0.0.0.0",
             analyzerMode: prodMode ? "disabled" : "json",
             openAnalyzer: false,
-            generateStatsFile: 1,
+            generateStatsFile: !prodMode,
             statsFilename: "../../logs/stats.json",
             reportFilename: "../../logs/report.json"
         }),
 
-        // Warn on duplication of code
-        new DuplicatesPlugin({
-            // Emit compilation warning or error? (Default: `false`)
-            emitErrors: false,
-            // Display full duplicates information? (Default: `false`)
-            verbose: true
-        }),
+        new WebpackDeduplicationPlugin({}),
 
         // Generate GZ versions of compiled code to sppedup download
         new CompressionPlugin({
@@ -380,48 +374,49 @@ if (TARGET !== "readme") {
         chunkIds: "named", // Keep names to load only 1 theme
         emitOnErrors: false,
         minimize: prodMode,
-        minimizer: prodMode
-            ? [
-                  `...`,
-                  new CssMinimizerPlugin({
-                      parallel: parallelJobs
-                  })
-              ]
-            : [],
+        minimizer: [
+            `...`,
+            new CssMinimizerPlugin({
+                parallel: parallelJobs
+            })
+        ],
         moduleIds: "deterministic",
-        runtimeChunk: prodMode ? "multiple" : false,
-        splitChunks: prodMode
-            ? {
-                  cacheGroups: {
-                      node_modules: {
-                          test(module) {
-                              // `module.resource` contains the absolute path of the file on disk.
-                              // Note the usage of `path.sep` instead of / or \, for cross-platform compatibility.
-                              return (
-                                  module.resource &&
-                                  !module.resource.endsWith(".css") &&
-                                  module.resource.includes(
-                                      `${path.sep}node_modules${path.sep}`
-                                  )
-                              );
-                          },
-                          name(module) {
-                              const nlsName = module.context.match(
-                                  /[\\/](dojo[\\/]cldr|dijit)[\\/]nls[\\/]([a-zA-Z0-9-]+)/
-                              );
-                              if (nlsName) {
-                                  return `npm.${nlsName[1]}-nls.${nlsName[2]}`;
-                              }
-                              const packageName = module.context.match(
-                                  /[\\/]node_modules[\\/](.*?)([\\/]|$)/
-                              )[1];
-                              return `npm.${packageName.replace("@", "")}`;
-                          },
-                          chunks: "all"
-                      }
-                  }
-              }
-            : false
+        runtimeChunk: "multiple",
+        splitChunks: {
+            cacheGroups: {
+                node_modules: {
+                    test(module) {
+                        // `module.resource` contains the absolute path of the file on disk.
+                        // Note the usage of `path.sep` instead of / or \, for cross-platform compatibility.
+                        return (
+                            module.resource &&
+                            !module.resource.endsWith(".css") &&
+                            module.resource.includes(
+                                `${path.sep}node_modules${path.sep}`
+                            )
+                        );
+                    },
+                    name(module) {
+                        // const nlsName = module.context.match(
+                        //     /[\\/]dojo[\\/]cldr[\\/]nls[\\/]([a-zA-Z0-9]+)/
+                        // );
+                        // if (nlsName) {
+                        //     return `npm.dojo-nls`;
+                        // }
+                        if (module.context.match(/.+cldr[\\/]/)) {
+                            return `npm.dojo-cldr`;
+                        }
+                        const packageName = module.context.match(
+                            /[\\/]node_modules[\\/](.*?)([\\/]|$)/
+                        )[1];
+                        return `npm.${packageName.replace("@", "")}`;
+                    },
+                    chunks: "all"
+                    //,
+                    //enforce: true
+                }
+            }
+        }
     };
 
     /* WEBPACK CONFIG */
@@ -488,17 +483,17 @@ if (TARGET !== "readme") {
             allowedHosts: "all", // Replace with docker parent and localhost
             client: {
                 logging: "info",
-                overlay: false // true would be nice when duplicates sources is fixed
+                overlay: false  // true would be nice when duplicates sources is fixed
             },
             compress: true,
             devMiddleware: {
-                publicPath: "js/",
-                writeToDisk: true
+                publicPath: 'js/',
+                writeToDisk: true,
             },
             hot: true,
             port: 9000,
             proxy: {
-                "/": "http://localhost:5762"
+                '/': 'http://localhost:5762',
             },
             static: {
                 directory: path.join(__dirname, "/UI")
