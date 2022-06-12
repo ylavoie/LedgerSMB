@@ -1,3 +1,5 @@
+/* stylelint-disable max-line-length */
+
 /* Gnome Stylesheet for LedgerSMB
 Mixed by: Andres Basile <basile@gmail.com>
 Original file: ledgersmb.css
@@ -47,17 +49,17 @@ ul.submenu {
 }
 
 li.menu_closed {
-    background: #999 url('gnome/zoom-in.png') top left no-repeat;
+    background: #999 url("gnome/zoom-in.png") top left no-repeat;
     padding-left: 18px;
 }
 
 li.menu_open {
-    background: #bbb url('gnome/zoom-out.png') top left no-repeat;
+    background: #bbb url("gnome/zoom-out.png") top left no-repeat;
     padding-left: 18px;
 }
 
 li.menu_item {
-    background: #ddd url('gnome/edit-redo.png') top left no-repeat;
+    background: #ddd url("gnome/edit-redo.png") top left no-repeat;
     padding-left: 18px;
 }
 
@@ -76,7 +78,7 @@ li#menu_103,
 li#menu_109,
 li#menu_226,
 li#menu_236 {
-    background: #eee url('gnome/address-book-new.png') top left no-repeat;
+    background: #eee url("gnome/address-book-new.png") top left no-repeat;
 }
 
 /* Search
@@ -88,14 +90,14 @@ li#menu_104,
 li#menu_221,
 li#menu_233,
 li#menu_222 {
-    background: #eee url('gnome/system-search.png') center left no-repeat;
+    background: #eee url("gnome/system-search.png") center left no-repeat;
 }
 
 /* History
 Historial */
 li#menu_15,
 li#menu_34 {
-    background: #eee url('gnome/document-open-recent.png') center left no-repeat;
+    background: #eee url("gnome/document-open-recent.png") center left no-repeat;
 }
 
 /* Add
@@ -138,7 +140,7 @@ li#menu_68,
 li#menu_69,
 li#menu_51,
 li#menu_52 {
-    background: #eee url('gnome/list-add.png') center left no-repeat;
+    background: #eee url("gnome/list-add.png") center left no-repeat;
 }
 
 /* List
@@ -152,7 +154,7 @@ li#menu_152,
 li#menu_155,
 li#menu_225,
 li#menu_231 {
-    background: #eee url('gnome/libreoffice-text.png') top left no-repeat;
+    background: #eee url("gnome/libreoffice-text.png") top left no-repeat;
 }
 
 /* Templates */
@@ -189,7 +191,7 @@ li#menu_186,
 li#menu_187,
 li#menu_242,
 li#menu_189 {
-    background: #eee url('gnome/text-x-preview.png') top left no-repeat;
+    background: #eee url("gnome/text-x-preview.png") top left no-repeat;
 }
 
 /* Contacts
@@ -197,13 +199,13 @@ Contactos */
 li#menu_11,
 li#menu_30,
 li#menu_47 {
-    background: #eee url('gnome/user-info.png') top left no-repeat;
+    background: #eee url("gnome/user-info.png") top left no-repeat;
 }
 
 /* Inventory
 Inventario */
 li#menu_114 {
-    background: #eee url('gnome/package-x-generic.png') center left no-repeat;
+    background: #eee url("gnome/package-x-generic.png") center left no-repeat;
 }
 
 /* Printing
@@ -220,38 +222,38 @@ li#menu_124,
 li#menu_125,
 li#menu_126,
 li#menu_127 {
-    background: #eee url('gnome/document-print.png') center left no-repeat;
+    background: #eee url("gnome/document-print.png") center left no-repeat;
 }
 
 /* Recurrents
 Recurrentes */
 li#menu_115 {
-    background: #eee url('gnome/view-refresh.png') center left no-repeat;
+    background: #eee url("gnome/view-refresh.png") center left no-repeat;
 }
 
 /* Taxes
 Impuestos */
 li#menu_130 {
-    background: #eee url('gnome/face-angry.png') top left no-repeat;
+    background: #eee url("gnome/face-angry.png") top left no-repeat;
 }
 
 /* Preferences
 Preferencias */
 li#menu_191,
 li#menu_131 {
-    background: #eee url('gnome/preferences-system.png') center left no-repeat;
+    background: #eee url("gnome/preferences-system.png") center left no-repeat;
 }
 
 /* New Window
 Nueva Ventana */
 li#menu_192 {
-    background: #eee url('gnome/window-new.png') center left no-repeat;
+    background: #eee url("gnome/window-new.png") center left no-repeat;
 }
 
 /* Logout
 Salir */
 li#menu_193 {
-    background: #eee url('gnome/system-log-out.png') center left no-repeat;
+    background: #eee url("gnome/system-log-out.png") center left no-repeat;
 }
 
 span.warning_label {

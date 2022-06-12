@@ -187,14 +187,14 @@ body.menu,
 }
 
 .menu_open {
-    background-image: url('../images/up.gif');
+    background-image: url("../images/up.gif");
     background-position: 0 0;
     background-repeat: no-repeat;
     padding-left: 12px;
 }
 
 .menu_closed {
-    background-image: url('../images/down.gif');
+    background-image: url("../images/down.gif");
     background-position: 0 0;
     background-repeat: no-repeat;
     padding-left: 12px;
@@ -398,7 +398,7 @@ span.no-submit {
 }
 
 td.cleared-future {
-    background: wvar(--td-cleared-future-bg);
+    background: var(--td-cleared-future-bg);
     color: var(--td-cleared-future-clr);
     font-weight: bold;
 }
