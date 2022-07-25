@@ -547,7 +547,7 @@ RETURNS SETOF aa_transactions_line LANGUAGE SQL AS $$
 SELECT a.id, a.invoice, eeca.id, eca.meta_number, eeca.name,
        a.transdate, a.invnumber, a.ordnumber, a.ponumber, a.curr,
        a.amount_bc as amount, a.netamount_bc as netamount,
-       a.amount_bc - a.netamount_bc as tax, a.amount_bc - p.due,
+       t_tax_selected as tax, a.amount_bc - p.due,
        p.due, p.last_payment,
        a.duedate, a.notes,
        a.till, eee.name as employee, mee.name as manager, a.shippingpoint,
@@ -576,6 +576,26 @@ SELECT a.id, a.invoice, eeca.id, eca.meta_number, eeca.name,
          WHERE l.description IN ('AR', 'AP')
       GROUP BY ac.trans_id
        ) p ON p.trans_id = a.id
+  LEFT
+  JOIN (SELECT trans_id, SUM(amount_bc)
+               as tax_selected
+          FROM acc_trans ac
+          JOIN account_link l ON ac.chart_id = l.account_id
+         WHERE l.description IN ('AR_tax', 'AP_tax')
+       AND (in_taxable IS NULL
+            OR (in_taxable
+              AND (in_tax_account_id IS NULL
+                 OR chart_id = in_tax_account_id)
+            ))
+            OR (NOT in_taxable
+                  AND NOT EXISTS (SELECT 1
+                                    FROM acc_trans a
+                                    JOIN account_link al
+                                      ON al.account_id = ac.chart_id
+                                   WHERE ac.trans_id = a.trans_id
+                                     AND al.description ilike '%tax'))
+      GROUP BY ac.trans_id
+       ) t ON t.trans_id = a.id
   LEFT
   JOIN entity_employee ee ON ee.entity_id = a.person_id
   LEFT
