@@ -155,7 +155,7 @@ jobs:
       BROWSER: ${{ matrix.BROWSER }}
       COA_TESTING: ${{ matrix.COA_TESTING }}
       DB_TESTING: ${{ matrix.DB_TESTING }}
-      DEVEL_COVER_OPTIONS: -silent,1,+ignore,(^x?t/|^local/|^utils/|\.lttc\$|^/usr/|^/opt/|starman\$\$),-summary,1
+      DEVEL_COVER_OPTIONS: -silent,1,+ignore,(^x?t/|^local/|^utils/|\.lttc$|^/usr/|^/opt/|starman\$\$),-summary,1
       JOB_COUNT: 5
       LSMB_BASE_URL: http://lsmb:5000
       LSMB_NEW_DB: lsmb_test
@@ -262,8 +262,9 @@ jobs:
 
       - name: Setup coverage
         run: |
-          echo "PERL5LIB=$GITHUB_WORKSPACE/local/lib/perl5/x86_64-linux:$PERL5LIB" >> $GITHUB_ENV
-          echo "PERL5OPT=-MSyntax::Keyword::Try::Deparse -MDevel::Cover=${{ env.DEVEL_COVER_OPTIONS }}" >> $GITHUB_ENV
+          echo "STARMAN_DEVEL_COVER_OPTIONS=-MDevel::Cover=${{ env.DEVEL_COVER_OPTIONS }}" >> $GITHUB_ENV
+          echo "YATH_DEVEL_COVER_OPTIONS=--cover=${{ env.DEVEL_COVER_OPTIONS }}" >> $GITHUB_ENV
+          echo "JOB_COUNT=2" >> $GITHUB_ENV
           echo "YATH_DEVEL_COVER_OPTIONS=--cover=\"${{ env.DEVEL_COVER_OPTIONS }}\"" >> $GITHUB_ENV
           echo "JOB_COUNT=2" >> $GITHUB_ENV
           echo "UITESTS=--coverage" >> $GITHUB_ENV
