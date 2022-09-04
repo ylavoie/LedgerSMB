@@ -47,11 +47,6 @@
   "browserslist": [
     "supports es6-module and supports async-functions and supports xhr2 and supports bloburls and supports css-variables and supports css3-boxsizing and supports border-radius and supports fetch and supports classlist and supports multicolumn and not edge <= 18"
   ],
-  "bugs": "https://github.com/ledgersmb/LedgerSMB/issues",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ledgersmb/LedgerSMB.git"
-  },
   "devDependencies": {
     "@babel/core": "7.18.10",
     "@babel/eslint-parser": "7.18.9",
@@ -69,6 +64,7 @@
     "clean-webpack-plugin": "4.0.0",
     "compression-webpack-plugin": "10.0.0",
     "copy-webpack-plugin": "11.0.0",
+    "coveralls": "^3.1.1",
     "css-loader": "6.7.1",
     "css-minimizer-webpack-plugin": "4.0.0",
     "cssnano": "5.1.13",

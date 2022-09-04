@@ -300,6 +300,13 @@ jobs:
         run: |
           PWD=$HOME
           make jstest
+        if: ${{ matrix.COVERAGE != 1 }}
+
+      - name: Run API tests with coverage
+        run: |
+          PWD=$HOME
+          make jstest TESTS="--coverage"
+        if: ${{ matrix.COVERAGE }}
 
       - name: Run Coverage Perl tests
         run: |
@@ -319,6 +326,16 @@ jobs:
           cover -report text > logs/coverage.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ matrix.COVERAGE }}
+
+      - name: Upload UI coverage data
+        uses: coverallsapp/github-action@v1.1.0
+        env:
+          NODE_COVERALLS_DEBUG: 1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          parallel: true
+          flag-name: run-${{ matrix.test_number }}
         if: ${{ matrix.COVERAGE }}
 
       - name: Collect docker logs

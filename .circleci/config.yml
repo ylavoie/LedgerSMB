@@ -11,6 +11,11 @@ aliases:
     store_artifacts:
       path: /tmp/artifact/
 
+# UI Coverage orbs
+orbs:
+  coveralls: coveralls/coveralls@1.0.5
+  node: circleci/node@1.1.6
+      
 # Reuseable commands
 commands:
 
@@ -36,9 +41,15 @@ commands:
       - run:
           name: Run API tests
           command: |
-            echo "PWD=${CIRCLE_WORKING_DIRECTORY/#\~/$HOME}" >> $BASH_ENV
-            make jstest
-    
+            if [ "x$COVERAGE" == "x1" ]
+            then
+              echo "PWD=${CIRCLE_WORKING_DIRECTORY/#\~/$HOME}" >> $BASH_ENV
+              make jstest TESTS="--coverage"
+            else
+              echo "PWD=${CIRCLE_WORKING_DIRECTORY/#\~/$HOME}" >> $BASH_ENV
+              make jstest
+            fi
+
       - run:
           command: |
             source $BASH_ENV
@@ -78,6 +89,15 @@ commands:
               cover -report text > /tmp/artifact/coverage.txt
             fi
 
+      - when:
+          condition:
+            "$COVERAGE"
+          steps:
+            - coveralls/upload:
+                parallel: true
+                flag_name: Test 1
+                verbose: true
+    
       - *store_artifacts
 
   prep_env:
