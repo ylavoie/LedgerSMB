@@ -14,8 +14,7 @@ aliases:
 # UI Coverage orbs
 orbs:
   coveralls: coveralls/coveralls@1.0.5
-  node: circleci/node@1.1.6
-      
+
 # Reuseable commands
 commands:
 
@@ -36,19 +35,14 @@ commands:
               echo "JOB_COUNT=4" >> $BASH_ENV
               echo "STARMAN_DEVEL_COVER_OPTIONS='-MDevel::Cover=$DEVEL_COVER_OPTIONS'" >> $BASH_ENV
               echo "YATH_DEVEL_COVER_OPTIONS='--cover=$DEVEL_COVER_OPTIONS'" >> $BASH_ENV
+              echo "UITESTS='--coverage *'" >> $BASH_ENV
             fi
 
       - run:
           name: Run API tests
           command: |
-            if [ "x$COVERAGE" == "x1" ]
-            then
-              echo "PWD=${CIRCLE_WORKING_DIRECTORY/#\~/$HOME}" >> $BASH_ENV
-              make jstest TESTS="--coverage"
-            else
-              echo "PWD=${CIRCLE_WORKING_DIRECTORY/#\~/$HOME}" >> $BASH_ENV
-              make jstest
-            fi
+            echo "PWD=${CIRCLE_WORKING_DIRECTORY/#\~/$HOME}" >> $BASH_ENV
+            make jstest TESTS="$UITESTS"
 
       - run:
           command: |
@@ -58,7 +52,7 @@ commands:
             then
               make devtest TESTS="--no-progress --job-count $JOB_COUNT \"--cover=$DEVEL_COVER_OPTIONS\" t/ xt/"
             else
-               make devtest TESTS='--no-progress --job-count 2 t/ xt/'
+              make devtest TESTS='--no-progress --job-count 2 t/ xt/'
             fi
 
       - run:
@@ -85,19 +79,27 @@ commands:
           command: |
             if [ "x$COVERAGE" == "x1" ]
             then
-              cover -report coveralls
+              COVERALLS_PARALLEL=true cover -report coveralls
+              COVERALLS_FLAG_NAME: Perl Tests
               cover -report text > /tmp/artifact/coverage.txt
             fi
 
       - when:
           condition:
-            "$COVERAGE"
+            equal: [ "$COVERAGE", "1" ]
           steps:
             - coveralls/upload:
                 parallel: true
-                flag_name: Test 1
-                verbose: true
-    
+                flag_name: UI Tests
+                verbose: false
+
+      - when:
+          condition:
+            equal: [ "$COVERAGE", "1" ]
+          steps:
+            - coveralls/upload:
+                parallel_finished: true
+
       - *store_artifacts
 
   prep_env:
@@ -284,7 +286,7 @@ executors:
           NODE_MAX_SESSION: 5
           NODE_MAX_INSTANCES: 5
       - image: mailhog/mailhog:latest
-  
+
     environment:
       BROWSER: << parameters.browser >>
       COVERAGE: << parameters.coverage >>
@@ -308,6 +310,7 @@ executors:
       STARMAN_DEVEL_COVER_OPTIONS: ''
       UIUSER: Jest
       UIPASSWORD: Tester
+      UITESTS: '*'
       YATH_DEVEL_COVER_OPTIONS: ''
 
 # Define jobs

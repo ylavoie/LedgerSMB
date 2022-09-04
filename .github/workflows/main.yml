@@ -279,6 +279,7 @@ jobs:
         uses: mxschmitt/action-tmate@v3
         if: ${{ matrix.BROWSER == 'chrome' && 0 }}
 
+      # Do perl tests
       - name: Run Perl tests
         run: |
           make devtest TESTS='--no-progress --job-count 2 t xt'
@@ -289,6 +290,18 @@ jobs:
           DB_TESTING: ${{ matrix.DB_TESTING }}
         if: ${{ !matrix.COVERAGE }}
 
+      - name: Run Coverage Perl tests
+        run: |
+          make devtest TESTS="--no-progress --job-count 2 \"--cover=${{ env.DEVEL_COVER_OPTIONS }}\" t xt"
+        env:
+          LSMB_TEST_DB: 1
+          COA_TESTING: ${{ matrix.COA_TESTING }}
+          COVERAGE: ${{ matrix.COVERAGE }}
+          DB_TESTING: ${{ matrix.DB_TESTING }}
+          PERL5OPT: -MSyntax::Keyword::Try::Deparse
+        if: ${{ matrix.COVERAGE }}
+
+      # Do API Tests
       - uses: actions/download-artifact@v3
         with:
           name: node_modules
@@ -300,7 +313,7 @@ jobs:
         run: |
           PWD=$HOME
           make jstest
-        if: ${{ matrix.COVERAGE != 1 }}
+        if: ${{ !matrix.COVERAGE }}
 
       - name: Run API tests with coverage
         run: |
@@ -308,17 +321,7 @@ jobs:
           make jstest TESTS="--coverage"
         if: ${{ matrix.COVERAGE }}
 
-      - name: Run Coverage Perl tests
-        run: |
-          make devtest TESTS="--no-progress --job-count $JOB_COUNT \"--cover=${{ env.DEVEL_COVER_OPTIONS }}\" t xt"
-        env:
-          LSMB_TEST_DB: 1
-          COA_TESTING: ${{ matrix.COA_TESTING }}
-          COVERAGE: ${{ matrix.COVERAGE }}
-          DB_TESTING: ${{ matrix.DB_TESTING }}
-          PERL5OPT: -MSyntax::Keyword::Try::Deparse
-        if: ${{ matrix.COVERAGE }}
-
+      # Upload coverage data if needed
       - name: Upload coverage data
         run: |
           unset PERL5OPT
@@ -326,18 +329,26 @@ jobs:
           cover -report text > logs/coverage.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_FLAG_NAME: perl-${{ matrix.test_number }}
+          COVERALLS_PARALLEL: true
         if: ${{ matrix.COVERAGE }}
 
       - name: Upload UI coverage data
         uses: coverallsapp/github-action@v1.1.0
-        env:
-          NODE_COVERALLS_DEBUG: 1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           parallel: true
-          flag-name: run-${{ matrix.test_number }}
+          flag-name: ui-${{ matrix.test_number }}
         if: ${{ matrix.COVERAGE }}
 
+      - name: Close parallel UI coverage data
+        uses: coverallsapp/github-action@v1.1.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          parallel_finished: true
+        if: ${{ matrix.COVERAGE }}
+
+      # Send logs & artifacts
       - name: Collect docker logs
         uses: jwalton/gh-docker-logs@v2
         with:
