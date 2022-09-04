@@ -1,9 +1,7 @@
 /** @format */
-/* global __SUPPORTED_LOCALES */
 /* eslint-disable global-require */
 /* eslint-disable camelcase, prettier/prettier */
 
-export const SUPPORT_LOCALES = __SUPPORTED_LOCALES;
 const rtlDetect = require("rtl-detect");
 
 import { createI18n } from "vue-i18n";
