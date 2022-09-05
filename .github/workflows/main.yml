@@ -329,7 +329,7 @@ jobs:
           cover -report text > logs/coverage.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_FLAG_NAME: perl-${{ matrix.test_number }}
+          COVERALLS_FLAG_NAME: perl
           COVERALLS_PARALLEL: true
         if: ${{ matrix.COVERAGE }}
 
@@ -338,14 +338,14 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           parallel: true
-          flag-name: ui-${{ matrix.test_number }}
+          flag-name: ui
         if: ${{ matrix.COVERAGE }}
 
       - name: Close parallel UI coverage data
         uses: coverallsapp/github-action@v1.1.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          parallel_finished: true
+          parallel-finished: true
         if: ${{ matrix.COVERAGE }}
 
       # Send logs & artifacts
