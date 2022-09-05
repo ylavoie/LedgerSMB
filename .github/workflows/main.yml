@@ -238,6 +238,12 @@ jobs:
             --with-feature=xls
             --with-feature=edi
 
+      - name: Cache CPAN Modules
+        uses: actions/cache@v2
+        with:
+          path: local
+          key: perl-${{ steps.perl.outputs.perl-hash }}
+
       - uses: actions/download-artifact@v3
         with:
           name: webpacked_js
