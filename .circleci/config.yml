@@ -41,9 +41,10 @@ commands:
       - run:
           name: Run API tests
           command: |
-            echo "PWD=${CIRCLE_WORKING_DIRECTORY/#\~/$HOME}" >> $BASH_ENV
-            make jstest TESTS="$UITESTS"
-
+            export PWD="${CIRCLE_WORKING_DIRECTORY/#\~/$HOME}"
+            export PERL5LIB="lib:old/lib:$PERL5LIB"
+            make jstest
+    
       - run:
           command: |
             source $BASH_ENV
