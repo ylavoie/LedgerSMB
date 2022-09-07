@@ -155,7 +155,7 @@ jobs:
       BROWSER: ${{ matrix.BROWSER }}
       COA_TESTING: ${{ matrix.COA_TESTING }}
       DB_TESTING: ${{ matrix.DB_TESTING }}
-      DEVEL_COVER_OPTIONS: -silent,1,+ignore,(^x?t/|^local/|^utils/|\.lttc$|^/usr/|^/opt/|starman\$\$),-summary,1
+      DEVEL_COVER_OPTIONS: -silent,1,+ignore,(^x?t/|^local/|^utils/|\.lttc\$|^/usr/|^/opt/|starman\$\$),-summary,1
       JOB_COUNT: 5
       LSMB_BASE_URL: http://lsmb:5000
       LSMB_NEW_DB: lsmb_test
@@ -228,6 +228,8 @@ jobs:
           install-modules: |
             Devel::Cover
             Devel::Cover::Report::Coveralls
+            Syntax::Keyword::Try
+            Syntax::Keyword::Try::Deparse
           # Features and Devel modules
           install-modules-args: >
             --metacpan
@@ -262,14 +264,14 @@ jobs:
 
       - name: Setup coverage
         run: |
-          echo "STARMAN_DEVEL_COVER_OPTIONS=-MDevel::Cover=${{ env.DEVEL_COVER_OPTIONS }}" >> $GITHUB_ENV
-          echo "YATH_DEVEL_COVER_OPTIONS=--cover=${{ env.DEVEL_COVER_OPTIONS }}" >> $GITHUB_ENV
+          echo "PERL5LIB=$GITHUB_WORKSPACE/local/lib/perl5/x86_64-linux:$PERL5LIB" >> $GITHUB_ENV
+          echo "PERL5OPT=-MSyntax::Keyword::Try::Deparse -MDevel::Cover=${{ env.DEVEL_COVER_OPTIONS }}" >> $GITHUB_ENV
+          echo "YATH_DEVEL_COVER_OPTIONS=--cover=\"${{ env.DEVEL_COVER_OPTIONS }}\"" >> $GITHUB_ENV
           echo "JOB_COUNT=2" >> $GITHUB_ENV
         if: ${{ matrix.COVERAGE }}
 
       - name: Starting 'starman'
         run: |
-          PERL5OPT="$PERL5OPT -MSyntax::Keyword::Try::Deparse $STARMAN_DEVEL_COVER_OPTIONS" \
           starman --preload-app --pid starman.pid --workers $JOB_COUNT \
                   --max-requests 5000 --error-log logs/starman-error.log \
                   -Ilib -Iold/lib --port 5762 bin/ledgersmb-server.psgi &
@@ -282,23 +284,25 @@ jobs:
         # Do perl tests
       - name: Run Perl tests
         run: |
-          make devtest TESTS='--no-progress --job-count 2 t xt'
+          sudo find /home -name Deparse.pm
+          sudo find /home -name Cover.so
+          make devtest TESTS="$TESTS --no-progress --job-count $JOB_COUNT $YATH_DEVEL_COVER_OPTIONS t xt"
         env:
           LSMB_TEST_DB: 1
           COA_TESTING: ${{ matrix.COA_TESTING }}
           COVERAGE: ${{ matrix.COVERAGE }}
           DB_TESTING: ${{ matrix.DB_TESTING }}
-        if: ${{ !matrix.COVERAGE }}
 
-      - name: Run Coverage Perl tests
+      # Upload coverage data if needed
+      - name: Upload coverage data
         run: |
-          make devtest TESTS="--no-progress --job-count 2 \"--cover=${{ env.DEVEL_COVER_OPTIONS }}\" t xt"
+          unset PERL5OPT
+          cover -report coveralls
+          cover -report text > logs/coverage.txt
         env:
-          LSMB_TEST_DB: 1
-          COA_TESTING: ${{ matrix.COA_TESTING }}
-          COVERAGE: ${{ matrix.COVERAGE }}
-          DB_TESTING: ${{ matrix.DB_TESTING }}
-          PERL5OPT: -MSyntax::Keyword::Try::Deparse
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_FLAG_NAME: perl
+          COVERALLS_PARALLEL: true
         if: ${{ matrix.COVERAGE }}
 
       # Do API Tests
@@ -312,14 +316,11 @@ jobs:
       - name: Run API tests
         run: |
           PWD=$HOME
-          make jstest
-        if: ${{ !matrix.COVERAGE }}
-
-      - name: Run API tests with coverage
-        run: |
-          PWD=$HOME
-          make jstest TESTS="--coverage"
-        if: ${{ matrix.COVERAGE }}
+          if [[ "${{ matrix.COVERAGE }}" != "" ]]; then
+            make jstest TESTS="--coverage"
+          else
+            make jstest
+          fi
 
       # Upload coverage data if needed
       - name: Upload coverage data
@@ -339,6 +340,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           flag-name: ui
           parallel: true
+          path-to-lcov: ${{ github.workspace }}/coverage/lcov.info
         if: ${{ matrix.COVERAGE }}
 
       - name: Close parallel UI coverage data
@@ -346,6 +348,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           parallel-finished: true
+          path-to-lcov: ${{ github.workspace }}/coverage/lcov.info
         if: ${{ matrix.COVERAGE }}
 
       # Send logs & artifacts
