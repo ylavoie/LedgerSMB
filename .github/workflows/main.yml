@@ -351,6 +351,12 @@ jobs:
           path-to-lcov: ${{ github.workspace }}/coverage/lcov.info
         if: ${{ matrix.COVERAGE }}
 
+      # Run the build hook again (Coveralls suggested patch)
+      - name: Rerun Build Webhook
+        run: |
+          curl --location --request GET "https://coveralls.io/rerun_build?repo_token=${{ secrets.GITHUB_TOKEN }}&build_num=${GITHUB_RUN_ID}"
+        if: ${{ matrix.COVERAGE }}
+
       # Send logs & artifacts
       - name: Collect docker logs
         uses: jwalton/gh-docker-logs@v2
