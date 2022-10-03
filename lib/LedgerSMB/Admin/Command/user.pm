@@ -91,8 +91,11 @@ sub _get_valid_country {
         or die $dbh->errstr;
     my ($values) = $sth->fetchall_arrayref({});
     foreach (@$values) {
-        return $_->{id}
-            if ( $_->{name} eq $country)
+        if ( $_->{name} eq $country
+        ||   $_->{short_name} eq uc $country ) {
+            $country = $_->{name};
+            return $_->{id};
+        }
     }
     $self->logger->error('Invalid country');
     return 0;
@@ -112,20 +115,20 @@ sub _option_spec {
             # employee
             'dob=s' => \$dob,
             'employeenumber=s' => \$employeenumber,
-            'end_date=s' => \$end_date,
-            'is_manager!' => \$is_manager,
+            'end-date=s' => \$end_date,
+            'is-manager!' => \$is_manager,
             'manager=s' => \$manager,
             'role=s' => \$role,
             'sales!' => \$is_sales,
             'ssn=s' => \$ssn,
-            'start_date=s' => \$start_date,
+            'start-date=s' => \$start_date,
             # person
             #'birthdate=s' => \$birthdate, # Not used?
             'country=s' => \$country,
-            'first_name=s' => \$first_name,
-            'last_name=s' => \$last_name,
-            'middle_name=s' => \$middle_name,
-            #'personal_id=s' => \$personal_id,
+            'first-name=s' => \$first_name,
+            'last-name=s' => \$last_name,
+            'middle-name=s' => \$middle_name,
+            #'personal-id=s' => \$personal_id,
             'salutation=s' => \$salutation
         );
         $option_spec{'no-permission=s@'} = \$no_permission
@@ -209,11 +212,13 @@ sub change {
     local $LedgerSMB::App_State::DBH = $dbh;
     my $user = LedgerSMB::Entity::User->get($_user->{entity_id});
     my $emp = LedgerSMB::Entity::Person::Employee->get($_user->{entity_id});
+    my $country_id = $self->_get_valid_country($dbh);
 
     if ( $password ) {
         $user->reset_password($password);
     }
     $emp->{country} = $country if $country;
+    $emp->{country_id} = $country_id if $country_id;
     $emp->{dob} = $dob if $dob;
     $emp->{employeenumber} = $employeenumber if $employeenumber;
     $emp->{end_date} = $end_date if $end_date;
@@ -306,12 +311,13 @@ sub _create_employee {
     $self->logger->error('Missing country')
         if !$country;
     my $country_id = $self->_get_valid_country($dbh);
-    return undef if !$country_id;
 
     if (!$first_name || !$last_name){
         $self->logger->error('Missing first or last name');
-        return undef;
     }
+    return undef
+        if !$country_id || !$first_name || !$last_name;
+
     my $_manager = $self->_get_user($dbh,$manager);
 
     local $LedgerSMB::App_State::User = {};
@@ -444,10 +450,10 @@ __END__
 
 =head1 SYNOPSIS
 
-   ledgersmb-admin user list <db-uri>
-   ledgersmb-admin user create <db-uri> [options] 
-   ledgersmb-admin user delete <db-uri>
-   ledgersmb-admin user change <db-uri>
+   ledgersmb-admin user list <db-uri> <user>
+   ledgersmb-admin user create <db-uri> <user> [options] 
+   ledgersmb-admin user delete <db-uri> <user>
+   ledgersmb-admin user change <db-uri> <user> [options]
 
 =head1 DESCRIPTION
 
@@ -459,7 +465,7 @@ This command manages users in the database identified by C<db-uri>.
 
 Lists users in the database identified by C<db-uri>.
 
-=head2 create <db-uri>
+=head2 create <db-uri> <user>
 
 Creates user C<user> in the database identified by C<db-uri>.
 
@@ -475,11 +481,11 @@ User name of the created or changed user
 
 Password
 
-=item start_date
+=item start-date
 
 Start date of the employee
 
-=item end_date
+=item end-date
 
 Ending date of the employee
 
@@ -507,7 +513,7 @@ Employee manager
 
 Employee number
 
-=item is_manager
+=item is-manager
 
 Employee is a manager
 
@@ -515,15 +521,15 @@ Employee is a manager
 
 Salutation
 
-=item first_name
+=item first-name
 
 First name of the employee
 
-=item middle_name
+=item middle-name
 
 Middle name of the employee
 
-=item last_name
+=item last-name
 
 Last name of the employee
 
@@ -533,7 +539,7 @@ Country name
 
 =back
 
-=head2 delete <db-uri>
+=head2 delete <db-uri> <user>
 
 Deletes user C<user> in the database identified by C<db-uri>.
 
@@ -547,7 +553,7 @@ User name of the created or changed user
 
 =back
 
-=head2 change <db-uri>
+=head2 change <db-uri> <user>
 
 Changes user C<user> in the database identified by C<db-uri>.
 
