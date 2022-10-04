@@ -450,7 +450,7 @@ __END__
 
 =head1 SYNOPSIS
 
-   ledgersmb-admin user list <db-uri> <user>
+   ledgersmb-admin user list <db-uri>
    ledgersmb-admin user create <db-uri> <user> [options] 
    ledgersmb-admin user delete <db-uri> <user>
    ledgersmb-admin user change <db-uri> <user> [options]
