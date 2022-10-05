@@ -451,9 +451,9 @@ __END__
 =head1 SYNOPSIS
 
    ledgersmb-admin user list <db-uri>
-   ledgersmb-admin user create <db-uri> <user> [options] 
-   ledgersmb-admin user delete <db-uri> <user>
-   ledgersmb-admin user change <db-uri> <user> [options]
+   ledgersmb-admin user create <db-uri> [options] 
+   ledgersmb-admin user delete <db-uri>
+   ledgersmb-admin user change <db-uri> [options]
 
 =head1 DESCRIPTION
 
@@ -465,9 +465,9 @@ This command manages users in the database identified by C<db-uri>.
 
 Lists users in the database identified by C<db-uri>.
 
-=head2 create <db-uri> <user>
+=head2 create <db-uri>
 
-Creates user C<user> in the database identified by C<db-uri>.
+Creates a user in the database identified by C<db-uri>.
 
 =head3 OPTIONS
 
@@ -475,7 +475,7 @@ Creates user C<user> in the database identified by C<db-uri>.
 
 =item username
 
-User name of the created or changed user
+User name of the created, deleted or changed user
 
 =item password
 
