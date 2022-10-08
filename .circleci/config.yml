@@ -99,6 +99,7 @@ commands:
           steps:
             - coveralls/upload:
                 parallel_finished: true
+
       - *store_artifacts
 
   prep_env:

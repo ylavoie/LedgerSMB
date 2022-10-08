@@ -281,7 +281,7 @@ jobs:
         uses: mxschmitt/action-tmate@v3
         if: ${{ matrix.BROWSER == 'chrome' && 0 }}
 
-        # Do perl tests
+      # Do perl tests
       - name: Run Perl tests
         run: |
           sudo find /home -name Deparse.pm
