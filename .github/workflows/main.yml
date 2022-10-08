@@ -273,7 +273,7 @@ jobs:
 
       - name: Starting 'starman'
         run: |
-          PERL5OPT="$PERL5OPT -MSyntax::Keyword::Try::Deparse $STARMAN_DEVEL_COVER_OPTIONS" \
+          PERL5OPT="$PERL5OPT $STARMAN_DEVEL_COVER_OPTIONS" \
           starman --preload-app --pid starman.pid --workers $JOB_COUNT \
                   --max-requests 5000 --error-log logs/starman-error.log \
                   -Ilib -Iold/lib --port 5762 bin/ledgersmb-server.psgi &
@@ -286,8 +286,6 @@ jobs:
       # Do perl tests
       - name: Run Perl tests
         run: |
-          sudo find /home -name Deparse.pm
-          sudo find /home -name Cover.so
           make devtest TESTS="$TESTS --no-progress --job-count $JOB_COUNT $YATH_DEVEL_COVER_OPTIONS t xt"
         env:
           LSMB_TEST_DB: 1
