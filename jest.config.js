@@ -24,15 +24,17 @@ module.exports = {
 
     // An array of glob patterns indicating a set of files for which coverage information should be collected
     collectCoverageFrom: [
-        "UI/**/*.{js,jsx,vue}",
+        "*/**/*.{js,jsx,vue}",
         "!UI/js/**/*",
-        "!**/*.spec.js"
+        "**/*.spec.js",
+        "!coverage/**/*",
+        "!.*/**/*"
     ],
 
     // The directory where Jest should output its coverage files
     coverageDirectory: "coverage",
 
-    coveragePathIgnorePatterns: ["/node_modules/", "/tests/", "/.local/"],
+    coveragePathIgnorePatterns: ["/node_modules/"],
 
     // An array of regexp pattern strings used to skip coverage collection
     // coveragePathIgnorePatterns: ["node_modules", "<rootDir>/test/*.*"],
@@ -126,7 +128,10 @@ module.exports = {
 
     // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
     moduleNameMapper: {
-        "^@/(.*)$": "<rootDir>/UI/src/$1"
+        "^@/(.*)$": "<rootDir>/UI/src/$1",
+        "@intlify/unplugin-vue-i18n/messages": "<rootDir>/node_modules/@intlify/unplugin-vue-i18n/messages.d.ts",
+        "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/tests/common/mocks/fileMock.js",
+        "\\.(css|less)$": "identity-obj-proxy"
     },
 
     // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
@@ -153,7 +158,7 @@ module.exports = {
 
 
     // A preset that is used as a base for Jest's configuration
-    // preset: 'ts-jest',
+    preset: "ts-jest",
 
     // Run tests from one or more projects, found in the specified paths; also takes path globs.
     // This option is the CLI equivalent of the projects configuration option.
@@ -203,7 +208,7 @@ module.exports = {
     sandboxInjectedGlobals: [],
 
     // The paths to modules that run some code to configure or set up the testing environment before each test
-    // setupFiles: [],
+    setupFiles: ["<rootDir>/tests/common/jest-init.js"],
 
     // A list of paths to modules that run some code to configure or set up the testing framework before each test
     setupFilesAfterEnv: [],
@@ -217,7 +222,7 @@ module.exports = {
     snapshotSerializers: [],
 
     // The test environment that will be used for testing
-    testEnvironment: "node",
+    testEnvironment: "jsdom",
 
     // Options that will be passed to the testEnvironment
     testEnvironmentOptions: {
@@ -234,7 +239,7 @@ module.exports = {
     ],
 
     // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
-    testPathIgnorePatterns: ["/node_modules/", "tmp/", ".vscode"],
+    testPathIgnorePatterns: ["/node_modules/", "tmp/", ".vscode/"],
 
     // The regexp pattern or array of patterns that Jest uses to detect test files
     testRegex: [],
@@ -247,13 +252,21 @@ module.exports = {
 
     // A map from regular expressions to paths to transformers
     transform: {
-        // "\\.tsx?$": "ts-jest",
+        ".+\\.tsx?$": [
+            "ts-jest",
+            {
+                "useESM": true,
+                diagnostics: {
+                    ignoreCodes: ["TS151001"]
+                }
+            }
+        ],
         ".*\\.(js)$": "babel-jest",
         ".+\\.(vue)$": "@vue/vue3-jest"
     },
 
     // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
-    // transformIgnorePatterns: [],
+    transformIgnorePatterns: [],
 
     // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them
     // unmockedModulePathPatterns: undefined,

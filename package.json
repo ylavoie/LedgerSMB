@@ -54,10 +54,12 @@
     "@babel/eslint-parser": "7.19.1",
     "@babel/plugin-proposal-object-rest-spread": "7.18.9",
     "@babel/preset-env": "7.19.3",
+    "@babel/preset-typescript": "^7.18.6",
     "@intlify/unplugin-vue-i18n": "0.7.0",
+    "@typescript-eslint/eslint-plugin": "5.39.0",
     "@vue/test-utils": "2.1.0",
     "@vue/vue3-jest": "29.1.1",
-    "axios": "0.27.2",
+    "axios": "<=0.27.2",
     "babel-jest": "29.1.2",
     "babel-loader": "8.2.5",
     "browserslist": "4.21.4",
@@ -66,6 +68,7 @@
     "clean-webpack-plugin": "4.0.0",
     "compression-webpack-plugin": "10.0.0",
     "copy-webpack-plugin": "11.0.0",
+    "coveralls-next": "4.1.2",
     "css-loader": "6.7.1",
     "css-minimizer-webpack-plugin": "4.2.1",
     "cssnano": "5.1.13",
@@ -95,8 +98,10 @@
     "html-webpack-plugin": "5.5.0",
     "http-status-codes": "2.2.0",
     "i18next-conv": "13.1.0",
+    "identity-obj-proxy": "^3.0.0",
     "jest": "29.1.2",
     "jest-environment-jsdom": "29.1.2",
+    "jest-fetch-mock": "3.0.3",
     "jest-openapi": "0.14.2",
     "jest-runner-groups": "2.2.0",
     "jest-tap-reporter": "1.9.0",
@@ -121,6 +126,8 @@
     "stylelint-order": "5.0.0",
     "stylelint-webpack-plugin": "3.3.0",
     "stylelint-z-index-value-constraint": "1.2.0",
+    "ts-jest": "29.0.3",
+    "typescript": "4.8.4",
     "unix-timestamp": "1.0.2",
     "unused-webpack-plugin": "2.4.0",
     "vue": "3.2.40",
@@ -190,7 +197,10 @@
           "plugin:jest/recommended"
         ],
         "rules": {
-          "jest/prefer-expect-assertions": "off"
+          "jest/prefer-expect-assertions": "off",
+          "jest/no-commented-out-tests": "off",
+          "no-console": "off",
+          "camelcase": "off"
         }
       }
     ],
@@ -202,6 +212,7 @@
       "markdown",
       "package-json",
       "sort-dojo-dependency",
+      "@typescript-eslint",
       "vue",
       "prettier"
     ],
@@ -237,6 +248,7 @@
       "plugin:import/errors",
       "plugin:import/warnings",
       "plugin:markdown/recommended",
+      "plugin:@typescript-eslint/recommended",
       "plugin:vue/vue3-recommended",
       "prettier"
     ],
@@ -358,7 +370,11 @@
       "no-restricted-syntax": [
         "error",
         "SequenceExpression"
-      ]
+      ],
+      "@typescript-eslint/no-empty-function": 0,
+      "@typescript-eslint/no-this-alias": 0,
+      "@typescript-eslint/no-unused-vars": 0,
+      "@typescript-eslint/no-var-requires": 0
     }
   },
   "stylelint": {
@@ -380,7 +396,7 @@
       "UI/**/util/**/*.css",
       "UI/js/**",
       "UI/pod/**",
-      "UI/openapi/**"
+      "doc/openapi/**"
     ],
     "rules": {
       "declaration-block-no-duplicate-custom-properties": null,
