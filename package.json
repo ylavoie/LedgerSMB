@@ -54,7 +54,9 @@
     "@babel/eslint-parser": "7.19.1",
     "@babel/plugin-proposal-object-rest-spread": "7.20.7",
     "@babel/preset-env": "7.20.2",
-    "@intlify/unplugin-vue-i18n": "~0.7.3",
+    "@babel/preset-typescript": "^7.18.6",
+    "@intlify/unplugin-vue-i18n": "^0.7.3",
+    "@typescript-eslint/eslint-plugin": "5.42.1",
     "@vue/test-utils": "2.2.6",
     "@vue/vue3-jest": "29.2.2",
     "axios": "~0.27.2",
@@ -191,7 +193,10 @@
           "plugin:jest/recommended"
         ],
         "rules": {
-          "jest/prefer-expect-assertions": "off"
+          "jest/prefer-expect-assertions": "off",
+          "jest/no-commented-out-tests": "off",
+          "no-console": "off",
+          "camelcase": "off"
         }
       }
     ],
@@ -203,6 +208,7 @@
       "markdown",
       "package-json",
       "sort-dojo-dependency",
+      "@typescript-eslint",
       "vue",
       "prettier"
     ],
@@ -238,6 +244,7 @@
       "plugin:import/errors",
       "plugin:import/warnings",
       "plugin:markdown/recommended",
+      "plugin:@typescript-eslint/recommended",
       "plugin:vue/vue3-recommended",
       "prettier"
     ],
@@ -359,7 +366,11 @@
       "no-restricted-syntax": [
         "error",
         "SequenceExpression"
-      ]
+      ],
+      "@typescript-eslint/no-empty-function": 0,
+      "@typescript-eslint/no-this-alias": 0,
+      "@typescript-eslint/no-unused-vars": 0,
+      "@typescript-eslint/no-var-requires": 0
     }
   },
   "stylelint": {

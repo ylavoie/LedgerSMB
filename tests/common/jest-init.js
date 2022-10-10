@@ -13,6 +13,7 @@ Object.defineProperty(window, "lsmbConfig", {
         language: "en"
     }
 });
+
 Object.defineProperty(window, "location", {
     writable: true,
     value: { href: null }
