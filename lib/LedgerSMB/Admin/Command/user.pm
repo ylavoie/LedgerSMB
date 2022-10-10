@@ -34,8 +34,8 @@ my $start_date; # date
 my $end_date; # date
 my $dob; # date
 my $role; # text
-my $ssn; # text 
-my $is_sales; # bool 
+my $ssn; # text
+my $is_sales; # bool
 my $manager; # text
 my $employeenumber; # text
 my $is_manager; # bool
@@ -43,8 +43,8 @@ my $is_manager; # bool
 
 # person
 my $salutation = ''; # Default to none
-my $first_name; # text 
-my $middle_name; # text 
+my $first_name; # text
+my $middle_name; # text
 my $last_name; # text
 my $country; # text
 #my $personal_id; # text
@@ -119,7 +119,7 @@ sub _option_spec {
             'is-manager!' => \$is_manager,
             'manager=s' => \$manager,
             'role=s' => \$role,
-            'sales!' => \$is_sales,
+            'is-sales!' => \$is_sales,
             'ssn=s' => \$ssn,
             'start-date=s' => \$start_date,
             # person
@@ -153,7 +153,7 @@ sub _add_permissions{
 
     my $roles;
     @$roles = @{$user->{role_list}};
-    if (@$permission[0] =~ /Full Permissions/i) {
+    if (@$permission[0] =~ /__all__/i) {
         @$roles = map { $_->{rolname} } @{$user->list_roles};
     } else {
         foreach my $p (@$permission) {
@@ -473,67 +473,82 @@ Creates a user in the database identified by C<db-uri>.
 
 =over
 
-=item username
+=item C<--username=USERNAME>
 
 User name of the created, deleted or changed user
 
-=item password
+=item C<--password=PASSWORD>
 
 Password
 
-=item start-date
+=item C<--start-date=DATE>
 
 Start date of the employee
 
-=item end-date
+=item C<--end-date=DATE>
 
 Ending date of the employee
 
-=item dob
+=item C<--dob=DATE>
 
 Date of birth
 
-=item role
+=item C<--role=ROLE>
 
-Role(s) to affect to the user.
+The organizational role an employee has been assigned. Can be
+one of 'manager', 'administrator', 'user'.
 
-=item ssn
+=item C<--permission=PERMISSION>
+
+Permission(s) to assign to the user. This option can be repeated
+multiple times to assign multiple permissions to the user.
+
+The pseudo permission C<__all__> can be specified to
+assign the user all available permissions in the system.
+
+=item C<--ssn=SSN>
 
 Social security number
 
-=item sales
+=item C<--is-sales>
 
-Employee is in sales
+Employee is a sales employee.
 
-=item manager
+This is a boolean option. Not specifying this option means the user
+is no a sales employee.
+
+=item C<--manager=MANAGER_ID>
 
 Employee manager
 
-=item employeenumber
+=item C<--employeenumber=EMPLOYEENUMBER>
 
 Employee number
 
-=item is-manager
+=item C<--is-manager>
 
-Employee is a manager
+Employee is a manager.
 
-=item salutation
+This is a boolean option. Not specifying this option means the user
+is not a manager.
+
+=item C<--salutation=SALUTATION>
 
 Salutation
 
-=item first-name
+=item C<--first-name=NAME>
 
 First name of the employee
 
-=item middle-name
+=item C<--middle-name=NAME>
 
 Middle name of the employee
 
-=item last-name
+=item C<--last-name=NAME>
 
 Last name of the employee
 
-=item country
+=item C<--country=COUNTRY>
 
 Country name
 
