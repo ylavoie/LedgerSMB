@@ -2,32 +2,36 @@
 /* eslint-disable max-classes-per-file, no-console, vue/component-definition-name-casing */
 
 import { mount } from "@vue/test-utils";
-import { enableFetchMocks } from "jest-fetch-mock";
 
 import { i18n } from "../common/i18n";
 import LoginPage from "@/views/LoginPage.vue";
 
-enableFetchMocks();
-
 let wrapper;
+const testOptions = {
+    global: {
+        plugins: [i18n]
+    },
+    directives: {
+        update: () => jest.fn()
+    }
+};
 
 describe("LoginPage.vue", () => {
-    beforeEach(() => {
-        fetch.resetMocks();
+/*    beforeEach(() => {
         Object.assign(window, {
             // window object does not exist in JSDom
             alert: jest.fn()
         });
     });
+*/
+    it("register as a component", () => {
+        wrapper = mount(LoginPage, testOptions);
+        expect(wrapper.exists()).toBeTruthy();
+    });
 
     it("should show dialog", async () => {
         wrapper = mount(LoginPage, {
-            global: {
-                plugins: [i18n]
-            },
-            directives: {
-                update: () => jest.fn()
-            },
+            ...testOptions,
             data() {
                 return {
                     version: "LedgerSMB 1.10.0-dev"
@@ -48,12 +52,7 @@ describe("LoginPage.vue", () => {
 
     it("should enable login button when filled", async () => {
         wrapper = mount(LoginPage, {
-            global: {
-                plugins: [i18n]
-            },
-            directives: {
-                update: () => jest.fn()
-            },
+            ...testOptions,
             data() {
                 return {
                     version: "LedgerSMB 1.10.0-dev",
@@ -74,19 +73,9 @@ describe("LoginPage.vue", () => {
     });
 
     it("should login when filled", async () => {
-        fetch.mockResponseOnce(
-            JSON.stringify({
-                target: "login.pl?action=authenticate&company=MyCompany",
-                status: 200
-            })
-        );
+        let target = "login.pl?action=authenticate&company=MyCompany";
         wrapper = mount(LoginPage, {
-            global: {
-                plugins: [i18n]
-            },
-            directives: {
-                update: () => jest.fn()
-            },
+            ...testOptions,
             data() {
                 return {
                     username: "MyUser",
@@ -95,30 +84,15 @@ describe("LoginPage.vue", () => {
                 };
             }
         });
-        const loginButton = wrapper.get("#login");
+        const loginButton = await wrapper.get("#login");
         await loginButton.trigger("click");
 
-        // assert on the times called and arguments given to fetch
-        expect(fetch.mock.calls).toHaveLength(1);
-        expect(window.location.href).toEqual(
-            "login.pl?action=authenticate&company=MyCompany"
-        );
+        expect(window.location.href).toEqual(target);
     });
 
     it("should fail on non-existent company", async () => {
-        fetch.mockResponse(
-            {},
-            {
-                status: 454
-            }
-        );
         wrapper = mount(LoginPage, {
-            global: {
-                plugins: [i18n]
-            },
-            directives: {
-                update: () => jest.fn()
-            },
+            ...testOptions,
             data() {
                 return {
                     username: "MyUser",
@@ -127,26 +101,15 @@ describe("LoginPage.vue", () => {
                 };
             }
         });
-        const loginButton = wrapper.get("#login");
+        const loginButton = await wrapper.get("#login");
         await loginButton.trigger("click");
 
         expect(window.alert).toHaveBeenCalledWith("Company does not exist");
     });
 
     it("should fail on bad user", async () => {
-        fetch.mockResponse(
-            {},
-            {
-                status: 401
-            }
-        );
         wrapper = mount(LoginPage, {
-            global: {
-                plugins: [i18n]
-            },
-            directives: {
-                update: () => jest.fn()
-            },
+            ...testOptions,
             data() {
                 return {
                     username: "BadUser",
@@ -155,7 +118,7 @@ describe("LoginPage.vue", () => {
                 };
             }
         });
-        const loginButton = wrapper.get("#login");
+        const loginButton = await wrapper.get("#login");
         await loginButton.trigger("click");
 
         expect(window.alert).toHaveBeenCalledWith(
@@ -164,47 +127,25 @@ describe("LoginPage.vue", () => {
     });
 
     it("should fail on bad version", async () => {
-        fetch.mockResponse(
-            {},
-            {
-                status: 521
-            }
-        );
         wrapper = mount(LoginPage, {
-            global: {
-                plugins: [i18n]
-            },
-            directives: {
-                update: () => jest.fn()
-            },
+            ...testOptions,
             data() {
                 return {
                     username: "MyUser",
                     password: "MyPassword",
-                    company: "MyComp4ny"
+                    company: "MyOldComp4ny"
                 };
             }
         });
-        const loginButton = wrapper.get("#login");
+        const loginButton = await wrapper.get("#login");
         await loginButton.trigger("click");
 
         expect(window.alert).toHaveBeenCalledWith("Database version mismatch");
     });
 
     it("should fail unknown error", async () => {
-        fetch.mockResponse(
-            {},
-            {
-                status: 999
-            }
-        );
         wrapper = mount(LoginPage, {
-            global: {
-                plugins: [i18n]
-            },
-            directives: {
-                update: () => jest.fn()
-            },
+            ...testOptions,
             data() {
                 return {
                     username: "My",
@@ -213,7 +154,7 @@ describe("LoginPage.vue", () => {
                 };
             }
         });
-        const loginButton = wrapper.get("#login");
+        const loginButton = await wrapper.get("#login");
         await loginButton.trigger("click");
 
         expect(window.alert).toHaveBeenCalledWith(
