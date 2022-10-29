@@ -188,7 +188,7 @@ module.exports = {
     restoreMocks: false,
 
     // The root directory that Jest should scan for tests and modules within
-    // rootDir: ".",
+    rootDir: ".",
 
     // A list of paths to directories that Jest should use to search for files in
     // roots: [
@@ -207,10 +207,10 @@ module.exports = {
     sandboxInjectedGlobals: [],
 
     // The paths to modules that run some code to configure or set up the testing environment before each test
-    setupFiles: ["<rootDir>/tests/common/jest-init.js"],
+    setupFiles: ["<rootDir>/UI/tests/common/jest-init.js"],
 
     // A list of paths to modules that run some code to configure or set up the testing framework before each test
-    setupFilesAfterEnv: ["<rootDir>/tests/common/jest-setup.js"],
+    setupFilesAfterEnv: ["<rootDir>/UI/tests/common/jest-setup.js"],
 
     skipFilter: false,
 
@@ -224,9 +224,9 @@ module.exports = {
     testEnvironment: "jsdom",
 
     // Options that will be passed to the testEnvironment
-    testEnvironmentOptions: {
-        customExportConditions: ["node", "node-addons"]
-    },
+    // testEnvironmentOptions: {
+    //     customExportConditions: ["node", "node-addons"]
+    // },
 
     // Adds a location field to test results
     testLocationInResults: false,
