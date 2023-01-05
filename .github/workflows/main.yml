@@ -155,7 +155,7 @@ jobs:
       BROWSER: ${{ matrix.BROWSER }}
       COA_TESTING: ${{ matrix.COA_TESTING }}
       DB_TESTING: ${{ matrix.DB_TESTING }}
-      DEVEL_COVER_OPTIONS: -silent,1,+ignore,(^x?t/|^local/|^utils/|\.lttc\$|^/usr/|^/opt/|starman\$\$),-summary,1
+      DEVEL_COVER_OPTIONS: -silent,1,+ignore,\(^x?t/\|^local/\|^utils/\|\.lttc\$\|^/usr/\|^/opt/\|starman\$\$\),-summary,1
       JOB_COUNT: 5
       LSMB_BASE_URL: http://lsmb:5000
       LSMB_NEW_DB: lsmb_test
