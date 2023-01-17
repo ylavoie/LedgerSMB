@@ -11,10 +11,10 @@ default:
          screenshots_dir: logs/screens
          logging_dir: logs
          screenshot_events:
-           pre-step: 0
+           pre-step: 1
            post-step: 1
-           pre-scenario: 0
-           post-scenario: 0
+           pre-scenario: 1
+           post-scenario: 1
          timestamps: 1
          sessions:
            selenium:
@@ -23,7 +23,7 @@ default:
              # Need a long retry timeout because instrumenting
              # old code takes loooong when running coverage testing
              retry_timeout: 120
-             poll_delay: 0.1
+             poll_delay: 0.50
              driver:
                 drv_name: Weasel::Driver::Selenium2
                 wait_timeout: 3000
