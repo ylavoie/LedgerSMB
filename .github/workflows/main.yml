@@ -297,6 +297,7 @@ jobs:
       # Do perl tests
       - name: Run Perl tests
         run: |
+          env | sort
           make devtest TESTS="--no-progress --job-count $JOB_COUNT $YATH_DEVEL_COVER_OPTIONS t xt"
         env:
           LSMB_TEST_DB: 1
