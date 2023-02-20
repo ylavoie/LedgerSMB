@@ -22,6 +22,17 @@
         },
         {
             "matchPackagePatterns": [
+                "stylelint"
+            ],
+            "matchUpdateTypes": [
+                "major"
+            ],
+            "automerge": false,
+            "groupName": "all stylelint related dependencies",
+            "groupSlug": "stylelint-major"
+        },
+        {
+            "matchPackagePatterns": [
                 "*"
             ],
             "matchUpdateTypes": [
