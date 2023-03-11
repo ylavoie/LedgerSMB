@@ -116,7 +116,7 @@
     "path-browserify": "1.0.1",
     "pinia": "2.0.23",
     "prettier": "2.7.1",
-    "redoc-cli": "0.13.20",
+    "redoc-cli": "0.13.21",
     "rtl-detect": "1.0.4",
     "stylelint": "14.14.1",
     "stylelint-config-standard": "29.0.0",
