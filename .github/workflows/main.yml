@@ -292,7 +292,7 @@ jobs:
       # Fix the condition to debug
       - name: Setup upterm session
         uses: mxschmitt/action-tmate@v3
-        if: ${{ matrix.BROWSER == 'chrome' && 0 }}
+        if: ${{ matrix.BROWSER == 'chrome' && 1 }}
 
       # Do perl tests
       - name: Run Perl tests
