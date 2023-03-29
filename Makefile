@@ -179,7 +179,7 @@ ifneq ($(origin DOCKER_CMD),undefined)
 	$(DOCKER_CMD) make jstest
 else
 	# Test API answer
-	./UI/node_modules/.bin/jest --config=UI/jest.config.js $(TESTS)
+	cd UI && ./node_modules/.bin/jest $(TESTS)
 endif
 
 serve:
