@@ -52,7 +52,9 @@
   "devDependencies": {
     "@babel/core": "7.22.5",
     "@babel/eslint-parser": "7.22.5",
+    "@babel/plugin-proposal-class-properties": "7.18.6",
     "@babel/plugin-proposal-object-rest-spread": "7.20.7",
+    "@babel/plugin-transform-classes": "7.22.6",
     "@babel/preset-env": "7.22.5",
     "@pinia/testing": "0.1.2",
     "@redocly/cli": "1.0.0-beta.129",
@@ -159,6 +161,10 @@
     "test:unit": "jest --group=test:unit"
   },
   "babel": {
+    "plugins": [
+      "@babel/plugin-proposal-class-properties",
+      "@babel/plugin-transform-classes"
+    ],
     "presets": [
       [
         "@babel/preset-env"
