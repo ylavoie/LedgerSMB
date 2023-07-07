@@ -118,7 +118,7 @@
     "prettier": "2.7.1",
     "redoc-cli": "0.13.21",
     "rtl-detect": "1.0.4",
-    "stylelint": "14.14.1",
+    "stylelint": "15.10.1",
     "stylelint-config-standard": "29.0.0",
     "stylelint-declaration-block-no-ignored-properties": "2.6.0",
     "stylelint-no-nested-media": "0.1.0",
