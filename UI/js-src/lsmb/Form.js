@@ -24,7 +24,8 @@ define([
 
             var method =
                 typeof this.method === "undefined" ? "GET" : this.method;
-            var url = this.action, o = new URL(window.location);
+            var url = this.action;
+            var o = new URL(window.location);
             var rel = url.toString().substring(o.origin.length);
             url = rel;
             var options = { handleAs: "text" };
