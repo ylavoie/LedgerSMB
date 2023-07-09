@@ -13,7 +13,7 @@ define([
         clickedAction: null,
         onSubmit: function (evt) {
             event.stop(evt);
-            this.clickedAction = evt.submitter;
+            this.clickedAction = evt.submitter; /* ought to be the same as this.domNode.__action */
             this.submit();
         },
         submit: function () {
@@ -24,17 +24,10 @@ define([
 
             var method =
                 typeof this.method === "undefined" ? "GET" : this.method;
-            var url = this.action;
-            var o = new URL(window.location);
-            var rel = url.toString().substring(o.origin.length);
-            url = rel;
+            var url = this.action; /* relative; this.domNode.action is absolute */
             var options = { handleAs: "text" };
             options.doing = widget["data-lsmb-doing"];
             options.done = widget["data-lsmb-done"];
-            let effectiveAction = domattr.get(this.clickedAction, "name");
-            if (effectiveAction === "__action") {
-                effectiveAction = "action";
-            }
             if (method.toLowerCase() === "get") {
                 if (!url) {
                     /* eslint no-alert:0 */
@@ -44,7 +37,7 @@ define([
                 c++;
                 var qobj = domform.toQuery(this.domNode);
                 qobj =
-                    effectiveAction +
+                    domattr.get(this.clickedAction, "name") +
                     "=" +
                     domattr.get(this.clickedAction, "value") +
                     "&" +
@@ -57,7 +50,7 @@ define([
                     options.data = new FormData(this.domNode);
                     // FF doesn't add the clicked button
                     options.data.append(
-                        effectiveAction,
+                        domattr.get(this.clickedAction, "name"),
                         domattr.get(this.clickedAction, "value")
                     );
                 } else {
@@ -66,7 +59,7 @@ define([
                         "Content-Type": "application/x-www-form-urlencoded"
                     };
                     options.data =
-                        effectiveAction +
+                        domattr.get(this.clickedAction, "name") +
                         "=" +
                         domattr.get(this.clickedAction, "value") +
                         "&" +
