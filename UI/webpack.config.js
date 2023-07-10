@@ -224,7 +224,7 @@ if (TARGET !== "readme") {
     const UnusedWebpackPluginOptions = {
         // Source directories
         directories: [
-            path.join(__dirname, "js-src/lsmb"), 
+            path.join(__dirname, "js-src/lsmb"),
             path.join(__dirname, "src")
         ],
         // Exclude patterns
@@ -426,6 +426,7 @@ if (TARGET !== "readme") {
         context: __dirname,
 
         entry: {
+            ungap: "node_modules/@ungap/custom-elements/index.js",
             bootstrap: "./bootstrap.js", // Virtual file
             ...lsmbCSS,
             ...globCssEntries("./css/**/*.css")
