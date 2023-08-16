@@ -11,6 +11,9 @@ inputs:
   coverage:
     description: "Coverage indicator"
     default: ''
+  starman:
+    description: "Start starman"
+    default: '1'
 
 runs:
   using: "composite"
@@ -61,3 +64,4 @@ runs:
         starman --preload-app --pid starman.pid --workers $JOB_COUNT \
                 --max-requests 5000 --error-log logs/starman-error.log \
                 -Ilib -Iold/lib --port 5762 bin/ledgersmb-server.psgi &
+      if: ${{ inputs.starman == '1' }}

@@ -116,7 +116,7 @@ jobs:
             JOB_COUNT: 5
 
     env:
-      DEVEL_COVER_OPTIONS: -silent,1,+ignore,^x?t,+ignore,^utils,+ignore,local/,+ignore,^/usr/,+ignore,^/opt/,+ignore,\\.lttc,+ignore,starman\\b,-summary,1
+      DEVEL_COVER_OPTIONS: -db,cover_db-pure-perl,-silent,1,+ignore,^x?t,+ignore,^utils,+ignore,local/,+ignore,^/usr/,+ignore,^/opt/,+ignore,\\.lttc,+ignore,starman\\b,-summary,1
       RELEASE_TESTING: 1
 
     steps:
@@ -141,15 +141,12 @@ jobs:
           JOB_COUNT: ${{ matrix.JOB_COUNT }}
           PERL5OPT: -MSyntax::Keyword::Try::Deparse
 
-        # Upload coverage data if needed
-      - name: Upload coverage data
-        run: |
-          unset PERL5OPT
-          cover -report coveralls
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_FLAG_NAME: pure-perl
-          COVERALLS_PARALLEL: true
+      - name: Cache coverage
+        uses: actions/cache/save@v3
+        id: cache-pure-perl
+        with:
+          path: cover_db-pure-perl
+          key: cover_db-pure-perl-${{ github.run_id }}
         if: ${{ matrix.COVERAGE }}
 
   test-database:
@@ -210,7 +207,7 @@ jobs:
       LSMB_BASE_URL: http://lsmb:5000
       PSGI_BASE_URL: http://lsmb:5762
       REMOTE_SERVER_ADDRESS: 127.0.0.1
-      DEVEL_COVER_OPTIONS: -silent,1,+ignore,^x?t,+ignore,^utils,+ignore,local/,+ignore,^/usr/,+ignore,^/opt/,+ignore,\\.lttc,+ignore,starman\\b,-summary,1
+      DEVEL_COVER_OPTIONS: -db,cover_db-webservices-perl,-silent,1,+ignore,^x?t,+ignore,^utils,+ignore,local/,+ignore,^/usr/,+ignore,^/opt/,+ignore,\\.lttc,+ignore,starman\\b,-summary,1
 
     services:
       # Label used to access the service container
@@ -285,7 +282,7 @@ jobs:
       - name: Wait until Coverage has finished producing the database (10 minutes max)
         uses: iFaxity/wait-on-action@v1.1.0
         with:
-          resource: ./cover_db/digests
+          resource: ./cover_db-webservices-perl/digests
           timeout: 600000
         if: ${{ matrix.COVERAGE }}
 
@@ -312,12 +309,17 @@ jobs:
       - name: Upload coverage data
         run: |
           unset PERL5OPT
-          cover -report coveralls
-          cover -report text > logs/coverage.txt
+          cover -report text cover_db-webservices-perl > logs/coverage.txt
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_FLAG_NAME: webservices-perl
-          COVERALLS_PARALLEL: true
+        if: ${{ matrix.COVERAGE }}
+
+      - name: Cache coverage
+        uses: actions/cache/save@v3
+        id: cache-webservices-perl
+        with:
+          path: cover_db-webservices-perl
+          key: cover_db-webservices-perl-${{ github.run_id }}
         if: ${{ matrix.COVERAGE }}
 
   test-remainder:
@@ -373,7 +375,7 @@ jobs:
       BROWSER: ${{ matrix.BROWSER }}
       COA_TESTING: ${{ matrix.COA_TESTING }}
       DB_TESTING: ${{ matrix.DB_TESTING }}
-      DEVEL_COVER_OPTIONS: -silent,1,+ignore,^x?t,+ignore,^utils,+ignore,local/,+ignore,^/usr/,+ignore,^/opt/,+ignore,\\.lttc,+ignore,starman\\b,-summary,1
+      DEVEL_COVER_OPTIONS: -db,cover_db-remainder-perl,-silent,1,+ignore,^x?t,+ignore,^utils,+ignore,local/,+ignore,^/usr/,+ignore,^/opt/,+ignore,\\.lttc,+ignore,starman\\b,-summary,1
       JOB_COUNT: ${{ matrix.JOB_COUNT }}
       LSMB_BASE_URL: http://lsmb:5000
       LSMB_NEW_DB: lsmb_test
@@ -491,7 +493,7 @@ jobs:
       - name: Wait until Coverage has finished producing the database (10 minutes max)
         uses: iFaxity/wait-on-action@v1.1.0
         with:
-          resource: ./cover_db/digests
+          resource: ./cover_db-remainder-perl/digests
           timeout: 600000
         if: ${{ matrix.COVERAGE }}
 
@@ -499,12 +501,17 @@ jobs:
       - name: Upload coverage data
         run: |
           unset PERL5OPT
-          cover -report coveralls
-          cover -report text > logs/coverage.txt
+          cover -report text cover_db-remainder-perl > logs/coverage.txt
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_FLAG_NAME: remainder-perl
-          COVERALLS_PARALLEL: true
+        if: ${{ matrix.COVERAGE }}
+
+      - name: Cache coverage
+        uses: actions/cache/save@v3
+        id: cache-remainder-perl
+        with:
+          path: cover_db-remainder-perl
+          key: cover_db-remainder-perl-${{ github.run_id }}
         if: ${{ matrix.COVERAGE }}
 
       # Send logs & artifacts
@@ -526,7 +533,55 @@ jobs:
   close-parallel-coverage:
     runs-on: ubuntu-latest
     needs: [ test-pure-perl, test-remainder, test-webservices ]
+    strategy:
+      matrix:
+        include:
+          - postgres: "15"
+            perl: "5.34"
+            JOB_COUNT: 5
+            COVERAGE: 1
+
+    env:
+      DEVEL_COVER_OPTIONS: -silent,1,+ignore,^x?t,+ignore,^utils,+ignore,local/,+ignore,^/usr/,+ignore,^/opt/,+ignore,\\.lttc,+ignore,starman\\b,-summary,1
+
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Perl environment & start starman
+        uses: ./.github/workflows/Install TEX & Perl
+        with:
+          perl-version: ${{ matrix.perl }}
+          DEVEL_COVER_OPTIONS: ${{ env.DEVEL_COVER_OPTIONS }}
+          starman: "0"
+
+      - uses: actions/cache/restore@v3
+        id: cache-pure-perl
+        with:
+          key: cover_db-pure-perl-${{ github.run_id }}
+          path: cover_db-pure-perl
+
+      - uses: actions/cache/restore@v3
+        id: cache-remainder-perl
+        with:
+          key: cover_db-remainder-perl-${{ github.run_id }}
+          path: cover_db-remainder-perl
+
+      - uses: actions/cache/restore@v3
+        id: webservices-perl
+        with:
+          key: cover_db-webservices-perl-${{ github.run_id }}
+          path: cover_db-webservices-perl
+
+      - name: Upload coverage data
+        run: |
+          unset PERL5OPT
+          cover -report coveralls -outputdir cover_db cover_db-pure-perl cover_db-remainder-perl cover_db-webservices-perl
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_FLAG_NAME: perl
+          COVERALLS_PARALLEL: true
+
       - name: Close parallel UI coverage data
         uses: coverallsapp/github-action@v2.2.1
         with:
