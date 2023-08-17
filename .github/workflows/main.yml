@@ -28,11 +28,12 @@ env:
   PGPORT: 5432
   PGUSER: postgres
   JOB_COUNT: 5
+  DEVEL_COVER_OPTIONS: -silent,1,+ignore,^/home/,+ignore,^x?t,+ignore,UI/tests,+ignore,^utils,+ignore,local/,+ignore,^/usr/,+ignore,^/opt/,+ignore,\\.lttc,+ignore,starman\\b,-summary,1
 
 # Use github mechanism to kill outdated active jobs
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  group: ${{ github.ref }}
+  cancel-in-progress: true
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -97,7 +98,6 @@ jobs:
         uses: ./.github/workflows/Install TEX & Perl
         with:
           perl-version: ${{ matrix.perl }}
-          DEVEL_COVER_OPTIONS: ${{ env.DEVEL_COVER_OPTIONS }}
 
   test-pure-perl:
     runs-on: ubuntu-latest
@@ -113,7 +113,6 @@ jobs:
             JOB_COUNT: 5
 
     env:
-      DEVEL_COVER_OPTIONS: -silent,1,+ignore,^x?t,+ignore,^utils,+ignore,local/,+ignore,^/usr/,+ignore,^/opt/,+ignore,\\.lttc,+ignore,starman\\b,-summary,1
       RELEASE_TESTING: 1
 
     steps:
@@ -207,7 +206,6 @@ jobs:
       LSMB_BASE_URL: http://lsmb:5000
       PSGI_BASE_URL: http://lsmb:5762
       REMOTE_SERVER_ADDRESS: 127.0.0.1
-      DEVEL_COVER_OPTIONS: -silent,1,+ignore,^x?t,+ignore,^utils,+ignore,local/,+ignore,^/usr/,+ignore,^/opt/,+ignore,\\.lttc,+ignore,starman\\b,-summary,1
 
     services:
       # Label used to access the service container
@@ -277,14 +275,6 @@ jobs:
             done
             echo " "
           fi
-
-      # Patch
-      - name: Wait until Coverage has finished producing the database (10 minutes max)
-        uses: iFaxity/wait-on-action@v1.1.0
-        with:
-          resource: ./cover_db/digests
-          timeout: 600000
-        if: ${{ matrix.COVERAGE }}
 
       # Make Coverage appear from root instead of UI to integrate in Coveralls
       - name: Fix UI Coverage report
@@ -370,7 +360,6 @@ jobs:
       BROWSER: ${{ matrix.BROWSER }}
       COA_TESTING: ${{ matrix.COA_TESTING }}
       DB_TESTING: ${{ matrix.DB_TESTING }}
-      DEVEL_COVER_OPTIONS: -silent,1,+ignore,^x?t,+ignore,^utils,+ignore,local/,+ignore,^/usr/,+ignore,^/opt/,+ignore,\\.lttc,+ignore,starman\\b,-summary,1
       JOB_COUNT: ${{ matrix.JOB_COUNT }}
       LSMB_BASE_URL: http://lsmb:5000
       LSMB_NEW_DB: lsmb_test
@@ -483,14 +472,6 @@ jobs:
             done
             echo " "
           fi
-
-      # Patch
-      - name: Wait until Coverage has finished producing the database (10 minutes max)
-        uses: iFaxity/wait-on-action@v1.1.0
-        with:
-          resource: ./cover_db/digests
-          timeout: 600000
-        if: ${{ matrix.COVERAGE }}
 
       # Upload coverage data if needed
       - name: Upload coverage data
