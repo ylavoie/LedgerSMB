@@ -29,16 +29,13 @@ env:
   PGUSER: postgres
   JOB_COUNT: 5
 
+# Use github mechanism to kill outdated active jobs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  cancel-prior:
-    if: github.repository != 'ledgersmb/LedgerSMB' || startsWith(github.ref, 'refs/pull')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.11.0
-        with:
-          access_token: ${{ github.token }}
 
   webpack:
 
