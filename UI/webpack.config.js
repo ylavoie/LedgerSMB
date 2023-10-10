@@ -136,10 +136,19 @@ if (TARGET !== "readme") {
         }
     };
 
-
     const css = {
         test: /\.css$/i,
-        use: [MiniCssExtractPlugin.loader, "css-loader"]
+        use: [
+            {
+              loader: MiniCssExtractPlugin.loader,
+              options: {
+                publicPath: (resourcePath, context) => {
+                  return path.relative(path.dirname(resourcePath), context) + "/js/";
+                },
+              },
+            },
+            "css-loader"
+        ]
     };
 
     const images = {
@@ -162,6 +171,11 @@ if (TARGET !== "readme") {
     const svg = {
         test: /\.svg$/,
         type: "asset/resource"
+    };
+
+    const woff = {
+        test: /\.(woff|woff2|eot|ttf|otf)$/i,
+        type: 'asset'
     };
 
     /* PLUGINS */
@@ -216,7 +230,7 @@ if (TARGET !== "readme") {
     const UnusedWebpackPluginOptions = {
         // Source directories
         directories: [
-            path.join(__dirname, "js-src/lsmb"), 
+            path.join(__dirname, "js-src/lsmb"),
             path.join(__dirname, "src")
         ],
         // Exclude patterns
@@ -442,7 +456,7 @@ if (TARGET !== "readme") {
         },
 
         module: {
-            rules: [vue, javascript, css, images, svg, html]
+            rules: [vue, javascript, css, images, svg, woff, html]
         },
 
         plugins: pluginsList,
@@ -456,6 +470,7 @@ if (TARGET !== "readme") {
                 "@": path.join(__dirname, "src/")
             },
             extensions: [".js", ".vue"],
+            modules: ["node_modules"],
             fallback: {
                 path: require.resolve("path-browserify")
             }
@@ -524,8 +539,8 @@ if (TARGET !== "readme") {
             ],
             watchFiles: [
                 "webpack.config.js",
-                "**/*",
-                "!js/*",
+                "js-src/**/*",
+                "src/**/*",
                 "node_modules/**/*"
             ]
         },

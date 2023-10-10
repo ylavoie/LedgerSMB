@@ -1,7 +1,11 @@
 /** @format */
 /* eslint-disable no-console, import/no-unresolved, vue/multi-word-component-names */
 
-import { createApp } from "vue";
+import 'quasar/dist/quasar.css'
+import { createApp } from 'vue'
+import { Quasar } from 'quasar'
+import quasarUserOptions from './quasar-user-options'
+
 import router from "@/router";
 import i18n, { setI18nLanguage } from "@/i18n";
 import { useI18n } from "vue-i18n";
@@ -84,5 +88,6 @@ if (app) {
         tag.startsWith("lsmb-");
     app.directive("update", lsmbDirective);
     app.use(i18n);
+    app.use(Quasar, quasarUserOptions);
     app.mount(appName);
 }
