@@ -3,6 +3,8 @@
 import { jest, beforeAll, afterAll, beforeEach, afterEach } from "@jest/globals";
 import 'core-js';
 import { setGlobalOrigin } from 'undici';
+// Mock `window.location` with Jest spies and extend expect
+import "jest-location-mock";
 
 import "./mocks/lsmb_elements";
 import { server } from './mocks/server.js'
@@ -21,22 +23,7 @@ import { i18n } from '../common/i18n'
     
 config.global.plugins = [i18n]
 
-const oldWindowLocation = window.location;
-
 beforeAll(() => {
-  delete window.location
-
-  window.location = Object.defineProperties(
-    {},
-    {
-      ...Object.getOwnPropertyDescriptors(oldWindowLocation),
-      assign: {
-        configurable: true,
-        value: jest.fn(),
-      }
-    },
-  )
-
   // Establish API mocking before all tests.
   server.listen({
     onUnhandledRequest(req) {
@@ -50,10 +37,6 @@ beforeAll(() => {
 })
 
 afterAll(() => {
-  // restore `window.location` to the original `jsdom`
-  // `Location` object
-  window.location = oldWindowLocation
-
   // Clean up after the tests are finished.
   server.close();
 })
