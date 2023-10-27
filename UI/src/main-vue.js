@@ -10,6 +10,7 @@ import router from "@/router";
 import i18n, { setI18nLanguage } from "@/i18n";
 import { useI18n } from "vue-i18n";
 import LoginPage from "@/views/LoginPage";
+import SetupLoginPage from "@/views/SetupLoginPage";
 import Toaster from "@/components/Toaster";
 import { createToasterMachine } from "@/components/Toaster.machines";
 import { useSessionUserStore } from "@/store/sessionUser";
@@ -73,6 +74,9 @@ if (document.getElementById("main")) {
 } else if (document.getElementById("login")) {
     app = createApp(LoginPage);
     appName = "#login";
+} else if (document.getElementById("setup-login")) {
+    app = createApp(SetupLoginPage);
+    appName = "#setup-login";
 } else {
     /* In case we're running a "setup.pl" page */
     dojoParser.parse(document.body).then(() => {

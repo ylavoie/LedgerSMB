@@ -71,9 +71,9 @@ form#loginform {
     padding: initial;
 }
 
-div {
+/* div {
     overflow: auto;
-}
+} */
 
 label #yesno {
     width: 2em;
