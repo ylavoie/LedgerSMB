@@ -5,6 +5,8 @@
  * @format
  */
 
+const esModules = ["quasar", "quasar/lang", "lodash-es"].join("|");
+
 module.exports = {
     // All imported modules in your tests should be mocked automatically
     automock: false,
@@ -75,6 +77,9 @@ module.exports = {
 
     // A set of global variables that need to be available in all test environments
     // globals: {},
+    globals: {
+        __DEV__: true,
+    },
 
     haste: {
         computeSha1: false,
@@ -103,13 +108,14 @@ module.exports = {
     maxConcurrency: 5,
 
     // The maximum amount of workers used to run your tests. Can be specified as % or a number. E.g. maxWorkers: 10% will use 10% of your CPU amount + 1 as the maximum worker number. maxWorkers: 2 will use a maximum of 2 workers.
-    maxWorkers: 1, // "50%",
+    maxWorkers: "50%",
 
     // An array of directory names to be searched recursively up from the requiring module's location
     moduleDirectories: ["node_modules"],
 
     // An array of file extensions your modules use
     moduleFileExtensions: [
+        "vue",
         "js",
         "json",
         "vue"
@@ -118,7 +124,10 @@ module.exports = {
     // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
     moduleNameMapper: {
         "^@/i18n": "<rootDir>/tests/common/i18n", // Jest doesn't support esm or top level await well
-        "^@/(.*)$": "<rootDir>/src/$1"
+        "^lodash-es$": "lodash",
+        '^quasar$': 'quasar/dist/quasar.esm.prod.js',
+        "^@/(.*)$": "<rootDir>/src/$1",
+        '\\..*css$': '@quasar/quasar-app-extension-testing-unit-jest/stub.css',
     },
 
     // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
@@ -231,12 +240,16 @@ module.exports = {
     // A map from regular expressions to paths to transformers
     transform: {
         "^.+\\.yaml$": "yaml-jest-transform",
-        "^.+\\.js$": "babel-jest",
-        "^.+\\.vue$": "@vue/vue3-jest"
+        "^.+\\.jsx?$": "babel-jest",
+        [`^(${esModules}).+\\.js$`]: "babel-jest",
+        "^.+\\.vue$": "@vue/vue3-jest",
+        '.+\\.(css|styl|less|sass|scss|svg|png|jpg|ttf|woff|woff2)$':
+          'jest-transform-stub'
     },
 
     // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
     // transformIgnorePatterns: [],
+    transformIgnorePatterns: [ `node_modules/(?!(${esModules}))` ],
 
     // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them
     // unmockedModulePathPatterns: undefined,

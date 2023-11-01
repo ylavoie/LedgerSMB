@@ -18,7 +18,7 @@ Object.defineProperty(window, "lsmbConfig", {
 // Enable i18n
 import { config } from '@vue/test-utils'
 import { i18n } from '../common/i18n'
-
+    
 config.global.plugins = [i18n]
 
 const oldWindowLocation = window.location;

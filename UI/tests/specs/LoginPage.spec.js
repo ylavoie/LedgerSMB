@@ -1,9 +1,14 @@
 /** @format */
 /* global retry */
 
+import { describe, expect, it } from '@jest/globals';
+import { installQuasarPlugin } from '@quasar/quasar-app-extension-testing-unit-jest';
+
 import { mount } from "@vue/test-utils";
 
 import LoginPage from "@/views/LoginPage.vue";
+
+installQuasarPlugin();
 
 let wrapper;
 
@@ -12,11 +17,12 @@ describe("LoginPage", () => {
         wrapper = mount(LoginPage);
         expect(wrapper.find("h1.login").text()).toMatch(/[\d.](-dev)?/);
 
-        expect(wrapper.get("#username").element.value).toBe("");
-        expect(wrapper.get("#password").element.value).toBe("");
-        expect(wrapper.get("#company").element.value).toBe("");
+        console.log(wrapper.html());
+        expect(wrapper.get('[name="username"]').element.value).toBe("");
+        expect(wrapper.get('[name="password"]').element.value).toBe("");
+        expect(wrapper.get('[name="company"]').element.value).toBe("");
 
-        const loginButton = wrapper.get("#login");
+        const loginButton = wrapper.get('[name="login"]');
 
         expect(loginButton.text()).toBe("Login");
         expect(loginButton.isDisabled()).toBe(true);
@@ -28,13 +34,13 @@ describe("LoginPage", () => {
         const loginButton = wrapper.get("#login");
         expect(await loginButton.isDisabled()).toBe(true);
 
-        wrapper.find("#username").setValue("MyUser");
+        wrapper.find('[name="username"]').setValue("MyUser");
         expect(await loginButton.isDisabled()).toBe(true);
 
-        wrapper.find("#password").setValue("MyPassword");
+        wrapper.find('[name="password"]').setValue("MyPassword");
         expect(await loginButton.isDisabled()).toBe(false);
 
-        wrapper.find("#company").setValue("MyCompany");
+        wrapper.find('[name="company"]').setValue("MyCompany");
         expect(await loginButton.isDisabled()).toBe(false);
     });
 
@@ -44,13 +50,13 @@ describe("LoginPage", () => {
 
         wrapper = mount(LoginPage);
 
-        wrapper.find("#username").setValue("BadUser");
+        wrapper.find('[name="username"]').setValue("BadUser");
         expect(await wrapper.get("#login").isDisabled()).toBe(true);
 
-        wrapper.find("#password").setValue("MyPassword");
+        wrapper.find('[name="password"]').setValue("MyPassword");
         expect(await wrapper.get("#login").isDisabled()).toBe(false);
 
-        wrapper.find("#company").setValue("MyCompany");
+        wrapper.find('[name="company"]').setValue("MyCompany");
         expect(await wrapper.get("#login").isDisabled()).toBe(false);
 
         await wrapper.get("#login").trigger("click");
@@ -67,9 +73,9 @@ describe("LoginPage", () => {
 
         wrapper = mount(LoginPage);
 
-        await wrapper.find("#username").setValue("MyUser");
-        await wrapper.find("#password").setValue("MyPassword");
-        await wrapper.find("#company").setValue("MyOldCompany");
+        await wrapper.find('[name="username"]').setValue("MyUser");
+        await wrapper.find('[name="password"]').setValue("MyPassword");
+        await wrapper.find('[name="company"]').setValue("MyOldCompany");
 
         await wrapper.get("#login").trigger("click");
 
@@ -85,9 +91,9 @@ describe("LoginPage", () => {
 
         wrapper = mount(LoginPage);
 
-        await wrapper.find("#username").setValue("My");
-        await wrapper.find("#password").setValue("My");
-        await wrapper.find("#company").setValue("My");
+        await wrapper.find('[name="username"]').setValue("My");
+        await wrapper.find('[name="password"]').setValue("My");
+        await wrapper.find('[name="company"]').setValue("My");
 
         await wrapper.get("#login").trigger("click");
 
@@ -101,9 +107,9 @@ describe("LoginPage", () => {
     it("should login when filled", async () => {
         wrapper = mount(LoginPage);
 
-        await wrapper.find("#username").setValue("MyUser");
-        await wrapper.find("#password").setValue("MyPassword");
-        await wrapper.find("#company").setValue("MyCompany");
+        await wrapper.find('[name="username"]').setValue("MyUser");
+        await wrapper.find('[name="password"]').setValue("MyPassword");
+        await wrapper.find('[name="company"]').setValue("MyCompany");
 
         await wrapper.get("#login").trigger("click");
 
