@@ -429,6 +429,10 @@ jobs:
           key: |
             modules-${{ hashFiles('UI/yarn.lock') }}
 
+      - name: Debug
+        run: |
+          for a in js-src src css *.html; do find UI/$a -type f -wholename "**" | while read -r file; do md5sum "$file"; done; done
+
       - name: Cache Dojo
         id: cache-dojo
         uses: actions/cache@v3
