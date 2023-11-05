@@ -72,6 +72,10 @@ jobs:
           key: |
             modules-${{ hashFiles('UI/yarn.lock') }}
 
+      - name: Debug
+        run: |
+          for a in js-src src css *.html; do find UI/$a -type f -wholename "**" | while read -r file; do md5sum "$file"; done; done
+
       - name: Cache Dojo
         id: cache-dojo
         uses: actions/cache@v3
@@ -87,6 +91,10 @@ jobs:
           make readme
         if: steps.cache-dojo.outputs.cache-hit != 'true' ||
             steps.cache-node_modules.outputs.cache-hit != 'true'
+
+      - name: Debug
+        run: |
+          for a in js-src src css *.html; do find UI/$a -type f -wholename "**" | while read -r file; do md5sum "$file"; done; done
 
   # Prep-up the cache
   build-perl-env:
