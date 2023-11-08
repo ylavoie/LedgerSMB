@@ -14,10 +14,12 @@ export const loginHandlers = [
 
         if ( action === 'authenticate' ) {
             if ( username === 'MyUser' && password === 'MyPassword' && company === 'MyCompany' ) {
-                window.location.assign('http://lsmb/erp.pl?action=root');
-                return new HttpResponse(null, {
+                // window.location.assign('http://lsmb/erp.pl?action=root');
+                return HttpResponse.json({
+                    "target":  window.location + "erp.pl?__action=root"
+                }, {
                     status: 200
-                  })
+                })
             }
             if ( username && password && company === 'MyOldCompany' ) {
                 return new HttpResponse(null, {

@@ -22,6 +22,7 @@ describe("loginPage", () => {
     beforeEach(() => {
         jest.spyOn(window, 'alert').mockImplementation();
         wrapper = mount(LoginPage);
+        expect(wrapper.find("p.login").text()).toMatch(/[\d.](-dev)?/);
 
         username = wrapper.get('[name="username"]');
         password = wrapper.get('[name="password"]');
@@ -40,7 +41,7 @@ describe("loginPage", () => {
     };
 
     it("should show dialog", () => {
-        expect(wrapper.find("h1.login").text()).toMatch(/[\d.](-dev)?/);
+        expect(wrapper.find("p.login").text()).toMatch(/[\d.](-dev)?/);
         expect(username.element.value).toBe("");
         expect(password.element.value).toBe("");
         expect(company.element.value).toBe("");
