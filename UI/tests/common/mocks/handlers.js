@@ -12,6 +12,7 @@ import { warehousesHandlers } from "./store_warehouses_handlers";
 
 // Views
 import { loginHandlers } from "./login_handlers";
+import { setupLoginHandlers } from "./setup_login_handlers";
 
 export const handlers = [
   // Stores
@@ -24,6 +25,7 @@ export const handlers = [
   ...sicsHandlers,
   ...warehousesHandlers,
   // Views
-  ...loginHandlers
+  ...loginHandlers,
+  ...setupLoginHandlers
 ];
 
