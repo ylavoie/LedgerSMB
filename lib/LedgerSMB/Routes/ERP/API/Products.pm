@@ -212,7 +212,7 @@ get api '/products/pricegroups/{id}' => sub {
 put api '/products/pricegroups/{id}' => sub {
     my ($env, $r, $c, $body, $params) = @_;
 
-    my ($ETag) = ($r->headers->header('If-Match') =~ m/^\s*"(.*)"\s*$/);
+    my ($ETag) = ($r->headers->header('If-Match') =~ m/^\s*(?>W\/)?"(.*)"\s*$/);
     my ($response, $meta) = _update_pricegroup(
         $c, {
             id => $params->{id},
@@ -425,7 +425,7 @@ get api '/products/warehouses/{id}' => sub {
 put api '/products/warehouses/{id}' => sub {
     my ($env, $r, $c, $body, $params) = @_;
 
-    my ($ETag) = ($r->headers->header('If-Match') =~ m/^\s*"(.*)"\s*$/);
+    my ($ETag) = ($r->headers->header('If-Match') =~ m/^\s*(?>W\/)?"(.*)"\s*$/);
     my ($response, $meta) = _update_warehouse(
         $c, {
             id => $params->{id},
