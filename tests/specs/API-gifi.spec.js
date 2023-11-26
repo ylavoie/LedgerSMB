@@ -7,10 +7,10 @@
  */
 
 // Import test packages
-import axios from "axios";
 import jestOpenAPI from "jest-openapi";
 import { StatusCodes } from "http-status-codes";
 import { create_database, drop_database } from "./database";
+import { fetch } from 'undici';
 
 // Load an OpenAPI file (YAML or JSON) into this plugin
 jestOpenAPI(process.env.PWD + "/openapi/API.yaml");
@@ -25,13 +25,12 @@ const username = `Jest${id}`;
 const password = "Tester";
 const company = `lsmb_test_api_${id}`;
 
-const server = process.env.LSMB_BASE_URL;
+const serverUrl = process.env.LSMB_BASE_URL;
 
 let headers = {};
 
 // For all tests
 beforeAll(() => {
-    axios.defaults.adapter = 'http';
     create_database(username, password, company);
 });
 
@@ -39,16 +38,30 @@ afterAll(() => {
     drop_database(company);
 });
 
+const emulateAxiosResponse = async(res) => {
+    return {
+        data: await res.json(),
+        status: res.status,
+        statusText: res.statusText,
+        headers: res.headers,
+        request: {
+            path: res.url,
+            method: 'GET'
+        }
+    };
+};
+
 // Log in before each test
 beforeEach(async () => {
-    let r = await axios.post(
-        server + "/login.pl?action=authenticate&company=" + encodeURI(company),
+    let r = await fetch(
+        serverUrl + "/login.pl?action=authenticate&company=" + encodeURI(company),
         {
-            company: company,
-            password: password,
-            login: username
-        },
-        {
+            method: "POST",
+            body: JSON.stringify({
+                company: company,
+                password: password,
+                login: username
+            }),
             headers: {
                 "X-Requested-With": "XMLHttpRequest",
                 "Content-Type": "application/json"
@@ -56,16 +69,18 @@ beforeEach(async () => {
         }
     );
     if (r.status === StatusCodes.OK) {
+        const data = await r.json();
         headers = {
-            cookie: r.headers["set-cookie"],
-            referer: server + "/" + r.data.target,
+            cookie: r.headers.get("set-cookie"),
+            referer: serverUrl + "/" + data.target,
             authorization: "Basic " + btoa(username + ":" + password)
         };
     }
 });
+
 // Log out after each test
 afterEach(async () => {
-    let r = await axios.get(server + "/login.pl?action=logout&target=_top");
+    let r = await fetch(serverUrl + "/login.pl?action=logout&target=_top");
     if (r.status === StatusCodes.OK) {
         headers = {};
     }
@@ -74,80 +89,79 @@ afterEach(async () => {
 // GIFI tests
 describe("Retrieving all gifis", () => {
     it("GET /gifi should satisfy OpenAPI spec", async () => {
-        // Get an HTTP response from your server
-        let res = await axios.get(server + "/" + api + "/gl/gifi", {
+        // Get an HTTP response from your serverUrl
+        let res = await fetch(serverUrl + "/" + api + "/gl/gifi", {
             headers: headers
         });
         expect(res.status).toEqual(StatusCodes.OK);
 
         // Assert that the HTTP response satisfies the OpenAPI spec
+        res = await emulateAxiosResponse(res);
         expect(res).toSatisfyApiSpec();
     });
 });
 
 describe("Retrieving all gifis with old syntax should fail", () => {
     it("GET /gifi/ should fail", async () => {
-        await expect(
-            axios.get(server + "/" + api + "/gl/gifi/", {
+        let res = await fetch(serverUrl + "/" + api + "/gl/gifi/", {
                 headers: headers
-            })
-        ).rejects.toThrow(
-            "Request failed with status code " + StatusCodes.BAD_REQUEST
-        );
+        });
+        expect(res.status).toEqual(StatusCodes.BAD_REQUEST);
     });
 });
 
 describe("Retrieve non-existant GIFI 99999", () => {
     it("GET /gifi/99999 should not retrieve invalid GIFI", async () => {
-        await expect(
-            axios.get(server + "/" + api + "/gl/gifi/99999", {
-                headers: headers
-            })
-        ).rejects.toThrow(
-            "Request failed with status code " + StatusCodes.NOT_FOUND
-        );
+        let res = await fetch(serverUrl + "/" + api + "/gl/gifi/99999", {
+            headers: headers
+        });
+        expect(res.status).toEqual(StatusCodes.NOT_FOUND);
     });
 });
 
 describe("Adding the new Test GIFI", () => {
     it("POST /gifi/99999 should allow adding a new GIFI", async () => {
-        let res = await axios.post(
-            server + "/" + api + "/gl/gifi",
-            {
+        let res = await fetch(serverUrl + "/" + api + "/gl/gifi", {
+            method: "POST",
+            body: JSON.stringify({
                 accno: "99999",
                 description: "Test GIFI"
-            },
-            {
-                headers: headers
-            }
-        );
+            }),
+            headers: { ...headers, "Content-Type": "application/json" }
+        });
         expect(res.status).toEqual(StatusCodes.CREATED);
 
         // Assert that the HTTP response satisfies the OpenAPI spec
+        res = await emulateAxiosResponse(res);
         expect(res.data).toSatisfySchemaInApiSpec("GIFI");
     });
 });
 
 describe("Modifying the new GIFI 99999", () => {
     it("PUT /gifi/99999 should allow updating Test GIFI", async () => {
-        let res = await axios.get(server + "/" + api + "/gl/gifi/99999", {
+        let res = await fetch(serverUrl + "/" + api + "/gl/gifi/99999", {
             headers: headers
         });
         expect(res.status).toEqual(StatusCodes.OK);
-        expect(res.headers.etag).toBeDefined();
-        res = await axios.put(
-            server + "/" + api + "/gl/gifi/99999",
-            {
-                accno: "99999",
-                description: "Test GIFI"
-            },
-            {
-                headers: { ...headers, "If-Match": res.headers.etag }
-            }
-        );
+        const etag = res.headers.get("etag");
+        expect(etag).toBeDefined();
+        res = await fetch(
+            serverUrl + "/" + api + "/gl/gifi/99999",{
+                method: "PUT",
+                body: JSON.stringify({
+                    accno: "99999",
+                    description: "Test GIFI"
+                }),
+                headers: {
+                    ...headers,
+                    "Content-Type": "application/json",
+                    "If-Match": etag
+                }
+        });
         expect(res.status).toEqual(StatusCodes.OK);
 
         // Assert that the HTTP response satisfies the OpenAPI spec
+        res = await emulateAxiosResponse(res);
         expect(res).toSatisfyApiSpec();
 
         // Assert that the HTTP response satisfies the OpenAPI spec
@@ -159,24 +173,31 @@ describe("Modifying the new GIFI 99999", () => {
  * Not implemented yet
 describe("Updating the new GIFI 99999", () => {
     it("PATCH /gifi/99999 should allow updating Test GIFI", async () => {
-        let res = await axios.get(server + "/" + api + "/gl/gifi/99999", {
+        let res = await fetch(serverUrl + "/" + api + "/gl/gifi/99999", {
             headers: headers
         });
         expect(res.status).toEqual(StatusCodes.OK);
-        expect(res.headers.etag).toBeDefined();
-        res = await axios.patch(
-            server + "/" + api + "/gl/gifi/99999",
+        const etag = res.headers.get("etag");
+        expect(etag).toBeDefined();
+        res = await fetch(
+            serverUrl + "/" + api + "/gl/gifi/99999",
             {
-                accno: "99999",
-                description: "Test GIFI"
-            },
-            {
-                headers: { ...headers, "If-Match": res.headers.etag }
+                method: "PATCH",
+                body: JSON.stringify({
+                    accno: "99999",
+                    description: "Test GIFI"
+                }),
+                headers: {
+                    ...headers,
+                    "Content-Type": "application/json",
+                    "If-Match": etag
+                }
             }
         );
         expect(res.status).toEqual(StatusCodes.OK);
 
         // Assert that the HTTP response satisfies the OpenAPI spec
+        res = await emulateAxiosResponse(res);
         expect(res).toSatisfyApiSpec();
 
         // Assert that the HTTP response satisfies the OpenAPI spec
@@ -187,18 +208,18 @@ describe("Updating the new GIFI 99999", () => {
 
 describe("Not Removing the new GIFI 99999", () => {
     it("DELETE /gifi/99999 should allow deleting Test GIFI", async () => {
-        let res = await axios.get(server + "/" + api + "/gl/gifi/99999", {
+        let res = await fetch(serverUrl + "/" + api + "/gl/gifi/99999", {
             headers: headers
         });
         expect(res.status).toEqual(StatusCodes.OK);
-        expect(res.headers.etag).toBeDefined();
+        const etag = res.headers.get("etag");
+        expect(etag).toBeDefined();
 
-        await expect(
-            axios.delete(server + "/" + api + "/gl/gifi/99999", {
-                headers: { ...headers, "If-Match": res.headers.etag }
-            })
-        ).rejects.toThrow(
-            "Request failed with status code " + StatusCodes.FORBIDDEN
+        res = await fetch(serverUrl + "/" + api + "/gl/gifi/99999", {
+                method: "DELETE",
+                headers: { ...headers, "If-Match": etag }
+            }
         );
+        expect(res.status).toEqual(StatusCodes.FORBIDDEN);
     });
 });
