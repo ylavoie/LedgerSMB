@@ -26,9 +26,7 @@
     <%= htmlWebpackPlugin.tags.headTags %>
     <link href="js/dojo/resources/dojo.css" rel="stylesheet">
     <link href="js/css/[% dojo_theme %].css" rel="stylesheet">
-    [%- IF form.stylesheet %]
-    <link href="js/css/[% form.stylesheet %]" rel="stylesheet">
-    [%- ELSIF stylesheet %]
+    [%- IF stylesheet %]
     <link href="js/css/[% stylesheet %]" rel="stylesheet">
     [%- END %]
     [%- FOREACH s = include_stylesheet %]
@@ -48,13 +46,19 @@
        END;
     %]
     <script>
-        window.alert("[% ALERT %]");
+      let h;
+      h = () => {
+          window.removeEventListener('DOMContentLoaded', h);
+          window.alert("[% ALERT %]");
+      };
+      window.addEventListener('DOMContentLoaded', h);
     </script>
     [% END %]
     <script>
         var dojoConfig = {
             async: 1,
             parseOnLoad: false,
+            defaultDuration: 100000,
             locale: "[% USER.language %]",
             packages: [{"name":"lsmb","location":"../lsmb"}],
             mode: "<%= htmlWebpackPlugin.options.mode %>"
