@@ -8,5 +8,5 @@ require([
     // Tooltip.defaultPosition = ["below"];
 
     // Set global default show delay for all tooltips (in milliseconds)
-    // Tooltip.showDelay = 10000; // Set the default show delay to 10000 milliseconds (100 second)
+    Tooltip.defaultShowDelay = 10000; // Set the default show delay to 10000 milliseconds (100 second)
 });
