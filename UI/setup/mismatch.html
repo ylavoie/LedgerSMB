@@ -2,11 +2,19 @@
           stylesheet="ledgersmb.css"
           include_stylesheet=["system/setup.css"]
        %]
-[% PROCESS elements.html %]
 <body id="setup-system-info" class="lsmb [% dojo_theme %]">
 <div><div class="setupconsole">
 <h2>[% text('Database Server version Mismatch') %]</h2>
-[% INCLUDE 'setup/ui-db-credentials.html' %]
+<div class="listtop"></div>[% text('Database Credentials') %]</div>
+<table class='lsmb_info' id="credentials">
+  <tbody>
+    <tr><td>[% text('Username') %] :</td>
+      <td id="username">[% login %]</td></tr>
+    <tr><td>[% text('Database') %] :</td>
+      <td id="databasename">[% database %]</td></tr>
+  </tbody>
+</table>
+<br>
 <p style="background:red;color:yellow;font-weight:bold">[%
   text('Your database server version ([_1]) is incompatible with this LedgerSMB version, which requires [_2]', found, required);
   %]</p>

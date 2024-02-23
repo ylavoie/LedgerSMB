@@ -1,12 +1,21 @@
 [% WRAPPER "ui-header.html"
-stylesheet="ledgersmb.css"
-include_stylesheet=["system/setup.css"] %]
+    stylesheet="ledgersmb.css"
+    include_stylesheet=["system/setup.css"] %]
 [% PROCESS elements.html %]
 <body id="setup-confirm-operation" class="lsmb [% dojo_theme %]">
 <div><div class="setupconsole">
 <h2>[% text('Database Management Console') %]</h2>
 [% # notice, message, and operation are all localized. %]
-[% INCLUDE 'setup/ui-db-credentials.html' %]
+<div class="listtop">[% text('Database Credentials') %]</div>
+<table class='lsmb_info' id="credentials">
+  <tbody>
+    <tr><td>[% text('Username') %] :</td>
+      <td id="username">[% login %]</td></tr>
+    <tr><td>[% text('Database') %] :</td>
+      <td id="databasename">[% database %]</td></tr>
+  </tbody>
+</table>
+<br>
 <div class="listtop">[% text('Confirm Operation') %]</div>
 <div id="notice">[% notice %]</div>
 <div id="message">[% message %]</div>
@@ -15,125 +24,129 @@ include_stylesheet=["system/setup.css"] %]
       action="setup.pl"
       method="POST"
       name="confirm_operation">
-  <input type="hidden" name="csrf_token" value="[% csrf_token %]" />
-[% INCLUDE input element_data = {
-    name = 'database'
-    type = 'hidden'
-   value = database
-} %]
-<div class="inputrow">
-[% INCLUDE button element_data = {
-    name = '__action'
-   value = next_action
-    type = 'submit'
-   class = 'submit'
-    text = text('Yes')
-} %]
-</div>
-<div id="sep" class="listheading">[% text('Other Actions') %]</div>
-[% IF next_action == 'rebuild_modules' %]
-<div id="copy-database">
-[% INCLUDE input element_data = {
-    name = 'new_name'
-    type = 'text'
-   class = 'dbname'
-   label = text('Copy to New Name') #'
-}; %]
-[% INCLUDE button element_data = {
-    name = '__action'
-   value = 'copy_db'
-    type = 'submit'
-   class = 'submit'
-    text = text('Copy') #'
-}; %]
-</div>
-<div id="user">
-<div>[% text('Users') %]</div>
-[% INCLUDE button element_data = {
-    name = '__action'
-   value = 'add_user'
-    type = 'submit'
-   class = 'submit'
-    text = text('Add User') #'
-}; %]
-[% INCLUDE button element_data = {
-    name = '__action'
-   value = 'list_users'
-    type = 'submit'
-   class = 'submit'
-    text = text('List Users') #'
-}; %]
-</div>
-<div id="templates">
-<div>[% text('Templates') %]</div>
-[% INCLUDE button element_data = {
-    name = '__action'
-   value = 'load_templates'
-    type = 'submit'
-   class = 'submit'
-    text = text('Load Templates') #'
-};
-INCLUDE input element_data = {
-    name = "only_templates"
-   value = "1"
-    type = "hidden"
-}; %]
-</div>
-[% END %]
-[% IF next_action != 'create_db' %]
-<div id="others">[% text('Backup') %]</div>
-<div class="inputrow">
-[% INCLUDE button element_data = {
-    name = '__action'
-   value = 'backup_db'
-    type = 'submit'
-   class = 'submit'
-    text = text('Backup DB') #'
-} %]
-[% INCLUDE button element_data = {
-    name = '__action'
-   value = 'backup_roles'
-    type = 'submit'
-   class = 'next'
-    text = text('Backup Roles') #'
-} %]
-</div>
-<div id="diagnostics">[% text('System diagnostics') %]</div>
-<div class="inputrow">
-[% INCLUDE button element_data = {
-    name = '__action'
-   value = 'system_info'
-    type = 'submit'
-   class = 'submit'
-    text = text('System Info') #'
-} %]
-[% INCLUDE button element_data = {
-    name = '__action'
-   value = 'consistency'
-    type = 'submit'
-   class = 'submit'
-    text = text('Check consistency') #'
-} %]
-</div>
-[% END %]
+    <input type="hidden" name="csrf_token" value="[% csrf_token %]" />
+    [% INCLUDE input element_data = {
+        name = 'database'
+        type = 'hidden'
+        value = database
+    } %]
+    <div class="inputrow">
+        [% INCLUDE button element_data = {
+            name = '__action'
+            value = next_action
+            type = 'submit'
+            class = 'submit'
+            text = text('Yes')
+        } %]
+    </div>
+    <q-btn type="submit"
+        :label="$t('Yes')"
+        @click="loadTemplates">
+    </q-btn>
+    <div id="sep" class="listheading">[% text('Other Actions') %]</div>
+    [% IF next_action == 'rebuild_modules' %]
+        <div id="copy-database">
+            [% INCLUDE input element_data = {
+                name = 'new_name'
+                type = 'text'
+                class = 'dbname'
+                label = text('Copy to New Name') #'
+            }; %]
+            [% INCLUDE button element_data = {
+                name = '__action'
+                value = 'copy_db'
+                type = 'submit'
+                class = 'submit'
+                text = text('Copy') #'
+            }; %]
+        </div>
+        <div id="user">
+            <div>[% text('Users') %]</div>
+            [% INCLUDE button element_data = {
+                name = '__action'
+                value = 'add_user'
+                type = 'submit'
+                class = 'submit'
+                text = text('Add User') #'
+            }; %]
+            [% INCLUDE button element_data = {
+                name = '__action'
+                value = 'list_users'
+                type = 'submit'
+                class = 'submit'
+                text = text('List Users') #'
+            }; %]
+        </div>
+        <div id="templates">
+            <div>[% text('Templates') %]</div>
+            [% INCLUDE button element_data = {
+                name = '__action'
+                value = 'load_templates'
+                type = 'submit'
+                class = 'submit'
+                text = text('Load Templates') #'
+            };
+            INCLUDE input element_data = {
+                name = "only_templates"
+                value = "1"
+                type = "hidden"
+            }; %]
+        </div>
+    [% END %]
+    [% IF next_action != 'create_db' %]
+        <div id="others">[% text('Backup') %]</div>
+        <div class="inputrow">
+            [% INCLUDE button element_data = {
+                name = '__action'
+                value = 'backup_db'
+                type = 'submit'
+                class = 'submit'
+                text = text('Backup DB') #'
+            } %]
+            [% INCLUDE button element_data = {
+                name = '__action'
+                value = 'backup_roles'
+                type = 'submit'
+                class = 'next'
+                text = text('Backup Roles') #'
+            } %]
+        </div>
+        <div id="diagnostics">[% text('System diagnostics') %]</div>
+        <div class="inputrow">
+            [% INCLUDE button element_data = {
+                name = '__action'
+                value = 'system_info'
+                type = 'submit'
+                class = 'submit'
+                text = text('System Info') #'
+            } %]
+            [% INCLUDE button element_data = {
+                name = '__action'
+                value = 'consistency'
+                type = 'submit'
+                class = 'submit'
+                text = text('Check consistency') #'
+            } %]
+        </div>
+    [% END %]
 </form>
 [% IF lsmb_info %]
-<table class='lsmb_info'>
-  <thead>
-  <tr><th colspan="2">[% text('LedgerSMB Database Statistics') %]</th></tr>
-  <tr><th colspan="2">[% text('Row counts') %]</th></tr>
-  </thead>
-  <tbody>
-  <tr><th>[% text('AP') %]</th><td>[% lsmb_info.ap_count %]</td></tr>
-  <tr><th>[% text('AR') %]</th><td>[% lsmb_info.ar_count %]</td></tr>
-  <tr><th>[% text('GL') %]</th><td>[% lsmb_info.gl_count %]</td></tr>
-  <tr><th>[% text('Journal Lines') %]</th><td>[% lsmb_info.acc_trans_count %]</td></tr>
-  <tr><th>[% text('Orders') %]</th><td>[% lsmb_info.oe_count %]</td></tr>
-  <tr><th>[% text('Customer/Vendor Accounts') %]</th><td>[% lsmb_info.eca_count %]</td></tr>
-  <tr><th>[% text('Transactions') %]</th><td>[% lsmb_info.transactions_count %]</td></tr>
-  <tr><th>[% text('Users') %]</th><td>[% lsmb_info.users_count %]</td></tr>
-  </tbody>
-</table>
+    <table class='lsmb_info'>
+    <thead>
+    <tr><th colspan="2">[% text('LedgerSMB Database Statistics') %]</th></tr>
+    <tr><th colspan="2">[% text('Row counts') %]</th></tr>
+    </thead>
+    <tbody>
+    <tr><th>[% text('AP') %]</th><td>[% lsmb_info.ap_count %]</td></tr>
+    <tr><th>[% text('AR') %]</th><td>[% lsmb_info.ar_count %]</td></tr>
+    <tr><th>[% text('GL') %]</th><td>[% lsmb_info.gl_count %]</td></tr>
+    <tr><th>[% text('Journal Lines') %]</th><td>[% lsmb_info.acc_trans_count %]</td></tr>
+    <tr><th>[% text('Orders') %]</th><td>[% lsmb_info.oe_count %]</td></tr>
+    <tr><th>[% text('Customer/Vendor Accounts') %]</th><td>[% lsmb_info.eca_count %]</td></tr>
+    <tr><th>[% text('Transactions') %]</th><td>[% lsmb_info.transactions_count %]</td></tr>
+    <tr><th>[% text('Users') %]</th><td>[% lsmb_info.users_count %]</td></tr>
+    </tbody>
+    </table>
 [% END %]
 </div></div>
 </body>

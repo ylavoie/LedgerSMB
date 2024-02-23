@@ -2,11 +2,19 @@
           stylesheet="ledgersmb.css"
           include_stylesheet=["system/setup.css"]
        %]
-[% PROCESS elements.html %]
 <body id="setup-operation-complete" class="lsmb [% dojo_theme %]">
 <div><div class="setupconsole">
 <h2>[% text('Database Management Console') %]</h2>
-[% INCLUDE 'setup/ui-db-credentials.html' %]
+<div class="listtop">[% text('Database Credentials') %]</div>
+<table class='lsmb_info' id="credentials">
+  <tbody>
+    <tr><td>[% text('Username') %] :</td>
+      <td id="username">[% login %]</td></tr>
+    <tr><td>[% text('Database') %] :</td>
+      <td id="databasename">[% database %]</td></tr>
+  </tbody>
+</table>
+<br>
 <div class="listtop">[% text('Database Operation Complete') %]</div>
 <p>[% text('This database operation has completed successfully.  LedgerSMB may now be used.'); %]</p>
 <p><a href="setup.pl?__action=login&amp;s_user=[% login %]&amp;database=">[% text('Return to setup') %]</a></p>
