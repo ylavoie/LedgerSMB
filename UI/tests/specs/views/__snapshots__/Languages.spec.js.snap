@@ -5,11 +5,11 @@ exports[`Languages should show dialog 1`] = `
   data-v-app=""
 >
   
-  <h1
+  <h5
     class="listtop"
   >
     Configure languages
-  </h1>
+  </h5>
   
   <div>
     <table

@@ -5,11 +5,11 @@ exports[`Warehouses - register as a component should show dialog 1`] = `
   data-v-app=""
 >
   
-  <h1
+  <h5
     class="listtop"
   >
     Configure warehouses
-  </h1>
+  </h5>
   
   <div>
     <table
@@ -125,11 +125,11 @@ exports[`Warehouses - register as a component should show dialog with editable d
   data-v-app=""
 >
   
-  <h1
+  <h5
     class="listtop"
   >
     Configure warehouses
-  </h1>
+  </h5>
   
   <div>
     <table

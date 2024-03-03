@@ -5,11 +5,11 @@ exports[`Pricegroups - register as a component should show dialog 1`] = `
   data-v-app=""
 >
   
-  <h1
+  <h5
     class="listtop"
   >
     Configure pricegroups
-  </h1>
+  </h5>
   
   <div>
     <table
@@ -104,11 +104,11 @@ exports[`Pricegroups - register as a component should show dialog with editable 
   data-v-app=""
 >
   
-  <h1
+  <h5
     class="listtop"
   >
     Configure pricegroups
-  </h1>
+  </h5>
   
   <div>
     <table

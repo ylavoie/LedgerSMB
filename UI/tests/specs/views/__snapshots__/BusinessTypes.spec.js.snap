@@ -5,11 +5,11 @@ exports[`BusinessTypes - register as a component should show dialog 1`] = `
   data-v-app=""
 >
   
-  <h1
+  <h5
     class="listtop"
   >
     Configure Type of Businesses
-  </h1>
+  </h5>
   
   <div>
     <table
@@ -127,11 +127,11 @@ exports[`BusinessTypes - register as a component should show dialog with editabl
   data-v-app=""
 >
   
-  <h1
+  <h5
     class="listtop"
   >
     Configure Type of Businesses
-  </h1>
+  </h5>
   
   <div>
     <table

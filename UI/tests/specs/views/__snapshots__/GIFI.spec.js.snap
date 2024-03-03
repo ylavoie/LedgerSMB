@@ -6,11 +6,11 @@ exports[`GIFI - register as a component should show dialog 1`] = `
 >
   
   <!-- eslint-disable vue/attribute-hyphenation -->
-  <h1
+  <h5
     class="listtop"
   >
     Configure GIFI codes
-  </h1>
+  </h5>
   
   <div>
     <table
@@ -122,11 +122,11 @@ exports[`GIFI - register as a component should show dialog 1`] = `
   <div
     class="import-section"
   >
-    <h2
+    <h6
       class="listheading"
     >
       Import
-    </h2>
+    </h6>
     <div
       id="import-gifi"
     >
@@ -210,11 +210,11 @@ exports[`GIFI - register as a component should show dialog with editable data 1`
 >
   
   <!-- eslint-disable vue/attribute-hyphenation -->
-  <h1
+  <h5
     class="listtop"
   >
     Configure GIFI codes
-  </h1>
+  </h5>
   
   <div>
     <table
@@ -376,11 +376,11 @@ exports[`GIFI - register as a component should show dialog with editable data 1`
   <div
     class="import-section"
   >
-    <h2
+    <h6
       class="listheading"
     >
       Import
-    </h2>
+    </h6>
     <div
       id="import-gifi"
     >

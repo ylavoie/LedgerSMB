@@ -5,11 +5,11 @@ exports[`SIC - register as a component should show dialog 1`] = `
   data-v-app=""
 >
   
-  <h1
+  <h5
     class="listtop"
   >
     Configure Standard Industry Codes (SIC)
-  </h1>
+  </h5>
   
   <div>
     <table
@@ -121,11 +121,11 @@ exports[`SIC - register as a component should show dialog 1`] = `
   <div
     class="import-section"
   >
-    <h2
+    <h6
       class="listheading"
     >
       Import
-    </h2>
+    </h6>
     <div
       id="import-sic"
     >
@@ -212,11 +212,11 @@ exports[`SIC - register as a component should show dialog with editable data 1`]
   data-v-app=""
 >
   
-  <h1
+  <h5
     class="listtop"
   >
     Configure Standard Industry Codes (SIC)
-  </h1>
+  </h5>
   
   <div>
     <table
@@ -378,11 +378,11 @@ exports[`SIC - register as a component should show dialog with editable data 1`]
   <div
     class="import-section"
   >
-    <h2
+    <h6
       class="listheading"
     >
       Import
-    </h2>
+    </h6>
     <div
       id="import-sic"
     >
