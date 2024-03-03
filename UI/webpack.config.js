@@ -380,7 +380,8 @@ if (TARGET !== "readme") {
             __INTLIFY_PROD_DEVTOOLS__: JSON.stringify(false),
             __VUE_I18N_LEGACY_API__: JSON.stringify(false),
             __VUE_OPTIONS_API__: true,
-            __VUE_PROD_DEVTOOLS__: true
+            __VUE_PROD_DEVTOOLS__: true,
+            __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: true
         })
     ];
 
