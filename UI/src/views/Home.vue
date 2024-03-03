@@ -7,9 +7,9 @@ export default {
 <template>
     <div>
         <div id="welcome" class="width100">
-            <h1 style="margin-bottom: 3em">{{ $t(`Welcome to LedgerSMB`) }}</h1>
+            <h5 style="margin-bottom: 3em">{{ $t(`Welcome to LedgerSMB`) }}</h5>
             <div class="welcomed w1">
-                <h2>{{ $t(`What is LedgerSMB`) }}</h2>
+                <h6>{{ $t(`What is LedgerSMB`) }}</h6>
                 <p>{{ $t(`LedgerSMB is a double entry accounting system offering a wide
                   variety of related functionalities, such as`) }}</p>
                 <ul>
@@ -23,7 +23,7 @@ export default {
                 </ul>
             </div>
             <div class="welcomed w2">
-                <h2>{{ $t(`Community resources`) }}</h2>
+                <h6>{{ $t(`Community resources`) }}</h6>
                 <p>{{ $t(`Community support for LedgerSMB is a available through various
                   channels, ranging from static all the way to near-realtime (depending
                   on availability of people):`) }}</p>
@@ -47,7 +47,7 @@ export default {
                       &quot;LedgerSMB&quot; room</a></p>
             </div>
             <div class="welcomed w3">
-                <h2>{{ $t(`Contributing`) }}</h2>
+                <h6>{{ $t(`Contributing`) }}</h6>
                 <p>{{ $t(`The project is always looking for contributions. The easiest ways to
                   contribute to the project are:`) }}</p>
                 <ul>

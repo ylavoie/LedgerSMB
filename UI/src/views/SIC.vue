@@ -17,7 +17,7 @@ const store = useSICsStore();
 </script>
 
 <template>
-    <h1 class="listtop">{{ t("Configure Standard Industry Codes (SIC)") }}</h1>
+    <h5 class="listtop">{{ t("Configure Standard Industry Codes (SIC)") }}</h5>
     <ConfigTable
         :columns="COLUMNS"
         :store="store"
@@ -25,7 +25,7 @@ const store = useSICsStore();
         editRole="sic_edit"
         createRole="sic_create" />
     <div class="import-section">
-        <h2 class="listheading">{{ t("Import") }}</h2>
+        <h6 class="listheading">{{ t("Import") }}</h6>
         <ImportCsvSic @upload-success="store.initialize()" />
     </div>
 </template>
@@ -36,7 +36,7 @@ const store = useSICsStore();
     margin-top: 3em;
 }
 
-.import-section h2 {
+.import-section h6 {
     text-align: left;
 }
 

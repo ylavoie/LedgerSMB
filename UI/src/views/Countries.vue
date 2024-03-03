@@ -17,7 +17,7 @@ const store = useCountriesStore();
 </script>
 
 <template>
-    <h1 class="listtop">{{ $t("Configure countries") }}</h1>
+    <h5 class="listtop">{{ $t("Configure countries") }}</h5>
     <ConfigTable
         :columns="COLUMNS"
         :store="store"

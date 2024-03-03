@@ -14,7 +14,7 @@ const pricegroupsStore = usePricegroupsStore();
 </script>
 
 <template>
-    <h1 class="listtop">{{ t("Configure pricegroups") }}</h1>
+    <h5 class="listtop">{{ t("Configure pricegroups") }}</h5>
     <ConfigTable
         :columns="COLUMNS"
         :store="pricegroupsStore"
