@@ -40,6 +40,7 @@ use LedgerSMB::Routes::ERP::API::Languages;
 use LedgerSMB::Routes::ERP::API::Products;
 use LedgerSMB::Routes::ERP::API::Session;
 use LedgerSMB::Routes::ERP::API::Templates;
+use LedgerSMB::Routes::ERP::API::Users;
 use LedgerSMB::Setting;
 
 use CGI::Emulate::PSGI;

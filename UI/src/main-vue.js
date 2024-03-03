@@ -1,7 +1,7 @@
+/* eslint-disable vue/one-component-per-file */
 /** @format */
 /* eslint-disable no-console, import/no-unresolved, vue/multi-word-component-names */
 
-import 'quasar/dist/quasar.css'
 import { createApp } from 'vue'
 import { Quasar } from 'quasar'
 import quasarUserOptions from './quasar-user-options'
@@ -11,6 +11,7 @@ import i18n, { setI18nLanguage } from "@/i18n";
 import { useI18n } from "vue-i18n";
 import LoginPage from "@/views/LoginPage";
 import SetupLoginPage from "@/views/SetupLoginPage";
+import SetupListUsers from "@/views/SetupListUsers";
 import Toaster from "@/components/Toaster";
 import { createToasterMachine } from "@/components/Toaster.machines";
 import { useSessionUserStore } from "@/store/sessionUser";
@@ -77,6 +78,10 @@ if (document.getElementById("main")) {
 } else if (document.getElementById("setup-login")) {
     app = createApp(SetupLoginPage);
     appName = "#setup-login";
+} else if (document.getElementById("setup-list-users")) {
+    app = createApp(SetupListUsers)
+            .use(createPinia());
+    appName = "#setup-list-users";
 } else {
     /* In case we're running a "setup.pl" page */
     dojoParser.parse(document.body).then(() => {

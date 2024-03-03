@@ -1,21 +1,9 @@
 [% WRAPPER "ui-header.html"
                stylesheet="ledgersmb.css"
-               include_stylesheet=["system/setup.css"];
-       PROCESS "elements.html";
-       PROCESS "dynatable.html"; %]
-<body id="setup-list-users" class="[% dojo_theme %]">
-    <div><div class="setupconsole">
-        <div class="listtop">[% text('Available Users') %]</div>
-        [% INCLUDE dynatable
-                    columns = [{col_id = 'name',
-                                  name = text('Username'),
-                                  type = 'href'
-                             href_base = 'setup.pl?__action=edit_user_roles&amp;database=' _ database _ '&amp;id='}]
-                      tbody = {rows = users}
-                 attributes = {
-                                  id = 'user_list'
-                              }
-        %]
-    </div></div>
+               include_stylesheet=["system/setup.css"]; %]
+<body class="[% dojo_theme %]">
+    <input type="hidden" id="csrf-token" name="csrf_token" value="[% csrf_token %]" />
+    <input type="hidden" id="database" name="database" value="[% database %]" />
+    <div id="setup-list-users" />
 </body>
 [% END %]

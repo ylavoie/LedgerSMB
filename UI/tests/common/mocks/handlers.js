@@ -8,6 +8,7 @@ import { languageHandlers } from "./store_language_handlers";
 import { pricegroupHandlers } from "./store_pricegroups_handlers";
 import { sessionUserHandlers } from "./store_sessionUser_handlers";
 import { sicsHandlers } from "./store_sics_handlers";
+import { usersHandlers } from "./store_users_handlers";
 import { warehousesHandlers } from "./store_warehouses_handlers";
 
 // Views
@@ -23,6 +24,7 @@ export const handlers = [
   ...pricegroupHandlers,
   ...sessionUserHandlers,
   ...sicsHandlers,
+  ...usersHandlers,
   ...warehousesHandlers,
   // Views
   ...loginHandlers,
