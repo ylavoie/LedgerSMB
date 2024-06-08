@@ -30,7 +30,7 @@ define([
             channel: null,
             height: null,
             store: partRestStore,
-            /* eslint no-template-curly-in-string:0 */
+
             queryExpr: "*${0}*",
             autoComplete: false,
             highlightMatch: "all",
@@ -48,8 +48,7 @@ define([
                             self.set("value", selected[self.searchAttr]);
                         })
                     );
-                    // eslint-disable-next-line no-unused-vars
-                    this.on("change", function (newValue) {
+                    this.on("change", function (/* newValue */) {
                         if (self.item) {
                             topic.publish(self.channel, self.item);
                         }

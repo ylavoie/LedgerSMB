@@ -36,10 +36,10 @@ define([
                             self.mode = value;
 
                             if (value === "by-dates") {
-                                display = self._comparison_periods.get("value");
+                                display = this.comparisonPeriods.get("value");
                             }
                         }
-                        self._update_display(display);
+                        self._updateDisplay(display);
                     })
                 );
             },
@@ -47,18 +47,21 @@ define([
                 var self = this;
 
                 this.inherited(arguments);
-                this._comparison_periods = registry.byId("comparison-periods");
+                this.comparisonPeriods = registry.byId("comparison-periods");
                 this.own(
-                    // eslint-disable-next-line no-unused-vars
-                    on(this._comparison_periods, "change", function (newvalue) {
-                        self._update_display(
-                            self._comparison_periods.get("value")
-                        );
-                    })
+                    on(
+                        this.comparisonPeriods,
+                        "change",
+                        function (/* newvalue */) {
+                            self._updateDisplay(
+                                self.comparisonPeriods.get("value")
+                            );
+                        }
+                    )
                 );
-                this._update_display("");
+                this._updateDisplay("");
             },
-            _update_display: function (count) {
+            _updateDisplay: function (count) {
                 if (count === "" || this.mode === "by-periods") {
                     domStyle.set(
                         dom.byId("comparison_dates"),

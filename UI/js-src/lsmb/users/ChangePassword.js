@@ -1,4 +1,5 @@
 /** @format */
+/* eslint-disable camelcase */
 
 define([
     "dojo/_base/declare",
@@ -43,7 +44,6 @@ define([
                 return this.lstrings[toTranslate];
             },
             startup: function () {
-                // eslint-disable-next-line guard-for-in
                 for (var str in this._lstrings) {
                     if (this.lstrings[str]) {
                         continue;

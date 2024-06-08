@@ -17,8 +17,7 @@
  */
 const path = require("path");
 
-// eslint-disable-next-line no-unused-vars
-function getConfig(env) {
+function getConfig(/* env */) {
     // env is set by the 'buildEnvironment' and/or 'environment' plugin options
     // (see webpack.config.js),
     // or by the code at the end of this file if using without webpack
@@ -85,5 +84,5 @@ if (typeof module !== "undefined") {
     module.exports = getConfig;
 } else {
     // No webpack.  This script was loaded by page via script tag, so load Dojo from CDN
-    getConfig({ dojoRoot: "//ajax.googleapis.com/ajax/libs/dojo/1.16.0" });
+    getConfig(/* { dojoRoot: "//ajax.googleapis.com/ajax/libs/dojo/1.16.0" } */);
 }
