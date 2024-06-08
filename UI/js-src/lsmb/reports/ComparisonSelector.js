@@ -36,7 +36,7 @@ define([
                             self.mode = value;
 
                             if (value === "by-dates") {
-                                display = this.comparisonPeriods.get("value");
+                                display = this._comparisonPeriods.get("value");
                             }
                         }
                         self._updateDisplay(display);
@@ -47,14 +47,14 @@ define([
                 var self = this;
 
                 this.inherited(arguments);
-                this.comparisonPeriods = registry.byId("comparison-periods");
+                this._comparisonPeriods = registry.byId("comparison-periods");
                 this.own(
                     on(
-                        this.comparisonPeriods,
+                        this._comparisonPeriods,
                         "change",
                         function (/* newvalue */) {
                             self._updateDisplay(
-                                self.comparisonPeriods.get("value")
+                                self._comparisonPeriods.get("value")
                             );
                         }
                     )

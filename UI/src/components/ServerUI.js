@@ -1,6 +1,5 @@
 /** @format */
 
-
 import { h, inject, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -52,7 +51,8 @@ export default {
                     .removeAttribute("data-lsmb-done");
                 // chop off the leading '/' to use relative paths
                 let base = window.location.pathname.replace(/[^/]*$/, "");
-                let relTgt = (tgt.substring(0, 1) === '/') ? tgt.substring(1) : tgt;
+                let relTgt =
+                    tgt.substring(0, 1) === "/" ? tgt.substring(1) : tgt;
                 let r = await fetch(base + relTgt, {
                     method: options.method,
                     body: options.data,
@@ -77,12 +77,16 @@ export default {
                         let maindiv = document.getElementById("maindiv");
                         parser.parse(maindiv).then(
                             () => {
-                                registry.findWidgets(maindiv).forEach((child) => {
-                                    this._recursively_resize(child);
-                                });
+                                registry
+                                    .findWidgets(maindiv)
+                                    .forEach((child) => {
+                                        this._recursivelyResize(child);
+                                    });
                                 maindiv
                                     .querySelectorAll("a")
-                                    .forEach((node) => this._interceptClick(node));
+                                    .forEach((node) =>
+                                        this._interceptClick(node)
+                                    );
                                 if (dismiss) {
                                     dismiss();
                                 }
@@ -91,14 +95,15 @@ export default {
                                 this._setFormFocus();
                             },
                             (e) => {
-                                this._report_error(e);
-                            });
+                                this._reportError(e);
+                            }
+                        );
                     });
                 } else {
-                    this._report_error(r);
+                    this._reportError(r);
                 }
             } catch (e) {
-                this._report_error(e);
+                this._reportError(e);
             } finally {
                 if (dismiss) {
                     dismiss();
@@ -106,26 +111,25 @@ export default {
             }
         },
         _setFormFocus() {
-            [ ...document.forms ].forEach(
-                (form) => {
-                    if (form.hasAttribute('data-lsmb-focus')) {
-                        let focus = form.getAttribute('data-lsmb-focus');
-                        let elm = document.getElementById(focus);
-                        if (elm) {
-                            elm.select();
-                        }
+            [...document.forms].forEach((form) => {
+                if (form.hasAttribute("data-lsmb-focus")) {
+                    let focus = form.getAttribute("data-lsmb-focus");
+                    let elm = document.getElementById(focus);
+                    if (elm) {
+                        elm.select();
                     }
-                });
+                }
+            });
         },
-        _recursively_resize(widget) {
+        _recursivelyResize(widget) {
             widget.getChildren().forEach((child) => {
-                this._recursively_resize(child);
+                this._recursivelyResize(child);
             });
             if (widget.resize) {
                 widget.resize();
             }
         },
-        async _report_error(errOrReq) {
+        async _reportError(errOrReq) {
             let errstr;
             if (errOrReq instanceof Error) {
                 errstr = this.$t("JavaScript error: ") + errOrReq.toString();
@@ -146,7 +150,7 @@ export default {
             d.show();
         },
         _interceptClick(dnode) {
-            let href = dnode.getAttribute('href');
+            let href = dnode.getAttribute("href");
             if (dnode.target || !href) {
                 return;
             }
@@ -160,7 +164,7 @@ export default {
             });
 
             let anode = dnode;
-            anode.href = '#' + href;
+            anode.href = "#" + href;
         },
         _cleanWidgets() {
             try {
@@ -176,11 +180,10 @@ export default {
                 // the widgets. (it may take a bit for the new content to overwrite the old
                 // content...)
                 query("*", document.getElementById("maindiv")).forEach(
-                    /* eslint-disable no-param-reassign */
                     (n) => delete n._cssState
                 );
             } catch (e) {
-                this._report_error(e);
+                this._reportError(e);
             }
         }
     },
@@ -192,10 +195,9 @@ export default {
             .getElementById("maindiv")
             .setAttribute("data-lsmb-done", "true");
         this.$nextTick(() => this.updateContent(this.uiURL));
-        window.__lsmbSubmitForm =
-            (req) => this.updateContent(req.url, req.options);
-        window.__lsmbReportError =
-            (err) => this._report_error(err);
+        window.__lsmbSubmitForm = (req) =>
+            this.updateContent(req.url, req.options);
+        window.__lsmbReportError = (err) => this._reportError(err);
     },
     render() {
         let body = this.content.match(/<body[^>]*>([\s\S]*)(<\/body>)?/i);

@@ -66,7 +66,7 @@ export const configStoreTemplate = {
         },
         async get(id) {
             let index = this.items.findIndex((w) => w[this.id] === id);
-            if ( index === -1 ) {
+            if (index === -1) {
                 index = this.items.length;
             }
             const warehouse = this.items[index];

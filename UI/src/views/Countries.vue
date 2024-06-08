@@ -1,19 +1,19 @@
+<!-- @format -->
+
 <!-- eslint-disable vue/multi-word-component-names -->
 
 <script setup>
-
 import { useCountriesStore } from "@/store/countries";
 import { useI18n } from "vue-i18n";
 import ConfigTable from "@/components/ConfigTable.vue";
 
 const { t } = useI18n();
 const COLUMNS = [
-    { key: "code",       type: "text",            head: t("Code") },
-    { key: "name",       type: "text",            head: t("Name") },
+    { key: "code", type: "text", head: t("Code") },
+    { key: "name", type: "text", head: t("Name") }
 ];
 
 const store = useCountriesStore();
-
 </script>
 
 <template>
@@ -23,5 +23,6 @@ const store = useCountriesStore();
         :store="store"
         storeId="code"
         editRole="country_edit"
-        createRole="country_create" />
+        createRole="country_create"
+    />
 </template>

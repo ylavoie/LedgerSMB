@@ -1,5 +1,4 @@
 /** @format */
-/* eslint-disable class-methods-use-this */
 
 export class LsmbDijit extends HTMLElement {
     dojoWidget = null;

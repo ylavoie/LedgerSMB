@@ -1,5 +1,7 @@
-<script setup>
+<!-- @format -->
+<!-- eslint-disable prettier/prettier -->
 
+<script setup>
 import { usePricegroupsStore } from "@/store/pricegroups";
 import { useI18n } from "vue-i18n";
 import ConfigTable from "@/components/ConfigTable.vue";
@@ -10,7 +12,6 @@ const COLUMNS = [
 ];
 
 const pricegroupsStore = usePricegroupsStore();
-
 </script>
 
 <template>
@@ -20,6 +21,6 @@ const pricegroupsStore = usePricegroupsStore();
         :store="pricegroupsStore"
         storeId="id"
         editRole="pricegroup_edit"
-        createRole="pricegroup_create" />
+        createRole="pricegroup_create"
+    />
 </template>
-
