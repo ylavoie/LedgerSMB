@@ -31,15 +31,14 @@ if (TARGET !== "readme") {
         process.env.NODE_ENV === "production" ||
         argv.p ||
         argv.mode === "production";
+    const parallelJobs = process.env.CI ? 2 : true;
 
     // Make sure all modules follow desired mode
     process.env.NODE_ENV = prodMode ? "production" : "development";
-    const parallelJobs = process.env.CI ? 2 : true;
 
     /* FUNCTIONS */
     var includedRequires = [];
 
-    /* eslint-disable-next-line no-inner-declarations */
     function findDataDojoTypes(fileName) {
         var content = "" + fs.readFileSync(fileName);
         // Return unique data-dojo-type refereces
@@ -50,7 +49,6 @@ if (TARGET !== "readme") {
         ).filter((x, i, a) => a.indexOf(x) === i);
     }
 
-    /* eslint-disable-next-line no-inner-declarations */
     function getPOFilenames(_path, extension) {
         return fs
             .readdirSync(_path)
@@ -64,15 +62,16 @@ if (TARGET !== "readme") {
             .sort();
     }
 
-    /* eslint-disable-next-line no-inner-declarations */
     function globCssEntries(globPath) {
         const files = glob.sync(globPath);
         let entries = {};
 
         for (var i = 0; i < files.length; i++) {
             const entry = files[i];
-            const dirName = path.dirname(entry).replace(/\.\/css\/?/,"");
-            const keyName = (dirName ? dirName + "/" : "" ) + path.basename(entry, path.extname(entry));
+            const dirName = path.dirname(entry).replace(/\.\/css\/?/, "");
+            const keyName =
+                (dirName ? dirName + "/" : "") +
+                path.basename(entry, path.extname(entry));
             entries[keyName] = path.join(__dirname, entry);
         }
         return entries;
@@ -80,7 +79,7 @@ if (TARGET !== "readme") {
 
     // Compute used data-dojo-type
     glob.sync("**/*.html", {
-        ignore: ["lib/ui-header.html", "js/**", "node_modules/**"],
+        ignore: ["lib/ui-header.html", "js/**", "node_modules/**"]
         // cwd: "."
     }).map(function (filename) {
         const requires = findDataDojoTypes(filename);
@@ -135,7 +134,6 @@ if (TARGET !== "readme") {
             }
         }
     };
-
 
     const css = {
         test: /\.css$/i,
@@ -199,13 +197,13 @@ if (TARGET !== "readme") {
     // dojo/domReady (only works if the DOM is ready when invoked)
     const NormalModuleReplacementPluginOptionsDomReady = function (data) {
         const match = /^dojo\/domReady!(.*)$/.exec(data.request);
-        /* eslint-disable-next-line no-param-reassign */
+
         data.request = "dojo/loaderProxy?loader=dojo/domReady!" + match[1];
     };
 
     const NormalModuleReplacementPluginOptionsSVG = function (data) {
         var match = /^svg!(.*)$/.exec(data.request);
-        /* eslint-disable-next-line no-param-reassign */
+
         data.request =
             "dojo/loaderProxy?loader=svg&deps=dojo/text%21" +
             match[1] +
@@ -216,7 +214,7 @@ if (TARGET !== "readme") {
     const UnusedWebpackPluginOptions = {
         // Source directories
         directories: [
-            path.join(__dirname, "js-src/lsmb"), 
+            path.join(__dirname, "js-src/lsmb"),
             path.join(__dirname, "src")
         ],
         // Exclude patterns
@@ -278,7 +276,6 @@ if (TARGET !== "readme") {
         new webpack.NormalModuleReplacementPlugin(/^dojo\/text!/, function (
             data
         ) {
-            /* eslint-disable-next-line no-param-reassign */
             data.request = data.request.replace(
                 /^dojo\/text!/,
                 "!!raw-loader!"
@@ -308,7 +305,10 @@ if (TARGET !== "readme") {
             minify: false, // Adjust t/16-schema-upgrade-html.t if prodMode is used,
             filename: "ui-header.html",
             mode: prodMode ? "production" : "development",
-            excludeChunks: [...Object.keys(lsmbCSS),...Object.keys(globCssEntries("./css/**/*.css"))],
+            excludeChunks: [
+                ...Object.keys(lsmbCSS),
+                ...Object.keys(globCssEntries("./css/**/*.css"))
+            ],
             template: "lib/ui-header.html"
         }),
 
@@ -355,7 +355,6 @@ if (TARGET !== "readme") {
         })
     ];
 
-
     var pluginsDev = [
         ...pluginsCommon,
 
@@ -394,7 +393,7 @@ if (TARGET !== "readme") {
         runtimeChunk: "multiple",
         splitChunks: {
             cacheGroups: {
-                node_modules: {
+                nodeModules: {
                     test(module) {
                         // `module.resource` contains the absolute path of the file on disk.
                         // Note the usage of `path.sep` instead of / or \, for cross-platform compatibility.
@@ -515,11 +514,11 @@ if (TARGET !== "readme") {
             static: [
                 {
                     directory: __dirname,
-                    publicPath: '/'
+                    publicPath: "/"
                 },
                 {
                     directory: __dirname,
-                    publicPath: '/app'
+                    publicPath: "/app"
                 }
             ],
             watchFiles: [
