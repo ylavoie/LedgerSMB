@@ -5,19 +5,20 @@
  *
  * @group openapi
  */
+/* global process, require */
 
 // Import test packages
 import jestOpenAPI from "jest-openapi";
 import { StatusCodes } from "http-status-codes";
 import { create_database, drop_database } from "./database";
-import { server } from '../../common/mocks/server.js'
+import { server } from "../../common/mocks/server.js";
 
 // Load an OpenAPI file (YAML or JSON) into this plugin
-const openapi = process.env.PWD.replace("/UI","");
-jestOpenAPI( openapi + "/openapi/API.yaml");
+const openapi = process.env.PWD.replace("/UI", "");
+jestOpenAPI(openapi + "/openapi/API.yaml");
 
 // Load the API definition
-const API_yaml = require (openapi + "/openapi/API.yaml");
+const API_yaml = require(openapi + "/openapi/API.yaml");
 
 // Set API version to use
 const api = "erp/api/v0";
@@ -38,7 +39,7 @@ beforeAll(() => {
 
     // Establish API mocking before all tests.
     server.listen({
-        onUnhandledRequest: 'bypass'
+        onUnhandledRequest: "bypass"
     });
 });
 
@@ -46,7 +47,7 @@ afterAll(() => {
     drop_database(company);
 });
 
-const emulateAxiosResponse = async(res) => {
+const emulateAxiosResponse = async (res) => {
     return {
         data: await res.json(),
         status: res.status,
@@ -54,7 +55,7 @@ const emulateAxiosResponse = async(res) => {
         headers: res.headers,
         request: {
             path: res.url,
-            method: 'GET'
+            method: "GET"
         }
     };
 };
@@ -62,7 +63,9 @@ const emulateAxiosResponse = async(res) => {
 // Log in before each test
 beforeEach(async () => {
     let r = await fetch(
-        serverUrl + "/login.pl?action=authenticate&company=" + encodeURI(company),
+        serverUrl +
+            "/login.pl?action=authenticate&company=" +
+            encodeURI(company),
         {
             method: "POST",
             body: JSON.stringify({
@@ -129,17 +132,14 @@ describe("Retrieve non-existant SIC", () => {
 
 describe("Adding the IT SIC", () => {
     it("POST /contacts/sic/541510 should allow adding IT SIC", async () => {
-        let res = await fetch(
-            serverUrl + "/" + api + "/contacts/sic",
-            {
-                method: "POST",
-                body: JSON.stringify({
-                    code: "541510",
-                    description: "Design of computer systems"
-                }),
-                headers: {...headers, "Content-Type": "application/json" }
-            }
-        );
+        let res = await fetch(serverUrl + "/" + api + "/contacts/sic", {
+            method: "POST",
+            body: JSON.stringify({
+                code: "541510",
+                description: "Design of computer systems"
+            }),
+            headers: { ...headers, "Content-Type": "application/json" }
+        });
         expect(res.status).toEqual(StatusCodes.CREATED);
 
         // Assert that the HTTP response satisfies the OpenAPI spec
@@ -150,12 +150,9 @@ describe("Adding the IT SIC", () => {
 
 describe("Validate against the example SIC", () => {
     it("GET /contacts/sic/541510 should validate IT SIC", async () => {
-        let res = await fetch(
-            serverUrl + "/" + api + "/contacts/sic/541510",
-            {
-                headers: headers
-            }
-        );
+        let res = await fetch(serverUrl + "/" + api + "/contacts/sic/541510", {
+            headers: headers
+        });
         expect(res.status).toEqual(StatusCodes.OK);
 
         // Pick the example
@@ -175,21 +172,18 @@ describe("Modifying the new IT SIC", () => {
         expect(res.status).toEqual(StatusCodes.OK);
         const etag = res.headers.get("etag");
         expect(etag).toBeDefined();
-        res = await fetch(
-            serverUrl + "/" + api + "/contacts/sic/541510",
-            {
-                method: "PUT",
-                body: JSON.stringify({
-                    code: "541510",
-                    description: "Design of computer systems and related services"
-                }),
-                headers: {
-                    ...headers,
-                    "content-type": "application/json",
-                    "If-Match": etag
-                }
+        res = await fetch(serverUrl + "/" + api + "/contacts/sic/541510", {
+            method: "PUT",
+            body: JSON.stringify({
+                code: "541510",
+                description: "Design of computer systems and related services"
+            }),
+            headers: {
+                ...headers,
+                "content-type": "application/json",
+                "If-Match": etag
             }
-        );
+        });
         expect(res.status).toEqual(StatusCodes.OK);
 
         // Assert that the HTTP response satisfies the OpenAPI spec
@@ -247,12 +241,10 @@ describe("Not removing the new IT SIC", () => {
         const etag = res.headers.get("etag");
         expect(etag).toBeDefined();
 
-        res = await fetch(
-            serverUrl + "/" + api + "/contacts/sic/541510", {
-                method: "DELETE",
-                headers: { ...headers, "If-Match": etag }
-            }
-        );
+        res = await fetch(serverUrl + "/" + api + "/contacts/sic/541510", {
+            method: "DELETE",
+            headers: { ...headers, "If-Match": etag }
+        });
         expect(res.status).toEqual(StatusCodes.FORBIDDEN);
     });
 });

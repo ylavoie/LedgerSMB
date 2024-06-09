@@ -1,8 +1,10 @@
-/*
+/**
  * View tests
  *
+ * @format
  * @group views
  */
+
 /* global retry */
 
 import Languages from "@/views/Languages.vue";
@@ -13,31 +15,31 @@ let wrapper;
 let sessionUser;
 
 describe("Languages", () => {
-
     beforeEach(() => {
         wrapper = factory(Languages);
         sessionUser = useSessionUserStore();
     });
 
     it("should show dialog", async () => {
-
         expect(wrapper.exists()).toBeTruthy();
 
         // Check loading
         expect(wrapper.get(".dynatableLoading").text()).toBe("Loading...");
 
         // Wait until loading done
-        await retry(() => expect(wrapper.find(".dynatableData").isVisible()).toBe(true));
+        await retry(() =>
+            expect(wrapper.find(".dynatableData").isVisible()).toBe(true)
+        );
 
         // Validate against snapshot
         expect(wrapper.element).toMatchSnapshot();
 
-        const language_items = wrapper.findAll('.data-row');
+        const language_items = wrapper.findAll(".data-row");
         expect(language_items).toHaveLength(2);
 
         // Validate data displayed
         let data = language_items.map((rows) => {
-            return rows.findAll('.input-box').map(row => row.element.value)
+            return rows.findAll(".input-box").map((row) => row.element.value);
         });
         expect(data).toEqual([
             ["en", "English"],
@@ -50,9 +52,8 @@ describe("Languages", () => {
     });
 
     it("should show dialog with editable data", async () => {
-
         // Give user edition capability
-        sessionUser.$patch({roles: ["language_edit"]});
+        sessionUser.$patch({ roles: ["language_edit"] });
 
         expect(wrapper.exists()).toBeTruthy();
 
@@ -60,17 +61,19 @@ describe("Languages", () => {
         expect(wrapper.get(".dynatableLoading").text()).toBe("Loading...");
 
         // Wait until loading done
-        await retry(() => expect(wrapper.find(".dynatableData").isVisible()).toBe(true));
+        await retry(() =>
+            expect(wrapper.find(".dynatableData").isVisible()).toBe(true)
+        );
 
         // Validate against snapshot
         expect(wrapper.element).toMatchSnapshot();
 
-        const language_items = wrapper.findAll('.data-row');
+        const language_items = wrapper.findAll(".data-row");
         expect(language_items).toHaveLength(2);
 
         // Validate data displayed
         let data = language_items.map((rows) => {
-            return rows.findAll('.input-box').map(row => row.element.value)
+            return rows.findAll(".input-box").map((row) => row.element.value);
         });
         expect(data).toEqual([
             ["en", "English"],
@@ -79,24 +82,25 @@ describe("Languages", () => {
 
         // Validate the buttons
         const buttons = language_items.map((rows) => {
-            return rows.findAll('button').map(row => row.element.name)
+            return rows.findAll("button").map((row) => row.element.name);
         });
         expect(buttons).toEqual([
-        [ 'modify', 'save', 'cancel' ],
-        [ 'modify', 'save', 'cancel' ]
+            ["modify", "save", "cancel"],
+            ["modify", "save", "cancel"]
         ]);
-  });
+    });
 
     it("should edit a language and save data", async () => {
-
         // Give user edition capability
-        sessionUser.$patch({roles: ["language_edit"]});
+        sessionUser.$patch({ roles: ["language_edit"] });
 
         // Wait until loading done
-        await retry(() => expect(wrapper.find(".dynatableData").isVisible()).toBe(true));
+        await retry(() =>
+            expect(wrapper.find(".dynatableData").isVisible()).toBe(true)
+        );
 
         // Find 1st item
-        const language_item = wrapper.findAll('.data-row').at(0);
+        const language_item = wrapper.findAll(".data-row").at(0);
         const code = language_item.find('[name="code"]');
         const description = language_item.find('[name="description"]');
         const modify = language_item.find('[name="modify"]');
@@ -110,7 +114,7 @@ describe("Languages", () => {
         expect(save.element.disabled).toBe(true);
         expect(cancel.element.disabled).toBe(true);
 
-        await modify.trigger('click');
+        await modify.trigger("click");
 
         // Proper buttons enabled?
         await retry(() => expect(modify.element.disabled).toBe(true));
@@ -118,12 +122,16 @@ describe("Languages", () => {
         expect(cancel.element.disabled).toBe(false);
 
         description.setValue("English (american)");
-        await save.trigger('click');
+        await save.trigger("click");
         await retry(() => expect(modify.element.disabled).toBe(false));
 
-        expect(wrapper.findAll('.data-row').map((rows) => {
-            return rows.findAll('.input-box').map(row => row.element.value)
-        })).toEqual([
+        expect(
+            wrapper.findAll(".data-row").map((rows) => {
+                return rows
+                    .findAll(".input-box")
+                    .map((row) => row.element.value);
+            })
+        ).toEqual([
             ["en", "English (american)"],
             ["fr", "Français"]
         ]);
@@ -133,19 +141,20 @@ describe("Languages", () => {
     });
 
     it("should allow adding a new language and save data", async () => {
-
         // Give user edition capability
-        sessionUser.$patch({roles: ["language_create", "language_edit"]});
+        sessionUser.$patch({ roles: ["language_create", "language_edit"] });
 
         // Wait until loading done
-        await retry(() => expect(wrapper.find(".dynatableData").isVisible()).toBe(true));
+        await retry(() =>
+            expect(wrapper.find(".dynatableData").isVisible()).toBe(true)
+        );
 
-        let language_items = wrapper.findAll('.data-row');
+        let language_items = wrapper.findAll(".data-row");
         expect(language_items).toHaveLength(3);
 
         // Validate data displayed
         let data = language_items.map((rows) => {
-            return rows.findAll('.input-box').map(row => row.element.value)
+            return rows.findAll(".input-box").map((row) => row.element.value);
         });
         expect(data).toEqual([
             ["en", "English"],
@@ -154,7 +163,7 @@ describe("Languages", () => {
         ]);
 
         // Find 3rd item
-        let language_item = wrapper.findAll('.data-row').at(2);
+        let language_item = wrapper.findAll(".data-row").at(2);
         let code = language_item.find('[name="code"]');
         let description = language_item.find('[name="description"]');
         let add = language_item.find('[name="add"]');
@@ -173,16 +182,16 @@ describe("Languages", () => {
         // Add new entry
         code.setValue("my");
         description.setValue("Mayan");
-        await add.trigger('click');
+        await add.trigger("click");
 
         // Proper buttons enabled?
-        await retry(() => expect(wrapper.findAll('.data-row')).toHaveLength(4));
+        await retry(() => expect(wrapper.findAll(".data-row")).toHaveLength(4));
 
-        language_items = wrapper.findAll('.data-row');
+        language_items = wrapper.findAll(".data-row");
 
         // Validate data displayed
         data = language_items.map((rows) => {
-            return rows.findAll('.input-box').map(row => row.element.value)
+            return rows.findAll(".input-box").map((row) => row.element.value);
         });
         expect(data).toEqual([
             ["en", "English"],
@@ -191,5 +200,4 @@ describe("Languages", () => {
             ["", ""]
         ]);
     });
-
 });

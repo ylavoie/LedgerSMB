@@ -1,5 +1,4 @@
 /** @format */
-/* eslint-disable no-console */
 
 /*
  * Store tests
@@ -27,11 +26,13 @@ describe("Country Store", () => {
             { code: "ca", name: "Canada" },
             { code: "us", name: "United States" }
         ]);
-        expect(countries._links).toStrictEqual([{
-            title : "HTML",
-            rel : "download",
-            href : "?format=HTML"
-        }]);
+        expect(countries._links).toStrictEqual([
+            {
+                title: "HTML",
+                rel: "download",
+                href: "?format=HTML"
+            }
+        ]);
     });
 
     it("get United States country us", async () => {
@@ -56,13 +57,15 @@ describe("Country Store", () => {
 
     it("get Invalid country zz", async () => {
         await countries.initialize();
-        await expect(async () => {await countries.get("zz")}).rejects.toThrow("HTTP Error: 404");
+        await expect(async () => {
+            await countries.get("zz");
+        }).rejects.toThrow("HTTP Error: 404");
     });
 
     it("add Atlantida country zz", async () => {
         await countries.initialize();
         await countries.add({ code: "zz", name: "Atlantida" });
-        expect(countries.items[countries.items.length-1]).toStrictEqual({
+        expect(countries.items[countries.items.length - 1]).toStrictEqual({
             _meta: { ETag: "1234567891" },
             code: "zz",
             name: "Atlantida"

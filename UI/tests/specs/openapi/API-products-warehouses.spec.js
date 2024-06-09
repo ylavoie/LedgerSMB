@@ -5,19 +5,20 @@
  *
  * @group openapi
  */
+/* global process, require */
 
 // Import test packages
 import jestOpenAPI from "jest-openapi";
 import { StatusCodes } from "http-status-codes";
 import { create_database, drop_database } from "./database";
-import { server } from '../../common/mocks/server.js'
+import { server } from "../../common/mocks/server.js";
 
 // Load an OpenAPI file (YAML or JSON) into this plugin
-const openapi = process.env.PWD.replace("/UI","");
-jestOpenAPI( openapi + "/openapi/API.yaml");
+const openapi = process.env.PWD.replace("/UI", "");
+jestOpenAPI(openapi + "/openapi/API.yaml");
 
 // Load the API definition
-const API_yaml = require (openapi + "/openapi/API.yaml");
+const API_yaml = require(openapi + "/openapi/API.yaml");
 
 // Set API version to use
 const api = "erp/api/v0";
@@ -38,7 +39,7 @@ beforeAll(() => {
 
     // Establish API mocking before all tests.
     server.listen({
-        onUnhandledRequest: 'bypass'
+        onUnhandledRequest: "bypass"
     });
 });
 
@@ -46,7 +47,7 @@ afterAll(() => {
     drop_database(company);
 });
 
-const emulateAxiosResponse = async(res) => {
+const emulateAxiosResponse = async (res) => {
     return {
         data: await res.json(),
         status: res.status,
@@ -54,7 +55,7 @@ const emulateAxiosResponse = async(res) => {
         headers: res.headers,
         request: {
             path: res.url,
-            method: 'GET'
+            method: "GET"
         }
     };
 };
@@ -62,7 +63,9 @@ const emulateAxiosResponse = async(res) => {
 // Log in before each test
 beforeEach(async () => {
     let r = await fetch(
-        serverUrl + "/login.pl?action=authenticate&company=" + encodeURI(company),
+        serverUrl +
+            "/login.pl?action=authenticate&company=" +
+            encodeURI(company),
         {
             method: "POST",
             body: JSON.stringify({
@@ -111,38 +114,41 @@ describe("Retrieving all products/warehouses", () => {
 
 describe("Retrieving all products/warehouses with old syntax should fail", () => {
     it("GET /products/warehouses/ should fail", async () => {
-        const res = await fetch(serverUrl + "/" + api + "/products/warehouses/", {
-            headers: headers
-        });
+        const res = await fetch(
+            serverUrl + "/" + api + "/products/warehouses/",
+            {
+                headers: headers
+            }
+        );
         expect(res.status).toEqual(StatusCodes.BAD_REQUEST);
     });
 });
 
 describe("Retrieve non-existant Warehouse1", () => {
     it("GET /products/warehouses/nv should not retrieve Warehouse1", async () => {
-        const res = await fetch(serverUrl + "/" + api + "/products/warehouses/1", {
-            headers: headers
-        });
+        const res = await fetch(
+            serverUrl + "/" + api + "/products/warehouses/1",
+            {
+                headers: headers
+            }
+        );
         expect(res.status).toEqual(StatusCodes.NOT_FOUND);
     });
 });
 
 describe("Adding the new Warehouse", () => {
     it("POST /products/warehouses/Warehouse1 should allow adding Warehouse1", async () => {
-        let res = await fetch(
-            serverUrl + "/" + api + "/products/warehouses",
-            {
-                method: "POST",
-                body: JSON.stringify({
-                    description: "Warehouse1"
-                }),
-                headers: {
-                    "X-Requested-With": "XMLHttpRequest",
-                    "Content-Type": "application/json",
-                    ...headers
-                },
+        let res = await fetch(serverUrl + "/" + api + "/products/warehouses", {
+            method: "POST",
+            body: JSON.stringify({
+                description: "Warehouse1"
+            }),
+            headers: {
+                "X-Requested-With": "XMLHttpRequest",
+                "Content-Type": "application/json",
+                ...headers
             }
-        );
+        });
         expect(res.status).toEqual(StatusCodes.CREATED);
 
         // Assert that the HTTP response satisfies the OpenAPI spec
@@ -153,13 +159,17 @@ describe("Adding the new Warehouse", () => {
 
 describe("Validate against the example Warehouse", () => {
     it("GET /products/warehouses/1", async () => {
-        let res = await fetch(serverUrl + "/" + api + "/products/warehouses/1", {
-            headers: headers
-        });
+        let res = await fetch(
+            serverUrl + "/" + api + "/products/warehouses/1",
+            {
+                headers: headers
+            }
+        );
         expect(res.status).toEqual(StatusCodes.OK);
 
         // Pick the example
-        const warehouseExample = API_yaml.components.examples.validWarehouse.value;
+        const warehouseExample =
+            API_yaml.components.examples.validWarehouse.value;
 
         // Assert that the response matches the example in the spec
         res = await emulateAxiosResponse(res);
@@ -178,21 +188,18 @@ describe("Modifying the new Warehouse", () => {
         expect(res.status).toEqual(StatusCodes.OK);
         const etag = res.headers.get("etag");
         expect(etag).toBeDefined();
-        res = await fetch(
-            serverUrl + "/" + api + "/products/warehouses/1",
-            {
-                method: "PUT",
-                body: JSON.stringify({
-                    id: 1,
-                    description: "PriceGroup1"
-                }),
-                headers: {
-                    ...headers,
-                    "content-type": "application/json",
-                    "If-Match": etag
-                }
+        res = await fetch(serverUrl + "/" + api + "/products/warehouses/1", {
+            method: "PUT",
+            body: JSON.stringify({
+                id: 1,
+                description: "PriceGroup1"
+            }),
+            headers: {
+                ...headers,
+                "content-type": "application/json",
+                "If-Match": etag
             }
-        );
+        });
         expect(res.status).toEqual(StatusCodes.OK);
 
         // Assert that the HTTP response satisfies the OpenAPI spec
@@ -243,7 +250,8 @@ describe("Updating the new Warehouse1", () => {
 describe("Not removing the new Warehouse", () => {
     it("DELETE /products/warehouses/PriceGroup1 should allow deleting Warehouse1", async () => {
         let res = await fetch(
-            serverUrl + "/" + api + "/products/warehouses/1", {
+            serverUrl + "/" + api + "/products/warehouses/1",
+            {
                 headers: headers
             }
         );

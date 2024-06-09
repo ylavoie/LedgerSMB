@@ -26,11 +26,13 @@ describe("Language Store", () => {
             { code: "en", description: "English" },
             { code: "fr", description: "Français" }
         ]);
-        expect(languages._links).toStrictEqual([{
-            title : "HTML",
-            rel : "download",
-            href : "?format=HTML"
-        }]);
+        expect(languages._links).toStrictEqual([
+            {
+                title: "HTML",
+                rel: "download",
+                href: "?format=HTML"
+            }
+        ]);
     });
 
     it("get English languages en", async () => {
@@ -46,7 +48,10 @@ describe("Language Store", () => {
     it("save English american language en", async () => {
         await languages.initialize();
         await languages.get("en");
-        await languages.save("en", { code: "en", description: "English (american)" });
+        await languages.save("en", {
+            code: "en",
+            description: "English (american)"
+        });
         expect(languages.items).toStrictEqual([
             { code: "en", description: "English (american)" },
             { code: "fr", description: "Français" }
@@ -55,13 +60,15 @@ describe("Language Store", () => {
 
     it("get Invalid language zz", async () => {
         await languages.initialize();
-        await expect(async () => {await languages.get("zz")}).rejects.toThrow("HTTP Error: 404");
+        await expect(async () => {
+            await languages.get("zz");
+        }).rejects.toThrow("HTTP Error: 404");
     });
 
     it("add Mayan language my", async () => {
         await languages.initialize();
         await languages.add({ code: "my", description: "Mayan" });
-        expect(languages.items[languages.items.length-1]).toStrictEqual({
+        expect(languages.items[languages.items.length - 1]).toStrictEqual({
             _meta: { ETag: "1234567891" },
             code: "my",
             description: "Mayan"

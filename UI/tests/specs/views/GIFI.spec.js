@@ -1,8 +1,10 @@
-/*
+/**
  * View tests
  *
+ * @format
  * @group views
  */
+
 /* global retry */
 
 import GIFI from "@/views/GIFI.vue";
@@ -13,7 +15,6 @@ let wrapper;
 let sessionUser;
 
 describe("GIFI - register as a component", () => {
-
     beforeEach(() => {
         wrapper = factory(GIFI);
         sessionUser = useSessionUserStore();
@@ -23,39 +24,39 @@ describe("GIFI - register as a component", () => {
     });
 
     it("should show dialog", async () => {
-
         expect(wrapper.exists()).toBeTruthy();
 
         // Check loading
         expect(wrapper.get(".dynatableLoading").text()).toBe("Loading...");
 
         // Wait until loading done
-        await retry(() => expect(wrapper.find(".dynatableData").isVisible()).toBe(true));
+        await retry(() =>
+            expect(wrapper.find(".dynatableData").isVisible()).toBe(true)
+        );
 
         // Validate against snapshot
         expect(wrapper.element).toMatchSnapshot();
 
-        const gifi_items = wrapper.findAll('.data-row');
+        const gifi_items = wrapper.findAll(".data-row");
         expect(gifi_items).toHaveLength(2);
 
         // Validate data displayed
         let data = gifi_items.map((rows) => {
-            return rows.findAll('.input-box').map(row => row.element.value)
+            return rows.findAll(".input-box").map((row) => row.element.value);
         });
         expect(data).toEqual([
             ["0000", "Dummy account"],
             ["0001", "Dummy account 1"]
         ]);
 
-        // TODO: Test links 
+        // TODO: Test links
         // expect that the links displayed match
         // what was returned by the API
     });
 
     it("should show dialog with editable data", async () => {
-
         // Give user edition capability
-        sessionUser.$patch({roles: ["gifi_edit"]});
+        sessionUser.$patch({ roles: ["gifi_edit"] });
 
         expect(wrapper.exists()).toBeTruthy();
 
@@ -63,17 +64,19 @@ describe("GIFI - register as a component", () => {
         expect(wrapper.get(".dynatableLoading").text()).toBe("Loading...");
 
         // Wait until loading done
-        await retry(() => expect(wrapper.find(".dynatableData").isVisible()).toBe(true));
+        await retry(() =>
+            expect(wrapper.find(".dynatableData").isVisible()).toBe(true)
+        );
 
         // Validate against snapshot
         expect(wrapper.element).toMatchSnapshot();
 
-        const gifi_items = wrapper.findAll('.data-row');
+        const gifi_items = wrapper.findAll(".data-row");
         expect(gifi_items).toHaveLength(2);
 
         // Validate data displayed
         let data = gifi_items.map((rows) => {
-            return rows.findAll('.input-box').map(row => row.element.value)
+            return rows.findAll(".input-box").map((row) => row.element.value);
         });
         expect(data).toEqual([
             ["0000", "Dummy account"],
@@ -82,11 +85,11 @@ describe("GIFI - register as a component", () => {
 
         // Validate the buttons
         const buttons = gifi_items.map((rows) => {
-            return rows.findAll('button').map(row => row.element.name)
+            return rows.findAll("button").map((row) => row.element.name);
         });
         expect(buttons).toEqual([
-            [ 'modify', 'save', 'cancel' ],
-            [ 'modify', 'save', 'cancel' ]
+            ["modify", "save", "cancel"],
+            ["modify", "save", "cancel"]
         ]);
     });
 });

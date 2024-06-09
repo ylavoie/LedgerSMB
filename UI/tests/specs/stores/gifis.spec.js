@@ -1,5 +1,4 @@
 /** @format */
-/* eslint-disable no-console */
 
 /*
  * Store tests
@@ -18,7 +17,6 @@ let gifies;
 beforeEach(() => {
     gifies = useGIFIsStore(pinia);
 });
-
 
 describe("GIFI Store", () => {
     it("initialize", async () => {
@@ -43,7 +41,10 @@ describe("GIFI Store", () => {
     it("save Funny account 0000", async () => {
         await gifies.initialize();
         await gifies.get("0000");
-        await gifies.save("0000", { accno: "0000", description: "Funny account" });
+        await gifies.save("0000", {
+            accno: "0000",
+            description: "Funny account"
+        });
         expect(gifies.items).toStrictEqual([
             { accno: "0000", description: "Funny account" },
             { accno: "0001", description: "Dummy account 1" }
@@ -52,13 +53,15 @@ describe("GIFI Store", () => {
 
     it("get Invalid GIFI 0002", async () => {
         await gifies.initialize();
-        await expect(async () => {await gifies.get("0002")}).rejects.toThrow("HTTP Error: 404");
+        await expect(async () => {
+            await gifies.get("0002");
+        }).rejects.toThrow("HTTP Error: 404");
     });
 
     it("add Dummy account 0002", async () => {
         await gifies.initialize();
         await gifies.add({ accno: "0002", description: "Dummy account 2" });
-        expect(gifies.items[gifies.items.length-1]).toStrictEqual({
+        expect(gifies.items[gifies.items.length - 1]).toStrictEqual({
             _meta: { ETag: "1234567891" },
             accno: "0002",
             description: "Dummy account 2"

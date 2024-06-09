@@ -1,8 +1,10 @@
-/*
+/**
  * View tests
  *
+ * @format
  * @group views
  */
+
 /* global retry */
 
 import Countries from "@/views/Countries.vue";
@@ -13,7 +15,6 @@ let wrapper;
 let sessionUser;
 
 describe("Countries - register as a component", () => {
-    
     beforeEach(() => {
         wrapper = factory(Countries);
         sessionUser = useSessionUserStore();
@@ -21,41 +22,41 @@ describe("Countries - register as a component", () => {
     afterEach(() => {
         // wrapper.unmount();
     });
-    
-    it("should show dialog", async () => {
 
+    it("should show dialog", async () => {
         expect(wrapper.exists()).toBeTruthy();
 
         // Check loading
         expect(wrapper.get(".dynatableLoading").text()).toBe("Loading...");
 
         // Wait until loading done
-        await retry(() => expect(wrapper.find(".dynatableData").isVisible()).toBe(true));
+        await retry(() =>
+            expect(wrapper.find(".dynatableData").isVisible()).toBe(true)
+        );
 
         // Validate against snapshot
         expect(wrapper.element).toMatchSnapshot();
 
-        const country_items = wrapper.findAll('.data-row');
+        const country_items = wrapper.findAll(".data-row");
         expect(country_items).toHaveLength(2);
 
         // Validate data displayed
         let data = country_items.map((rows) => {
-            return rows.findAll('.input-box').map(row => row.element.value)
+            return rows.findAll(".input-box").map((row) => row.element.value);
         });
         expect(data).toEqual([
             ["ca", "Canada"],
             ["us", "United States"]
         ]);
 
-        // TODO: Test links 
+        // TODO: Test links
         // expect that the links displayed match
         // what was returned by the API
     });
 
     it("should show dialog with editable data", async () => {
-
         // Give user edition capability
-        sessionUser.$patch({roles: ["country_edit"]});
+        sessionUser.$patch({ roles: ["country_edit"] });
 
         expect(wrapper.exists()).toBeTruthy();
 
@@ -63,17 +64,19 @@ describe("Countries - register as a component", () => {
         expect(wrapper.get(".dynatableLoading").text()).toBe("Loading...");
 
         // Wait until loading done
-        await retry(() => expect(wrapper.find(".dynatableData").isVisible()).toBe(true));
+        await retry(() =>
+            expect(wrapper.find(".dynatableData").isVisible()).toBe(true)
+        );
 
         // Validate against snapshot
         expect(wrapper.element).toMatchSnapshot();
 
-        const country_items = wrapper.findAll('.data-row');
+        const country_items = wrapper.findAll(".data-row");
         expect(country_items).toHaveLength(2);
 
         // Validate data displayed
         let data = country_items.map((rows) => {
-            return rows.findAll('.input-box').map(row => row.element.value)
+            return rows.findAll(".input-box").map((row) => row.element.value);
         });
         expect(data).toEqual([
             ["ca", "Canada"],
@@ -82,11 +85,11 @@ describe("Countries - register as a component", () => {
 
         // Validate the buttons
         const buttons = country_items.map((rows) => {
-            return rows.findAll('button').map(row => row.element.name)
+            return rows.findAll("button").map((row) => row.element.name);
         });
         expect(buttons).toEqual([
-            [ 'modify', 'save', 'cancel' ],
-            [ 'modify', 'save', 'cancel' ]
+            ["modify", "save", "cancel"],
+            ["modify", "save", "cancel"]
         ]);
     });
 });
