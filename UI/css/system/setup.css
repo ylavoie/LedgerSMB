@@ -40,10 +40,9 @@ form#loginform {
 }
 
 .login_form {
-    column-gap: 0.3em;
     display: grid;
+    gap: 0.3em 0.3em;
     grid-template-columns: auto auto;
-    row-gap: 0.3em;
     text-align: left;
 }
 
