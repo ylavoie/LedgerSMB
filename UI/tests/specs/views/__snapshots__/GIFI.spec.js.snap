@@ -34,6 +34,8 @@ exports[`GIFI - register as a component should show dialog 1`] = `
         class="dynatableData"
       >
         
+        
+        <!-- eslint-disable prettier/prettier -->
         <tr
           class="data-row"
         >
@@ -66,6 +68,9 @@ exports[`GIFI - register as a component should show dialog 1`] = `
             <!--v-if-->
           </td>
         </tr>
+        
+        
+        <!-- eslint-disable prettier/prettier -->
         <tr
           class="data-row"
         >
@@ -99,6 +104,7 @@ exports[`GIFI - register as a component should show dialog 1`] = `
           </td>
         </tr>
         
+        
       </tbody>
       <!--v-if-->
       
@@ -131,6 +137,8 @@ exports[`GIFI - register as a component should show dialog 1`] = `
     <div
       id="import-gifi"
     >
+      
+      <!-- eslint-disable prettier/prettier -->
       <div
         id="gifi"
       >
@@ -199,6 +207,7 @@ exports[`GIFI - register as a component should show dialog 1`] = `
           </div>
         </form>
       </div>
+      
     </div>
   </div>
   
@@ -239,6 +248,8 @@ exports[`GIFI - register as a component should show dialog with editable data 1`
         class="dynatableData"
       >
         
+        
+        <!-- eslint-disable prettier/prettier -->
         <tr
           class="data-row"
         >
@@ -296,6 +307,9 @@ exports[`GIFI - register as a component should show dialog with editable data 1`
             <!--v-if-->
           </td>
         </tr>
+        
+        
+        <!-- eslint-disable prettier/prettier -->
         <tr
           class="data-row"
         >
@@ -354,6 +368,7 @@ exports[`GIFI - register as a component should show dialog with editable data 1`
           </td>
         </tr>
         
+        
       </tbody>
       <!--v-if-->
       
@@ -386,6 +401,8 @@ exports[`GIFI - register as a component should show dialog with editable data 1`
     <div
       id="import-gifi"
     >
+      
+      <!-- eslint-disable prettier/prettier -->
       <div
         id="gifi"
       >
@@ -454,6 +471,7 @@ exports[`GIFI - register as a component should show dialog with editable data 1`
           </div>
         </form>
       </div>
+      
     </div>
   </div>
   

@@ -30,6 +30,8 @@ exports[`Warehouses - register as a component should show dialog 1`] = `
         class="dynatableData"
       >
         
+        
+        <!-- eslint-disable prettier/prettier -->
         <tr
           class="data-row"
         >
@@ -51,6 +53,9 @@ exports[`Warehouses - register as a component should show dialog 1`] = `
             <!--v-if-->
           </td>
         </tr>
+        
+        
+        <!-- eslint-disable prettier/prettier -->
         <tr
           class="data-row"
         >
@@ -72,6 +77,9 @@ exports[`Warehouses - register as a component should show dialog 1`] = `
             <!--v-if-->
           </td>
         </tr>
+        
+        
+        <!-- eslint-disable prettier/prettier -->
         <tr
           class="data-row"
         >
@@ -93,6 +101,7 @@ exports[`Warehouses - register as a component should show dialog 1`] = `
             <!--v-if-->
           </td>
         </tr>
+        
         
       </tbody>
       <!--v-if-->
@@ -149,6 +158,8 @@ exports[`Warehouses - register as a component should show dialog with editable d
         class="dynatableData"
       >
         
+        
+        <!-- eslint-disable prettier/prettier -->
         <tr
           class="data-row"
         >
@@ -195,6 +206,9 @@ exports[`Warehouses - register as a component should show dialog with editable d
             <!--v-if-->
           </td>
         </tr>
+        
+        
+        <!-- eslint-disable prettier/prettier -->
         <tr
           class="data-row"
         >
@@ -241,6 +255,9 @@ exports[`Warehouses - register as a component should show dialog with editable d
             <!--v-if-->
           </td>
         </tr>
+        
+        
+        <!-- eslint-disable prettier/prettier -->
         <tr
           class="data-row"
         >
@@ -287,6 +304,7 @@ exports[`Warehouses - register as a component should show dialog with editable d
             <!--v-if-->
           </td>
         </tr>
+        
         
       </tbody>
       <!--v-if-->
