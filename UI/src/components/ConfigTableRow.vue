@@ -107,7 +107,7 @@ watch(
                             value: e.target.value
                         })
                 "
-            />
+            >
         </td>
         <td>
             <template v-if="props.type === 'existing'">

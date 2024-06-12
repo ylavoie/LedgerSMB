@@ -31,7 +31,7 @@ export default {};
                 <ul>
                     <li>The <a href="https://ledgersmb.org" target="_blank"
                                rel="noopener noreferrer">
-                        website</a></li>
+                        project website</a></li>
                     <li>The <a href="https://ledgersmb.org/FAQ" target="_blank"
                                rel="noopener noreferrer">{{ $t(`FAQ`) }}</a></li>
                     <li>The <a href="http://archive.ledgersmb.org/" target="_blank"

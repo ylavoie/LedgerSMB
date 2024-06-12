@@ -35,7 +35,7 @@ export default {
             </template>
             <template #info>
                 The uploaded file contains the details of all transactions; the
-                batch data is entered into the fields
+                batch data is entered into the fields below.
             </template>
             <template #default>
                 The first row of the file contains the field names; each

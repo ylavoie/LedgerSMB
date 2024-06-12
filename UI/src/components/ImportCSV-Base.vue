@@ -85,7 +85,7 @@ export default {
             </div>
         </template>
         <form ref="form" name="csvupload">
-            <input type="hidden" name="type" :value="type" />
+            <input type="hidden" name="type" :value="type">
             <div v-if="multi" class="listheading">
                 {{ $t("Batch Information") }}
             </div>
@@ -133,7 +133,7 @@ export default {
                 class="inputrow"
                 :class="transactionFields ? '' : 'non-grid'"
             >
-                <input type="hidden" name="trans_type" />
+                <input type="hidden" name="trans_type">
                 <lsmb-button
                     class="submit"
                     name="action"
