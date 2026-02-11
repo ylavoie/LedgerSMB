@@ -1,7 +1,7 @@
 #!perl
 
 
-requires 'perl', '5.32.0';
+requires 'perl', '5.43.7';
 
 requires 'Archive::Zip';
 recommends 'Authen::SASL';
@@ -9,7 +9,7 @@ requires 'Beam::Wire';
 requires 'CGI::Emulate::PSGI';
 requires 'CGI::Parse::PSGI';
 requires 'Config::IniFiles';
-requires 'Cookie::Baker', '0.10'; # for 'samesite' attribute
+requires 'Cookie::Baker', '0.12'; # for 'samesite' attribute
 requires 'DBD::Pg', '3.3.0';
 requires 'DBI', '1.635';
 requires 'Data::UUID';
@@ -90,11 +90,11 @@ requires 'PGObject::Simple', '3.1.0';
 requires 'PGObject::Simple::Role', '2.1.1';
 requires 'PGObject::Type::Registry';
 requires 'PGObject::Type::BigFloat', '2.0.1';
-requires 'PGObject::Type::DateTime', '2.0.2';
+requires 'PGObject::Type::DateTime', '2.1.1';
 requires 'PGObject::Type::ByteString', '1.2.3';
 requires 'PGObject::Util::DBMethod', '1.1.0';
 requires 'PGObject::Util::DBAdmin', '1.6.1';
-requires 'Plack', '1.0031';
+requires 'Plack', '1.0051';
 requires 'Plack::App::File';
 requires 'Plack::Builder';
 requires 'Plack::Builder::Conditionals';
@@ -145,7 +145,7 @@ feature 'latex-pdf-ps', 'PDF and PostScript output' =>
         # missing executables
         requires 'LaTeX::Driver', '1.0.0';
         requires 'Template::Latex', '3.08';
-        requires 'Template::Plugin::Latex', '3.08';
+        requires 'Template::Plugin::Latex', '3.12';
         # 2.007 contains a fix for two characters we used to have
         # a work-around for in our code base.
         requires 'TeX::Encode', '2.007';
