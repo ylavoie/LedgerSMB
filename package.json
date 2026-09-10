@@ -55,7 +55,7 @@
     "vue-i18n": "9.2.2"
   },
   "devDependencies": {
-    "@babel/core": "7.19.3",
+    "@babel/core": "7.29.6",
     "@babel/eslint-parser": "7.19.1",
     "@babel/plugin-proposal-object-rest-spread": "7.18.9",
     "@babel/preset-env": "7.19.3",
