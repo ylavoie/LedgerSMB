@@ -1,7 +1,7 @@
 #!perl
 
 
-requires 'perl', '5.32.0';
+requires 'perl', '5.45.3';
 
 requires 'Archive::Zip';
 recommends 'Authen::SASL';
@@ -9,7 +9,7 @@ requires 'Beam::Wire';
 requires 'CGI::Emulate::PSGI';
 requires 'CGI::Parse::PSGI';
 requires 'Config::IniFiles';
-requires 'Cookie::Baker', '0.10'; # for 'samesite' attribute
+requires 'Cookie::Baker', '0.12'; # for 'samesite' attribute
 requires 'DBD::Pg', '3.3.0';
 requires 'DBI', '1.635';
 requires 'Data::UUID';
@@ -26,12 +26,12 @@ requires 'Hash::Merge';
 requires 'HTML::Entities';
 requires 'HTML::Escape';
 requires 'HTTP::AcceptLanguage';
-requires 'HTTP::Headers::Fast', '0.21'; # for content_is_text() method
+requires 'HTTP::Headers::Fast', '0.22'; # for content_is_text() method
 requires 'HTTP::Negotiate';
 requires 'HTTP::Status';
 requires 'IO::Scalar';
 requires 'JSON::MaybeXS';
-requires 'JSONSchema::Validator', '0.010';
+requires 'JSONSchema::Validator', '0.011';
 recommends 'Cpanel::JSON::XS', '3.0206'; # 3.0206 adds 'allow_bignum' option
 recommends 'JSON::PP', '2.00'; # 1.99_01 adds 'allow_bignum'
 requires 'List::MoreUtils';
@@ -64,7 +64,7 @@ requires 'Locale::CLDR::Locales::Sv';
 requires 'Locale::CLDR::Locales::Tr';
 requires 'Locale::CLDR::Locales::Uk';
 requires 'Locale::CLDR::Locales::Zh';
-requires 'Locale::Maketext::Lexicon', '0.62';
+requires 'Locale::Maketext::Lexicon', '0.99';
 requires 'Locales';
 requires 'Log::Any';
 requires 'Log::Any::Adapter';
@@ -84,17 +84,17 @@ requires 'Moose::Util::TypeConstraints';
 requires 'MooseX::ClassAttribute';
 requires 'MooseX::NonMoose';
 requires 'Number::Format';
-requires 'PGObject', '2.3.2';
+requires 'PGObject', '2.4.0';
 # PGObject::Simple 3.0.1 breaks our file uploads
 requires 'PGObject::Simple', '3.1.0';
 requires 'PGObject::Simple::Role', '2.1.1';
 requires 'PGObject::Type::Registry';
-requires 'PGObject::Type::BigFloat', '2.0.1';
-requires 'PGObject::Type::DateTime', '2.0.2';
+requires 'PGObject::Type::BigFloat', '2.001001';
+requires 'PGObject::Type::DateTime', '2.1.1';
 requires 'PGObject::Type::ByteString', '1.2.3';
 requires 'PGObject::Util::DBMethod', '1.1.0';
-requires 'PGObject::Util::DBAdmin', '1.6.1';
-requires 'Plack', '1.0031';
+requires 'PGObject::Util::DBAdmin', '1.6.2';
+requires 'Plack', '1.0055';
 requires 'Plack::App::File';
 requires 'Plack::Builder';
 requires 'Plack::Builder::Conditionals';
@@ -105,7 +105,7 @@ requires 'Plack::Request::WithEncoding';
 requires 'Plack::Util';
 requires 'Plack::Util::Accessor';
 requires 'Pod::Find';
-requires 'Scope::Guard', '0.10';
+requires 'Scope::Guard', '0.21';
 requires 'Session::Storage::Secure';
 requires 'String::Random';
 requires 'Template', '2.14';
@@ -143,12 +143,12 @@ feature 'latex-pdf-ps', 'PDF and PostScript output' =>
     sub {
         # 1.0.0 reports much better errors than 0.300.2 in case of
         # missing executables
-        requires 'LaTeX::Driver', '1.0.0';
-        requires 'Template::Latex', '3.08';
-        requires 'Template::Plugin::Latex', '3.08';
+        requires 'LaTeX::Driver', '1.3.1';
+        requires 'Template::Latex', '3.11';
+        requires 'Template::Plugin::Latex', '3.12';
         # 2.007 contains a fix for two characters we used to have
         # a work-around for in our code base.
-        requires 'TeX::Encode', '2.007';
+        requires 'TeX::Encode', '2.010';
 };
 
 feature 'openoffice', 'OpenOffice.org output' =>
@@ -167,13 +167,13 @@ feature 'xls', 'Microsoft Excel' =>
 # Even with cpanm --notest, 'test' target of --installdeps
 # will be included, so put our testing requirements in develop...
 on 'develop' => sub {
-    requires 'App::Prove', '3.41'; # parallel testing of pipe and socket sources
+    requires 'App::Prove', '3.52'; # parallel testing of pipe and socket sources
     requires 'Capture::Tiny';
-    requires 'DBD::Mock', '1.58';
+    requires 'DBD::Mock', '1.60';
     requires 'File::Grep';
     requires 'File::Util';
     requires 'HTML::Lint';
-    requires 'HTML::Lint::Parser', '2.26';
+    requires 'HTML::Lint::Parser', '2.32';
     requires 'HTML::Lint::Pluggable';
     requires 'HTML::Lint::Pluggable::HTML5';
     requires 'HTML::Lint::Pluggable::WhiteList';
@@ -182,11 +182,11 @@ on 'develop' => sub {
     requires 'Perl::Critic';
     requires 'Perl::Critic::Moose';
     requires 'Perl::Critic::Policy::Modules::RequireExplicitInclusion';
-    requires 'Pherkin::Extension::Weasel', '0.15';
+    requires 'Pherkin::Extension::Weasel', '0.19';
     requires 'Pod::ProjectDocs';
     requires 'Selenium::Remote::Driver';
-    requires 'TAP::Parser::SourceHandler::pgTAP', '3.33';
-    requires 'Test::BDD::Cucumber', '0.79';
+    requires 'TAP::Parser::SourceHandler::pgTAP', '3.37';
+    requires 'Test::BDD::Cucumber', '0.87';
     if ($ENV{CI}) {
         # Required to suppress a variable re-definition
         requires 'Test::Dependencies', '0.30';
@@ -194,17 +194,17 @@ on 'develop' => sub {
     else {
         requires 'Test::Dependencies', '0.25';
     }
-    requires 'Test::Harness', '3.41'; # parallel testing of pipe and socket sources
-    requires 'Test::Pod', '1.00';
+    requires 'Test::Harness', '3.52'; # parallel testing of pipe and socket sources
+    requires 'Test::Pod', '1.52';
     requires 'Test::Pod::Coverage';
     requires 'Test2::Harness';
     requires 'Test2::V0';
     requires 'Test2::Plugin::Feature', '0.001112';
     requires 'Test2::Plugin::pgTAP';
     requires 'Text::Diff';
-    requires 'Weasel', '0.29';
-    requires 'Weasel::Driver::Selenium2', '0.12';
-    requires 'Weasel::Session', '0.11';
+    requires 'Weasel', '0.32';
+    requires 'Weasel::Driver::Selenium2', '0.15';
+    requires 'Weasel::Session', '0.32';
     requires 'Weasel::Widgets::Dojo', '0.07';
 
     feature 'debug', 'Debug pane' =>
