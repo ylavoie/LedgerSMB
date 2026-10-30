@@ -1,7 +1,7 @@
 #!perl
 
 
-requires 'perl', '5.32.0';
+requires 'perl', '5.45.4';
 
 requires 'Archive::Zip';
 recommends 'Authen::SASL';
